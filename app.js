@@ -101,6 +101,26 @@ function toast(message, type) {
   }, 3500);
 }
 
+// Queues a toast to show on the *next* page (e.g. right after a redirect),
+// since the current page is about to be torn down before a normal toast()
+// could be seen.
+function queueToast(message, type) {
+  sessionStorage.setItem("mt_pending_toast", JSON.stringify({ message: message, type: type }));
+}
+
+// Shows and clears any toast queued by queueToast() on the previous page.
+(function showPendingToast() {
+  const raw = sessionStorage.getItem("mt_pending_toast");
+  if (!raw) return;
+  sessionStorage.removeItem("mt_pending_toast");
+  try {
+    const pending = JSON.parse(raw);
+    document.addEventListener("DOMContentLoaded", () => toast(pending.message, pending.type));
+  } catch (e) {
+    // Ignore a malformed pending toast rather than breaking page load.
+  }
+})();
+
 // ---------------------------------------------------------------------
 // Small data helpers
 // ---------------------------------------------------------------------

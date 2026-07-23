@@ -9,9 +9,12 @@ const SHELL_FILES = [
   "index.html",
   "privacy.html",
   "terms.html",
+  "register.html",
+  "myprofile.html",
   "styles.css",
   "app.js",
   "config.js",
+  "profile-shared.js",
   "manifest.json"
 ];
 

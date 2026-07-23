@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>My Profile — Jain Vivah</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="mt-header">
+  <div class="mt-logo">Jain Vivah</div>
+</div>
+
+<div class="mt-page">
+
+  <h1>My Profile</h1>
+
+  <div class="mt-card">
+
+    <div class="mt-section-title">
+      <h3>Basic details</h3>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-full-name">Full name *</label>
+      <input type="text" id="mp-full-name" required>
+    </div>
+
+    <div class="mt-field">
+      <label>Gender</label>
+      <div id="mp-gender-display" style="padding:12px 14px; background:#F5EDE3; border-radius:10px; font-weight:600;"></div>
+      <div class="mt-hint">Gender cannot be changed. Contact support if this is wrong.</div>
+      <input type="hidden" id="mp-gender">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-dob">Date of birth *</label>
+      <input type="date" id="mp-dob" required>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-birth-time">Birth time</label>
+      <input type="time" id="mp-birth-time">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-birth-place">Birth place</label>
+      <input type="text" id="mp-birth-place">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-height">Height *</label>
+      <select id="mp-height" required>
+        <option value="" disabled selected>Choose height</option>
+      </select>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-weight">Weight (kg)</label>
+      <input type="number" id="mp-weight" min="20" max="200" step="1">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-marital">Marital status *</label>
+      <select id="mp-marital" required>
+        <option value="" disabled selected>Choose one</option>
+      </select>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-diet">Diet *</label>
+      <select id="mp-diet" required>
+        <option value="" disabled selected>Choose one</option>
+      </select>
+    </div>
+
+    <div class="mt-section-title">
+      <h3>Community & location</h3>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-sect">Sect *</label>
+      <select id="mp-sect" required>
+        <option value="" disabled selected>Choose one</option>
+      </select>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-sub-caste">Sub caste</label>
+      <input type="text" id="mp-sub-caste">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-gotra">Gotra</label>
+      <input type="text" id="mp-gotra">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-city">City *</label>
+      <input type="text" id="mp-city" required>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-state">State *</label>
+      <input type="text" id="mp-state" required>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-country">Country</label>
+      <input type="text" id="mp-country" value="India">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-native-place">Native place</label>
+      <input type="text" id="mp-native-place">
+    </div>
+
+    <div class="mt-section-title">
+      <h3>Education & work</h3>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-education">Education *</label>
+      <select id="mp-education" required>
+        <option value="" disabled selected>Choose one</option>
+      </select>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-education-detail">Education detail</label>
+      <input type="text" id="mp-education-detail">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-profession">Profession *</label>
+      <select id="mp-profession" required>
+        <option value="" disabled selected>Choose one</option>
+      </select>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-occupation-detail">Occupation detail</label>
+      <input type="text" id="mp-occupation-detail">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-income">Annual income (optional)</label>
+      <select id="mp-income">
+        <option value="">Prefer not to say</option>
+      </select>
+    </div>
+
+    <div class="mt-section-title">
+      <h3>Family</h3>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-father-name">Father's name</label>
+      <input type="text" id="mp-father-name">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-father-occupation">Father's occupation</label>
+      <input type="text" id="mp-father-occupation">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-mother-name">Mother's name</label>
+      <input type="text" id="mp-mother-name">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-mother-occupation">Mother's occupation</label>
+      <input type="text" id="mp-mother-occupation">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-siblings">Siblings</label>
+      <textarea id="mp-siblings" rows="2"></textarea>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-family-type">Family type</label>
+      <select id="mp-family-type">
+        <option value="">Choose one</option>
+      </select>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-mosal">Mosal / maternal family</label>
+      <input type="text" id="mp-mosal">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-hobbies">Hobbies</label>
+      <textarea id="mp-hobbies" rows="2"></textarea>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-about">About</label>
+      <textarea id="mp-about" rows="4" maxlength="500"></textarea>
+      <div class="mt-char-counter"><span id="mp-about-count">0</span>/500</div>
+    </div>
+
+    <button type="button" class="mt-btn mt-btn-primary" id="mp-save-profile">Save profile</button>
+
+    <div class="mt-section-title">
+      <h3>Contact</h3>
+    </div>
+
+    <div class="mt-reassurance">
+      Your mobile number and address are never shown to any member.
+      They are shared only when you accept someone's interest.
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-mobile">Mobile *</label>
+      <input type="tel" id="mp-mobile" inputmode="numeric" maxlength="10" required>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-alt-mobile">Alternate mobile</label>
+      <input type="tel" id="mp-alt-mobile" inputmode="numeric" maxlength="10">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-email">Email</label>
+      <input type="email" id="mp-email">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-address">Address</label>
+      <textarea id="mp-address" rows="2"></textarea>
+    </div>
+
+    <button type="button" class="mt-btn mt-btn-outline" id="mp-save-contact">Save contact details</button>
+
+    <div id="mp-verify-section" style="margin-top:20px; display:none;">
+      <div class="mt-field">
+        <label>Mobile verification</label>
+        <div><span class="mt-badge" id="mp-verify-badge">Not verified</span></div>
+      </div>
+      <a href="#" target="_blank" class="mt-btn mt-btn-gold" id="mp-whatsapp-btn">Verify on WhatsApp</a>
+      <p class="mt-hint">Send this ready message from the same mobile number. Your number will be marked verified within a few hours.</p>
+    </div>
+
+    <div class="mt-section-title">
+      <h3>Photos</h3>
+      <div id="mp-photo-manager"></div>
+    </div>
+
+    <div class="mt-section-title">
+      <h3>Profile visibility</h3>
+      <div class="mt-switch-row">
+        <div>
+          <div>Pause my profile</div>
+          <div class="mt-hint">While paused, no member can see your profile.</div>
+        </div>
+        <label class="mt-switch">
+          <input type="checkbox" id="mp-pause-toggle">
+          <span class="mt-switch-slider"></span>
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mt-danger-zone">
+    <h3>Delete my account</h3>
+    <p>
+      This will permanently remove your photos, contact details and profile
+      from Jain Vivah. <strong>This cannot be undone.</strong>
+    </p>
+    <div class="mt-field">
+      <label for="mp-delete-confirm">Type DELETE to confirm</label>
+      <input type="text" id="mp-delete-confirm" placeholder="DELETE">
+    </div>
+    <button type="button" class="mt-btn mt-btn-danger" id="mp-delete-btn" disabled>Delete my account</button>
+  </div>
+
+</div>
+
+<div class="mt-footer">
+  <div>
+    <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a>
+  </div>
+  <div class="mt-brand">AnyApps.in</div>
+  <div>Support: <a href="mailto:vkvcoder.support@gmail.com">vkvcoder.support@gmail.com</a></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="profile-shared.js"></script>
+<script>
+  let currentUser = null;
+  let photoManager = null;
+
+  function fillSelect(selectEl, values) {
+    values.forEach((v) => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      selectEl.appendChild(opt);
+    });
+  }
+
+  function populateDropdowns() {
+    const heightSelect = document.getElementById("mp-height");
+    buildHeightOptions().forEach((h) => {
+      const opt = document.createElement("option");
+      opt.value = h.cm;
+      opt.textContent = h.label;
+      heightSelect.appendChild(opt);
+    });
+
+    fillSelect(document.getElementById("mp-marital"), MARITAL_STATUS_OPTIONS);
+    fillSelect(document.getElementById("mp-diet"), DIET_OPTIONS);
+    fillSelect(document.getElementById("mp-sect"), SECT_OPTIONS);
+    fillSelect(document.getElementById("mp-education"), EDUCATION_OPTIONS);
+    fillSelect(document.getElementById("mp-profession"), PROFESSION_OPTIONS);
+    fillSelect(document.getElementById("mp-income"), ANNUAL_INCOME_OPTIONS);
+    fillSelect(document.getElementById("mp-family-type"), FAMILY_TYPE_OPTIONS);
+  }
+
+  async function loadProfile() {
+    const { data, error } = await supabaseClient
+      .from("mt_profiles")
+      .select("*")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+    if (error) {
+      toast("Could not load your profile.", "error");
+      return null;
+    }
+    return data;
+  }
+
+  async function loadContact() {
+    const { data, error } = await supabaseClient
+      .from("mt_contacts")
+      .select("*")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+    if (error) return null;
+    return data;
+  }
+
+  function fillForm(profile, contact) {
+    if (profile) {
+      document.getElementById("mp-full-name").value = profile.full_name || "";
+      document.getElementById("mp-gender").value = profile.gender || "";
+      document.getElementById("mp-gender-display").textContent = profile.gender || "—";
+      if (profile.dob) document.getElementById("mp-dob").value = profile.dob;
+      if (profile.birth_time) document.getElementById("mp-birth-time").value = profile.birth_time;
+      document.getElementById("mp-birth-place").value = profile.birth_place || "";
+      if (profile.height_cm) document.getElementById("mp-height").value = profile.height_cm;
+      if (profile.weight_kg) document.getElementById("mp-weight").value = profile.weight_kg;
+      if (profile.marital_status) document.getElementById("mp-marital").value = profile.marital_status;
+      if (profile.diet) document.getElementById("mp-diet").value = profile.diet;
+
+      if (profile.sect) document.getElementById("mp-sect").value = profile.sect;
+      document.getElementById("mp-sub-caste").value = profile.sub_caste || "";
+      document.getElementById("mp-gotra").value = profile.gotra || "";
+      document.getElementById("mp-city").value = profile.city || "";
+      document.getElementById("mp-state").value = profile.state || "";
+      document.getElementById("mp-country").value = profile.country || "India";
+      document.getElementById("mp-native-place").value = profile.native_place || "";
+
+      if (profile.education) document.getElementById("mp-education").value = profile.education;
+      document.getElementById("mp-education-detail").value = profile.education_detail || "";
+      if (profile.profession) document.getElementById("mp-profession").value = profile.profession;
+      document.getElementById("mp-occupation-detail").value = profile.occupation_detail || "";
+      if (profile.annual_income) document.getElementById("mp-income").value = profile.annual_income;
+
+      document.getElementById("mp-father-name").value = profile.father_name || "";
+      document.getElementById("mp-father-occupation").value = profile.father_occupation || "";
+      document.getElementById("mp-mother-name").value = profile.mother_name || "";
+      document.getElementById("mp-mother-occupation").value = profile.mother_occupation || "";
+      document.getElementById("mp-siblings").value = profile.siblings || "";
+      if (profile.family_type) document.getElementById("mp-family-type").value = profile.family_type;
+      document.getElementById("mp-mosal").value = profile.mosal || "";
+      document.getElementById("mp-hobbies").value = profile.hobbies || "";
+      document.getElementById("mp-about").value = profile.about || "";
+      document.getElementById("mp-about-count").textContent = (profile.about || "").length;
+
+      document.getElementById("mp-pause-toggle").checked = !!profile.is_paused;
+    }
+
+    document.getElementById("mp-email").value = (contact && contact.email) || currentUser.email || "";
+    if (contact) {
+      document.getElementById("mp-mobile").value = contact.mobile || "";
+      document.getElementById("mp-alt-mobile").value = contact.alt_mobile || "";
+      document.getElementById("mp-address").value = contact.address || "";
+    }
+  }
+
+  document.getElementById("mp-about").addEventListener("input", (e) => {
+    document.getElementById("mp-about-count").textContent = e.target.value.length;
+  });
+
+  // ---------------- Save profile ----------------
+  document.getElementById("mp-save-profile").addEventListener("click", async () => {
+    const fullName = document.getElementById("mp-full-name").value.trim();
+    const gender = document.getElementById("mp-gender").value;
+    const dob = document.getElementById("mp-dob").value;
+    const heightCm = document.getElementById("mp-height").value;
+    const marital = document.getElementById("mp-marital").value;
+    const diet = document.getElementById("mp-diet").value;
+    const sect = document.getElementById("mp-sect").value;
+    const city = document.getElementById("mp-city").value.trim();
+    const state = document.getElementById("mp-state").value.trim();
+    const education = document.getElementById("mp-education").value;
+    const profession = document.getElementById("mp-profession").value;
+
+    if (!fullName || !dob || !heightCm || !marital || !diet || !sect || !city || !state || !education || !profession) {
+      toast("Please fill in all fields marked with *.", "error");
+      return;
+    }
+
+    const ageError = checkAgeRule(dob, gender);
+    if (ageError) {
+      toast(ageError, "error");
+      return;
+    }
+
+    const payload = {
+      user_id: currentUser.id,
+      full_name: fullName,
+      dob: dob,
+      birth_time: document.getElementById("mp-birth-time").value || null,
+      birth_place: document.getElementById("mp-birth-place").value.trim() || null,
+      height_cm: Number(heightCm),
+      weight_kg: document.getElementById("mp-weight").value ? Number(document.getElementById("mp-weight").value) : null,
+      marital_status: marital,
+      diet: diet,
+      sect: sect,
+      sub_caste: document.getElementById("mp-sub-caste").value.trim() || null,
+      gotra: document.getElementById("mp-gotra").value.trim() || null,
+      city: city,
+      state: state,
+      country: document.getElementById("mp-country").value.trim() || "India",
+      native_place: document.getElementById("mp-native-place").value.trim() || null,
+      education: education,
+      education_detail: document.getElementById("mp-education-detail").value.trim() || null,
+      profession: profession,
+      occupation_detail: document.getElementById("mp-occupation-detail").value.trim() || null,
+      annual_income: document.getElementById("mp-income").value || null,
+      father_name: document.getElementById("mp-father-name").value.trim() || null,
+      father_occupation: document.getElementById("mp-father-occupation").value.trim() || null,
+      mother_name: document.getElementById("mp-mother-name").value.trim() || null,
+      mother_occupation: document.getElementById("mp-mother-occupation").value.trim() || null,
+      siblings: document.getElementById("mp-siblings").value.trim() || null,
+      family_type: document.getElementById("mp-family-type").value || null,
+      mosal: document.getElementById("mp-mosal").value.trim() || null,
+      hobbies: document.getElementById("mp-hobbies").value.trim() || null,
+      about: document.getElementById("mp-about").value.trim() || null
+    };
+
+    const { error } = await supabaseClient.from("mt_profiles").upsert(payload, { onConflict: "user_id" });
+    if (error) {
+      toast("Could not save: " + error.message, "error");
+      return;
+    }
+
+    toast("Profile saved.", "success");
+    await recomputeCompletion();
+  });
+
+  // ---------------- Save contact ----------------
+  async function refreshVerifySection() {
+    const contact = await loadContact();
+    if (contact && contact.mobile) {
+      document.getElementById("mp-verify-section").style.display = "block";
+      const badge = document.getElementById("mp-verify-badge");
+      if (contact.mobile_verified) {
+        badge.textContent = "Verified";
+        badge.className = "mt-badge mt-badge-verified";
+      } else {
+        badge.textContent = "Not verified";
+        badge.className = "mt-badge mt-badge-unverified";
+      }
+
+      const profile = await loadProfile();
+      let code = profile && profile.profile_code;
+      if (!code) {
+        code = generateProfileCode(currentUser.id);
+        await supabaseClient.from("mt_profiles").update({ profile_code: code }).eq("user_id", currentUser.id);
+      }
+      const waLink =
+        "https://wa.me/" + WHATSAPP_VERIFY_NUMBER + "?text=" + encodeURIComponent("VERIFY " + code);
+      document.getElementById("mp-whatsapp-btn").href = waLink;
+    }
+  }
+
+  document.getElementById("mp-save-contact").addEventListener("click", async () => {
+    const mobile = document.getElementById("mp-mobile").value.trim();
+    const altMobile = document.getElementById("mp-alt-mobile").value.trim();
+    const email = document.getElementById("mp-email").value.trim();
+    const address = document.getElementById("mp-address").value.trim();
+
+    if (!/^\d{10}$/.test(mobile)) {
+      toast("Please enter a valid 10 digit mobile number.", "error");
+      return;
+    }
+    if (altMobile && !/^\d{10}$/.test(altMobile)) {
+      toast("Alternate mobile must be a valid 10 digit number.", "error");
+      return;
+    }
+
+    const { error } = await supabaseClient.from("mt_contacts").upsert(
+      {
+        user_id: currentUser.id,
+        mobile: mobile,
+        alt_mobile: altMobile || null,
+        email: email || null,
+        address: address || null
+      },
+      { onConflict: "user_id" }
+    );
+
+    if (error) {
+      toast("Could not save contact details: " + error.message, "error");
+      return;
+    }
+
+    toast("Contact details saved.", "success");
+    await refreshVerifySection();
+    await recomputeCompletion();
+  });
+
+  // Recompute profile_complete after any edit, so an incomplete edit never
+  // stays marked complete (and vice versa).
+  async function recomputeCompletion() {
+    const profile = await loadProfile();
+    const contact = await loadContact();
+    const photoCount = photoManager ? await photoManager.countPhotos() : 0;
+    const missing = findMissingFields(profile, contact, photoCount);
+    const shouldBeComplete = missing.length === 0;
+
+    if (profile && profile.profile_complete !== shouldBeComplete) {
+      await supabaseClient
+        .from("mt_profiles")
+        .update({ profile_complete: shouldBeComplete })
+        .eq("user_id", currentUser.id);
+
+      if (!shouldBeComplete) {
+        toast("Note: your profile is now incomplete and won't be shown until you finish it.", "info");
+      }
+    }
+  }
+
+  // ---------------- Pause toggle ----------------
+  document.getElementById("mp-pause-toggle").addEventListener("change", async (e) => {
+    const { error } = await supabaseClient
+      .from("mt_profiles")
+      .update({ is_paused: e.target.checked })
+      .eq("user_id", currentUser.id);
+
+    if (error) {
+      toast("Could not update pause setting.", "error");
+      e.target.checked = !e.target.checked;
+      return;
+    }
+    toast(e.target.checked ? "Your profile is now paused." : "Your profile is now visible again.", "success");
+  });
+
+  // ---------------- Delete account ----------------
+  document.getElementById("mp-delete-confirm").addEventListener("input", (e) => {
+    document.getElementById("mp-delete-btn").disabled = e.target.value.trim() !== "DELETE";
+  });
+
+  document.getElementById("mp-delete-btn").addEventListener("click", async () => {
+    document.getElementById("mp-delete-btn").disabled = true;
+    document.getElementById("mp-delete-btn").textContent = "Deleting...";
+
+    try {
+      const { data: photos } = await supabaseClient
+        .from("mt_photos")
+        .select("storage_path")
+        .eq("user_id", currentUser.id);
+
+      if (photos && photos.length > 0) {
+        await supabaseClient.storage.from("mt-photos").remove(photos.map((p) => p.storage_path));
+      }
+
+      await supabaseClient.from("mt_photos").delete().eq("user_id", currentUser.id);
+      await supabaseClient.from("mt_contacts").delete().eq("user_id", currentUser.id);
+      await supabaseClient.from("mt_profiles").delete().eq("user_id", currentUser.id);
+
+      await supabaseClient.auth.signOut();
+      queueToast("Your account and data have been deleted.", "success");
+      window.location.href = "index.html";
+    } catch (err) {
+      toast("Something went wrong while deleting your account. Please try again or contact support.", "error");
+      document.getElementById("mp-delete-btn").disabled = false;
+      document.getElementById("mp-delete-btn").textContent = "Delete my account";
+    }
+  });
+
+  // ---------------- Page init ----------------
+  (async () => {
+    const session = await requireAuth();
+    if (!session) return;
+    currentUser = session.user;
+
+    populateDropdowns();
+
+    const profile = await loadProfile();
+    const contact = await loadContact();
+    fillForm(profile, contact);
+
+    photoManager = createPhotoManager(document.getElementById("mp-photo-manager"), currentUser.id);
+    await photoManager.render();
+    await refreshVerifySection();
+  })();
+</script>
+
+</body>
+</html>

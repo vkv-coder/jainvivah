@@ -6,3 +6,8 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const APP_NAME = "Jain Vivah";
 const SUPPORT_EMAIL = "vkvcoder.support@gmail.com";
+
+// WhatsApp number members message to verify their mobile (manual process).
+// Replace with the real number, in international format with no + or spaces
+// (e.g. "919812345678").
+const WHATSAPP_VERIFY_NUMBER = "919XXXXXXXXX";
