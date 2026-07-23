@@ -3,7 +3,7 @@
 // Supabase API calls are always fetched fresh from the network — matrimonial
 // data must never be served stale from a cache.
 
-const CACHE_NAME = "MT_V2";
+const CACHE_NAME = "MT_V3";
 
 const SHELL_FILES = [
   "index.html",
