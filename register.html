@@ -408,6 +408,18 @@
         <div id="s6-photo-manager"></div>
       </div>
 
+      <div class="mt-section-title">
+        <h3>Full Bio-data (optional)</h3>
+
+        <div class="mt-lock-box">
+          This file is NOT shown to other members. It is shared only with a member
+          whose interest you have accepted. Most bio-data sheets carry your mobile
+          number and address, so it stays locked like your contact details.
+        </div>
+
+        <div id="s6-biodata-manager"></div>
+      </div>
+
       <div class="mt-step-nav">
         <button type="button" class="mt-btn mt-btn-outline" id="s6-back">Back</button>
         <button type="button" class="mt-btn mt-btn-primary" id="s6-finish">Finish</button>
@@ -438,7 +450,7 @@
     2: "Community & location",
     3: "Education & work",
     4: "Family",
-    5: "Looking for",
+    5: "My Preference",
     6: "Contact & photos"
   };
 
@@ -881,6 +893,111 @@
   // ---------------- Step 6: photos ----------------
   let photoManager = null;
 
+  // ---------------- Step 6: bio-data (optional, one file, PDF or image) ----------------
+  const BIODATA_BUCKET = "mt-photos";
+  const MAX_BIODATA_BYTES = 5 * 1024 * 1024;
+
+  async function renderBiodataSection() {
+    const container = document.getElementById("s6-biodata-manager");
+    const profile = await loadProfile();
+    const path = profile && profile.biodata_path;
+
+    let html = "";
+    if (path) {
+      const { data } = await supabaseClient.storage.from(BIODATA_BUCKET).createSignedUrl(path, 60);
+      const url = data ? data.signedUrl : "";
+      html += '<p><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">View my uploaded bio-data</a></p>';
+      html += '<div class="mt-step-nav">';
+      html += '<button type="button" class="mt-btn mt-btn-outline" id="s6-biodata-replace-btn">Replace file</button>';
+      html += '<button type="button" class="mt-btn mt-btn-danger" id="s6-biodata-delete-btn">Delete</button>';
+      html += "</div>";
+      html += '<input type="file" id="s6-biodata-input" accept="application/pdf,image/*" style="display:none;">';
+    } else {
+      html +=
+        '<div class="mt-field">' +
+        '<label for="s6-biodata-input">Upload bio-data (PDF or image, max 5 MB)</label>' +
+        '<input type="file" id="s6-biodata-input" accept="application/pdf,image/*">' +
+        "</div>";
+    }
+    container.innerHTML = html;
+
+    const fileInput = document.getElementById("s6-biodata-input");
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (file) await uploadBiodata(file, path);
+    });
+
+    const replaceBtn = document.getElementById("s6-biodata-replace-btn");
+    if (replaceBtn) replaceBtn.addEventListener("click", () => fileInput.click());
+
+    const deleteBtn = document.getElementById("s6-biodata-delete-btn");
+    if (deleteBtn) deleteBtn.addEventListener("click", () => deleteBiodata(path));
+  }
+
+  async function uploadBiodata(file, oldPath) {
+    if (file.size > MAX_BIODATA_BYTES) {
+      toast("That file is too large. Maximum size is 5 MB.", "error");
+      return;
+    }
+
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+    const isImage = file.type.startsWith("image/");
+    if (!isPdf && !isImage) {
+      toast("Please upload a PDF or image file.", "error");
+      return;
+    }
+
+    toast("Uploading bio-data...", "info");
+
+    const extMatch = /\.([a-zA-Z0-9]+)$/.exec(file.name);
+    const ext = extMatch ? extMatch[1].toLowerCase() : isPdf ? "pdf" : "jpg";
+    const path = currentUser.id + "/biodata." + ext;
+
+    // Replacing an existing file whose extension differs from the new one
+    // would otherwise leave the old object orphaned in storage.
+    if (oldPath && oldPath !== path) {
+      await supabaseClient.storage.from(BIODATA_BUCKET).remove([oldPath]);
+    }
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from(BIODATA_BUCKET)
+      .upload(path, file, { contentType: file.type, upsert: true });
+
+    if (uploadError) {
+      toast("Upload failed: " + uploadError.message, "error");
+      return;
+    }
+
+    const payload = normaliseCodes({ biodata_path: path });
+    console.log("Step 6 (biodata) UPDATE — payload sent to Supabase:", payload);
+    const { error } = await supabaseClient.from("mt_profiles").update(payload).eq("user_id", currentUser.id);
+
+    if (error) {
+      toast(describeSaveError(error, payload), "error");
+      return;
+    }
+
+    toast("Bio-data uploaded.", "success");
+    await renderBiodataSection();
+  }
+
+  async function deleteBiodata(path) {
+    if (!path) return;
+    await supabaseClient.storage.from(BIODATA_BUCKET).remove([path]);
+
+    const payload = normaliseCodes({ biodata_path: null });
+    console.log("Step 6 (biodata delete) UPDATE — payload sent to Supabase:", payload);
+    const { error } = await supabaseClient.from("mt_profiles").update(payload).eq("user_id", currentUser.id);
+
+    if (error) {
+      toast(describeSaveError(error, payload), "error");
+      return;
+    }
+
+    toast("Bio-data removed.", "success");
+    await renderBiodataSection();
+  }
+
   // ---------------- Finish ----------------
   document.getElementById("s6-finish").addEventListener("click", async () => {
     const profile = await loadProfile();
@@ -1064,6 +1181,7 @@
     photoManager = createPhotoManager(document.getElementById("s6-photo-manager"), currentUser.id);
     await photoManager.render();
     await refreshVerifySection();
+    await renderBiodataSection();
 
     goToStep(1);
   })();
