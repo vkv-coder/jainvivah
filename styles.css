@@ -267,6 +267,11 @@ a {
   color: var(--white);
 }
 
+.mt-choice:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
 /* Checkbox rows for consent text */
 .mt-checkbox-row {
   display: flex;

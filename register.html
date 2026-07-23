@@ -52,12 +52,16 @@
       </div>
 
       <div class="mt-field">
-        <label>Gender</label>
-        <div id="s1-gender-display" style="padding:12px 14px; background:#F5EDE3; border-radius:10px; font-weight:600;"></div>
-        <div class="mt-hint">Set at sign up and cannot be changed here.</div>
+        <label>Gender *</label>
+        <div class="mt-choice-group" id="s1-gender-group">
+          <button type="button" class="mt-choice" data-value="male">Male</button>
+          <button type="button" class="mt-choice" data-value="female">Female</button>
+        </div>
+        <div class="mt-hint" id="s1-gender-locked-hint" style="display:none;">
+          Gender cannot be changed. Contact support if this is wrong.
+        </div>
         <input type="hidden" id="s1-gender">
       </div>
-
 
       <div class="mt-field">
         <label for="s1-dob">Date of birth *</label>
@@ -603,7 +607,21 @@
     const marital = document.getElementById("s1-marital").value;
     const diet = document.getElementById("s1-diet").value;
 
-    if (!fullName || !dob || !heightCm || !weight || !marital || !diet) {
+    // Every one of these is NOT NULL on mt_profiles — stop and ask on the
+    // form rather than ever attempting a save with one of them missing.
+    if (!fullName) {
+      toast("Please enter the name of the candidate.", "error");
+      return;
+    }
+    if (!gender) {
+      toast("Please select gender", "error");
+      return;
+    }
+    if (!dob) {
+      toast("Please enter date of birth.", "error");
+      return;
+    }
+    if (!heightCm || !weight || !marital || !diet) {
       toast("Please fill in all required fields.", "error");
       return;
     }
@@ -848,17 +866,44 @@
     window.location.href = "browse.html";
   });
 
+  // Wires the Male/Female tap buttons. Clicks are ignored once gender has
+  // already been saved to mt_profiles (locked, per setGenderField below).
+  document.querySelectorAll("#s1-gender-group .mt-choice").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.disabled) return;
+      document.getElementById("s1-gender").value = btn.dataset.value;
+      document.querySelectorAll("#s1-gender-group .mt-choice").forEach((b) => {
+        b.classList.toggle("mt-choice-selected", b === btn);
+      });
+    });
+  });
+
+  // Populates and locks/unlocks the gender buttons.
+  // - savedGender (already in mt_profiles) always wins and locks the field.
+  // - otherwise fall back to whatever signup carried in localStorage.
+  // - otherwise leave both buttons unselected so the member must choose.
+  function setGenderField(savedGender, signupGender) {
+    const gender = savedGender || signupGender || "";
+    const locked = !!savedGender;
+
+    document.getElementById("s1-gender").value = gender;
+    document.querySelectorAll("#s1-gender-group .mt-choice").forEach((btn) => {
+      btn.classList.toggle("mt-choice-selected", btn.dataset.value === gender);
+      btn.disabled = locked;
+    });
+    document.getElementById("s1-gender-locked-hint").style.display = locked ? "block" : "none";
+  }
+
   // ---------------- Prefill from an existing draft, if any ----------------
   async function prefillForm(profile, contact) {
     const signupData = JSON.parse(localStorage.getItem("mt_signup") || "{}");
 
     const fullName = (profile && profile.full_name) || signupData.full_name || "";
+    document.getElementById("s1-full-name").value = fullName;
+
     // Lowercase here too, so an older mt_signup cached before the fix
     // (e.g. "Male") still resolves to a valid, saveable code.
-    const gender = normaliseCode((profile && profile.gender) || signupData.gender || "");
-    document.getElementById("s1-full-name").value = fullName;
-    document.getElementById("s1-gender").value = gender;
-    document.getElementById("s1-gender-display").textContent = GENDER_LABELS[gender] || gender || "—";
+    setGenderField(normaliseCode((profile && profile.gender) || ""), normaliseCode(signupData.gender || ""));
 
     if (profile) {
       if (profile.dob) document.getElementById("s1-dob").value = profile.dob;
