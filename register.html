@@ -557,14 +557,56 @@
   }
 
   // ---------------- Save helpers ----------------
-  // Every write to mt_profiles goes through here, and every write is run
-  // through normaliseCodes() first — no exceptions — so an invalid or
-  // stale gender/diet/marital_status/managed_by value can never reach
-  // the database.
-  async function saveProfile(fields) {
+  // Every mt_profiles write for the wizard goes through here. This is a
+  // deliberate select-then-insert-or-update, NOT an upsert: upsert's
+  // INSERT path (taken whenever the row doesn't exist yet) would create
+  // a brand new row containing ONLY the current step's fields, leaving
+  // NOT NULL columns such as gender/full_name/dob unset and failing the
+  // database constraint. Only Step 1 is allowed to create the row, and
+  // only once it is carrying those three fields itself; every other step
+  // may only UPDATE an already-existing row with its own fields.
+  async function saveProfileStep(step, fields) {
+    console.log("Step " + step + " save requested — fields:", fields);
+
+    const { data: existing, error: selectError } = await supabaseClient
+      .from("mt_profiles")
+      .select("user_id")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+
+    if (selectError) {
+      toast("Could not check your profile: " + selectError.message, "error");
+      return false;
+    }
+
     fields.user_id = currentUser.id;
     const cleaned = normaliseCodes(fields);
-    const { error } = await supabaseClient.from("mt_profiles").upsert(cleaned, { onConflict: "user_id" });
+
+    if (!existing) {
+      if (step !== 1) {
+        toast("Please complete Step 1 first.", "error");
+        goToStep(1);
+        return false;
+      }
+      if (!cleaned.full_name || !cleaned.gender || !cleaned.dob) {
+        toast("Please complete all required fields on Step 1.", "error");
+        return false;
+      }
+
+      console.log("Step " + step + " INSERT — payload sent to Supabase:", cleaned);
+      const { error } = await supabaseClient.from("mt_profiles").insert(cleaned);
+      if (error) {
+        toast(describeSaveError(error, cleaned), "error");
+        return false;
+      }
+      return true;
+    }
+
+    console.log("Step " + step + " UPDATE — payload sent to Supabase:", cleaned);
+    const { error } = await supabaseClient
+      .from("mt_profiles")
+      .update(cleaned)
+      .eq("user_id", currentUser.id);
     if (error) {
       toast(describeSaveError(error, cleaned), "error");
       return false;
@@ -648,7 +690,7 @@
     const signupData = JSON.parse(localStorage.getItem("mt_signup") || "{}");
     if (signupData.managed_by) payload.managed_by = normaliseCode(signupData.managed_by);
 
-    const ok = await saveProfile(payload);
+    const ok = await saveProfileStep(1, payload);
     if (ok) goToStep(2);
   });
 
@@ -674,7 +716,7 @@
       native_place: document.getElementById("s2-native-place").value.trim() || null
     };
 
-    const ok = await saveProfile(payload);
+    const ok = await saveProfileStep(2, payload);
     if (ok) goToStep(3);
   });
 
@@ -704,7 +746,7 @@
       about: document.getElementById("s3-about").value.trim() || null
     };
 
-    const ok = await saveProfile(payload);
+    const ok = await saveProfileStep(3, payload);
     if (ok) goToStep(4);
   });
 
@@ -724,7 +766,7 @@
       mosal: document.getElementById("s4-mosal").value.trim() || null
     };
 
-    const ok = await saveProfile(payload);
+    const ok = await saveProfileStep(4, payload);
     if (ok) goToStep(5);
   });
 
@@ -767,7 +809,7 @@
       pref_special: document.getElementById("s5-special").value.trim() || null
     };
 
-    const ok = await saveProfile(payload);
+    const ok = await saveProfileStep(5, payload);
     if (ok) goToStep(6);
   });
 
@@ -791,7 +833,9 @@
       let code = profile && profile.profile_code;
       if (!code) {
         code = generateProfileCode(currentUser.id);
-        await supabaseClient.from("mt_profiles").update(normaliseCodes({ profile_code: code })).eq("user_id", currentUser.id);
+        const codePayload = normaliseCodes({ profile_code: code });
+        console.log("Step 6 (profile_code) UPDATE — payload sent to Supabase:", codePayload);
+        await supabaseClient.from("mt_profiles").update(codePayload).eq("user_id", currentUser.id);
       }
       const waLink =
         "https://wa.me/" + WHATSAPP_VERIFY_NUMBER + "?text=" + encodeURIComponent("VERIFY " + code);
@@ -852,6 +896,7 @@
     }
 
     const finishPayload = normaliseCodes({ profile_complete: true });
+    console.log("Step 6 (Finish) UPDATE — payload sent to Supabase:", finishPayload);
     const { error } = await supabaseClient
       .from("mt_profiles")
       .update(finishPayload)
