@@ -51,6 +51,12 @@
         <input type="hidden" id="s1-gender">
       </div>
 
+      <div class="mt-field" id="s1-created-by-name-wrap" style="display:none;">
+        <label for="s1-created-by-name">Managed by (Name) *</label>
+        <input type="text" id="s1-created-by-name" autocomplete="off">
+        <div class="mt-hint">Name of the person managing this profile</div>
+      </div>
+
       <div class="mt-field">
         <label for="s1-dob">Date of birth *</label>
         <input type="date" id="s1-dob" required>
@@ -590,8 +596,17 @@
     const marital = document.getElementById("s1-marital").value;
     const diet = document.getElementById("s1-diet").value;
 
+    // Visibility of this field was already decided during prefill, from
+    // whichever "managed by" value was chosen at signup.
+    const createdByNameVisible = document.getElementById("s1-created-by-name-wrap").style.display !== "none";
+    const createdByName = document.getElementById("s1-created-by-name").value.trim();
+
     if (!fullName || !dob || !heightCm || !weight || !marital || !diet) {
       toast("Please fill in all required fields.", "error");
+      return;
+    }
+    if (createdByNameVisible && !createdByName) {
+      toast("Please enter the name of the person managing this profile.", "error");
       return;
     }
 
@@ -612,7 +627,8 @@
       height_cm: Number(heightCm),
       weight_kg: Number(weight),
       marital_status: normaliseCode(marital),
-      diet: normaliseCode(diet)
+      diet: normaliseCode(diet),
+      created_by_name: createdByNameVisible ? createdByName : null
     };
 
     // Carry over managed_by from signup, once, without asking the member again.
@@ -847,6 +863,17 @@
     document.getElementById("s1-full-name").value = fullName;
     document.getElementById("s1-gender").value = gender;
     document.getElementById("s1-gender-display").textContent = GENDER_LABELS[gender] || gender || "—";
+
+    const managedByCode = normaliseCode((profile && profile.managed_by) || signupData.managed_by || "");
+    const createdByNameWrap = document.getElementById("s1-created-by-name-wrap");
+    const createdByNameInput = document.getElementById("s1-created-by-name");
+    if (managedByCode && managedByCode !== "self") {
+      createdByNameWrap.style.display = "block";
+      createdByNameInput.value = (profile && profile.created_by_name) || signupData.created_by_name || "";
+    } else {
+      createdByNameWrap.style.display = "none";
+      createdByNameInput.value = "";
+    }
 
     if (profile) {
       if (profile.dob) document.getElementById("s1-dob").value = profile.dob;

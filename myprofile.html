@@ -43,6 +43,12 @@
       <input type="hidden" id="mp-gender">
     </div>
 
+    <div class="mt-field" id="mp-created-by-name-wrap" style="display:none;">
+      <label for="mp-created-by-name">Managed by (Name) *</label>
+      <input type="text" id="mp-created-by-name" autocomplete="off">
+      <div class="mt-hint">Name of the person managing this profile</div>
+    </div>
+
     <div class="mt-field">
       <label for="mp-dob">Date of birth *</label>
       <input type="date" id="mp-dob" required>
@@ -543,6 +549,18 @@
       document.getElementById("mp-full-name").value = profile.full_name || "";
       document.getElementById("mp-gender").value = profile.gender || "";
       document.getElementById("mp-gender-display").textContent = GENDER_LABELS[profile.gender] || profile.gender || "—";
+
+      const managedByCode = normaliseCode(profile.managed_by || "");
+      const createdByNameWrap = document.getElementById("mp-created-by-name-wrap");
+      const createdByNameInput = document.getElementById("mp-created-by-name");
+      if (managedByCode && managedByCode !== "self") {
+        createdByNameWrap.style.display = "block";
+        createdByNameInput.value = profile.created_by_name || "";
+      } else {
+        createdByNameWrap.style.display = "none";
+        createdByNameInput.value = "";
+      }
+
       if (profile.dob) document.getElementById("mp-dob").value = profile.dob;
       if (profile.birth_time) document.getElementById("mp-birth-time").value = profile.birth_time;
       document.getElementById("mp-birth-place").value = profile.birth_place || "";
@@ -630,6 +648,10 @@
     const income = document.getElementById("mp-income").value;
     const prefAgeMin = document.getElementById("mp-pref-age-min").value;
     const prefAgeMax = document.getElementById("mp-pref-age-max").value;
+    // Visibility was set from profile.managed_by when the page loaded —
+    // managed_by itself isn't editable here.
+    const createdByNameVisible = document.getElementById("mp-created-by-name-wrap").style.display !== "none";
+    const createdByName = document.getElementById("mp-created-by-name").value.trim();
 
     if (
       !fullName || !dob || !heightCm || !weight || !marital || !diet ||
@@ -637,6 +659,10 @@
       !prefAgeMin || !prefAgeMax
     ) {
       toast("Please fill in all fields marked with *.", "error");
+      return;
+    }
+    if (createdByNameVisible && !createdByName) {
+      toast("Please enter the name of the person managing this profile.", "error");
       return;
     }
 
@@ -659,6 +685,7 @@
     const payload = {
       user_id: currentUser.id,
       full_name: fullName,
+      created_by_name: createdByNameVisible ? createdByName : null,
       dob: dob,
       birth_time: document.getElementById("mp-birth-time").value || null,
       birth_place: document.getElementById("mp-birth-place").value.trim() || null,

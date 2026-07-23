@@ -97,6 +97,12 @@
         </select>
       </div>
 
+      <div class="mt-field" id="su-created-by-name-wrap" style="display:none;">
+        <label for="su-created-by-name">Managed by (Name) *</label>
+        <input type="text" id="su-created-by-name" autocomplete="off">
+        <div class="mt-hint">Name of the person managing this profile</div>
+      </div>
+
       <div class="mt-field">
         <label>Gender of the person</label>
         <div class="mt-choice-group" id="su-gender-group">
@@ -177,6 +183,18 @@
     });
   });
 
+  // ---------------- Show/require "Managed by (Name)" unless Self ----------------
+  const managedBySelect = document.getElementById("su-managed-by");
+  const createdByNameWrap = document.getElementById("su-created-by-name-wrap");
+  const createdByNameInput = document.getElementById("su-created-by-name");
+
+  function syncCreatedByNameField() {
+    const isSelf = managedBySelect.value === "self";
+    createdByNameWrap.style.display = isSelf ? "none" : "block";
+    if (isSelf) createdByNameInput.value = "";
+  }
+  managedBySelect.addEventListener("change", syncCreatedByNameField);
+
   // ---------------- Enable signup button only when both checkboxes are ticked ----------------
   const jainCheckbox = document.getElementById("su-confirm-jain");
   const termsCheckbox = document.getElementById("su-confirm-terms");
@@ -241,9 +259,14 @@
     const confirmPassword = document.getElementById("su-confirm-password").value;
     const managedBy = document.getElementById("su-managed-by").value;
     const sect = document.getElementById("su-sect").value;
+    const createdByName = document.getElementById("su-created-by-name").value.trim();
 
     if (!fullName || !email || !password || !managedBy || !selectedGender || !sect) {
       toast("Please fill in all fields.", "error");
+      return;
+    }
+    if (managedBy !== "self" && !createdByName) {
+      toast("Please enter the name of the person managing this profile.", "error");
       return;
     }
     if (password.length < 8) {
@@ -268,6 +291,9 @@
     // lowercase, but this is applied again here as a safety net.
     const genderCode = selectedGender.trim().toLowerCase();
     const managedByCode = managedBy.trim().toLowerCase();
+    // Only meaningful when someone other than the candidate is managing
+    // the profile; cleared to null for "self" so no stale name lingers.
+    const createdByNameValue = managedByCode !== "self" ? createdByName : null;
 
     const { data, error } = await supabaseClient.auth.signUp({
       email,
@@ -278,7 +304,8 @@
           full_name: fullName,
           gender: genderCode,
           sect: sect,
-          managed_by: managedByCode
+          managed_by: managedByCode,
+          created_by_name: createdByNameValue
         }
       }
     });
@@ -296,7 +323,8 @@
       full_name: fullName,
       gender: genderCode,
       sect: sect,
-      managed_by: managedByCode
+      managed_by: managedByCode,
+      created_by_name: createdByNameValue
     }));
 
     if (data.session) {
