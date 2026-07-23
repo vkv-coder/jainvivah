@@ -699,6 +699,36 @@ a {
   color: var(--charcoal);
 }
 
+/* Collapsible "What is still needed" panel, shown above every step */
+.mt-missing-panel {
+  background: var(--white);
+  border: 1.5px solid var(--gold);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  font-size: 13px;
+}
+
+.mt-missing-panel summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--maroon);
+}
+
+.mt-missing-panel ul {
+  margin: 10px 0 2px;
+  padding-left: 18px;
+}
+
+.mt-missing-panel li {
+  margin-bottom: 4px;
+}
+
+.mt-missing-panel a {
+  color: var(--maroon);
+  text-decoration: underline;
+}
+
 /* Lock-styled notice: family details, contact details — hidden fields */
 .mt-lock-box {
   background: #FBF0F0;

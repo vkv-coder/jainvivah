@@ -22,26 +22,37 @@
 
 <div class="mt-page">
 
-  <div class="mt-progress" id="progress-bar">
-    <div class="mt-progress-step" data-step="1"></div>
-    <div class="mt-progress-step" data-step="2"></div>
-    <div class="mt-progress-step" data-step="3"></div>
-    <div class="mt-progress-step" data-step="4"></div>
-    <div class="mt-progress-step" data-step="5"></div>
-    <div class="mt-progress-step" data-step="6"></div>
+  <div id="wizard-chrome">
+    <div class="mt-progress" id="progress-bar">
+      <div class="mt-progress-step" data-step="1"></div>
+      <div class="mt-progress-step" data-step="2"></div>
+      <div class="mt-progress-step" data-step="3"></div>
+      <div class="mt-progress-step" data-step="4"></div>
+      <div class="mt-progress-step" data-step="5"></div>
+      <div class="mt-progress-step" data-step="6"></div>
+    </div>
+    <div class="mt-progress-label" id="progress-label">Step 1 of 6 — Basic details</div>
+
+    <p class="mt-hint" style="margin-top:-10px;">
+      <a href="#" id="start-over-link">Start over (testing)</a>
+    </p>
+
+    <div class="mt-reassurance" id="resume-banner" style="display:none;">
+      Welcome back. You had reached Step <span id="resume-banner-step"></span> of 6.
+    </div>
+
+    <div class="mt-visibility-banner">
+      Only the details marked <strong>OPEN</strong> are visible to other members.
+      Family details and your contact number stay hidden until you accept someone's interest.
+    </div>
+
+    <details class="mt-missing-panel" id="missing-panel" style="display:none;">
+      <summary>What is still needed</summary>
+      <ul id="missing-panel-list"></ul>
+    </details>
   </div>
-  <div class="mt-progress-label" id="progress-label">Step 1 of 6 — Basic details</div>
 
-  <p class="mt-hint" style="margin-top:-10px;">
-    <a href="#" id="start-over-link">Start over (testing)</a>
-  </p>
-
-  <div class="mt-visibility-banner">
-    Only the details marked <strong>OPEN</strong> are visible to other members.
-    Family details and your contact number stay hidden until you accept someone's interest.
-  </div>
-
-  <div class="mt-card">
+  <div class="mt-card" id="wizard-card">
 
     <!-- ============ STEP 1: BASIC (OPEN) ============ -->
     <section class="mt-step" data-step="1">
@@ -107,6 +118,7 @@
       <div class="mt-step-nav">
         <button type="button" class="mt-btn mt-btn-primary" id="s1-next">Next</button>
       </div>
+      <button type="button" class="mt-btn mt-btn-outline" id="s1-save-later" style="margin-top:10px; width:100%;">Save &amp; finish later</button>
     </section>
 
     <!-- ============ STEP 2: COMMUNITY & LOCATION (OPEN) ============ -->
@@ -152,6 +164,7 @@
         <button type="button" class="mt-btn mt-btn-outline" id="s2-back">Back</button>
         <button type="button" class="mt-btn mt-btn-primary" id="s2-next">Next</button>
       </div>
+      <button type="button" class="mt-btn mt-btn-outline" id="s2-save-later" style="margin-top:10px; width:100%;">Save &amp; finish later</button>
     </section>
 
     <!-- ============ STEP 3: EDUCATION & WORK (OPEN) ============ -->
@@ -202,6 +215,7 @@
         <button type="button" class="mt-btn mt-btn-outline" id="s3-back">Back</button>
         <button type="button" class="mt-btn mt-btn-primary" id="s3-next">Next</button>
       </div>
+      <button type="button" class="mt-btn mt-btn-outline" id="s3-save-later" style="margin-top:10px; width:100%;">Save &amp; finish later</button>
     </section>
 
     <!-- ============ STEP 4: FAMILY (LOCKED) ============ -->
@@ -271,6 +285,7 @@
         <button type="button" class="mt-btn mt-btn-outline" id="s4-back">Back</button>
         <button type="button" class="mt-btn mt-btn-primary" id="s4-next">Next</button>
       </div>
+      <button type="button" class="mt-btn mt-btn-outline" id="s4-save-later" style="margin-top:10px; width:100%;">Save &amp; finish later</button>
     </section>
 
     <!-- ============ STEP 5: LOOKING FOR (OPEN) ============ -->
@@ -350,6 +365,7 @@
         <button type="button" class="mt-btn mt-btn-outline" id="s5-back">Back</button>
         <button type="button" class="mt-btn mt-btn-primary" id="s5-next">Next</button>
       </div>
+      <button type="button" class="mt-btn mt-btn-outline" id="s5-save-later" style="margin-top:10px; width:100%;">Save &amp; finish later</button>
     </section>
 
     <!-- ============ STEP 6: CONTACT & PHOTOS ============ -->
@@ -422,10 +438,23 @@
 
       <div class="mt-step-nav">
         <button type="button" class="mt-btn mt-btn-outline" id="s6-back">Back</button>
-        <button type="button" class="mt-btn mt-btn-primary" id="s6-finish">Finish</button>
+        <button type="button" class="mt-btn mt-btn-primary" id="s6-finish" disabled>Submit my profile</button>
       </div>
+      <ul id="s6-missing-list" class="mt-hint" style="margin-top:8px; padding-left:18px;"></ul>
     </section>
 
+  </div>
+
+  <div class="mt-card" id="save-later-screen" style="display:none;">
+    <h2>Your profile is saved.</h2>
+    <p>You can complete it any time.</p>
+    <button type="button" class="mt-btn mt-btn-primary" id="save-later-continue">Continue now</button>
+    <button type="button" class="mt-btn mt-btn-outline" id="save-later-logout" style="margin-top:10px;">Log out</button>
+  </div>
+
+  <div class="mt-card" id="submit-success-screen" style="display:none;">
+    <h2>Your profile is now live</h2>
+    <p>Members can now discover your profile.</p>
   </div>
 </div>
 
@@ -592,6 +621,9 @@
     }
 
     fields.user_id = currentUser.id;
+    // Records where to resume the wizard next time — the step after the
+    // one that was just saved, capped at the last step.
+    fields.draft_step = Math.min(step + 1, TOTAL_STEPS);
     const cleaned = normaliseCodes(fields);
 
     if (!existing) {
@@ -611,6 +643,7 @@
         toast(describeSaveError(error, cleaned), "error");
         return false;
       }
+      await refreshCompletionState();
       return true;
     }
 
@@ -623,8 +656,72 @@
       toast(describeSaveError(error, cleaned), "error");
       return false;
     }
+    await refreshCompletionState();
     return true;
   }
+
+  // ---------------- "What is still needed" panel + Step 6 submit gate ----------------
+  // Single source of truth for completion state — refreshes the
+  // collapsible panel shown above every step and the Step 6 submit
+  // button/list, from one set of fresh reads. Called after every save so
+  // both stay live. Returns the current missing list.
+  async function refreshCompletionState() {
+    const profile = await loadProfile();
+    const contact = await loadContact();
+    const photoCount = photoManager ? await photoManager.countPhotos() : 0;
+    const missing = findMissingFields(profile, contact, photoCount);
+
+    const panel = document.getElementById("missing-panel");
+    const panelList = document.getElementById("missing-panel-list");
+    if (missing.length === 0) {
+      panel.style.display = "none";
+    } else {
+      panel.style.display = "block";
+      panelList.innerHTML = missing
+        .map((m) => '<li><a href="#" data-step="' + m.step + '" class="missing-jump-link">' + escapeHtml(m.label) + "</a></li>")
+        .join("");
+      panelList.querySelectorAll(".missing-jump-link").forEach((a) => {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          goToStep(Number(a.dataset.step));
+        });
+      });
+    }
+
+    const submitBtn = document.getElementById("s6-finish");
+    const submitList = document.getElementById("s6-missing-list");
+    submitBtn.disabled = missing.length > 0;
+    submitList.innerHTML = missing.map((m) => "<li>" + escapeHtml(m.label) + "</li>").join("");
+
+    return missing;
+  }
+
+  // ---------------- Screen switching (wizard / save-later / submitted) ----------------
+  function hideAllScreens() {
+    document.getElementById("wizard-chrome").style.display = "none";
+    document.getElementById("wizard-card").style.display = "none";
+    document.getElementById("save-later-screen").style.display = "none";
+    document.getElementById("submit-success-screen").style.display = "none";
+  }
+
+  function showWizard() {
+    hideAllScreens();
+    document.getElementById("wizard-chrome").style.display = "block";
+    document.getElementById("wizard-card").style.display = "block";
+  }
+
+  function showSaveLaterScreen() {
+    hideAllScreens();
+    document.getElementById("save-later-screen").style.display = "block";
+  }
+
+  function showSubmitSuccessScreen() {
+    hideAllScreens();
+    document.getElementById("submit-success-screen").style.display = "block";
+  }
+
+  document.getElementById("save-later-continue").addEventListener("click", showWizard);
+  document.getElementById("save-later-logout").addEventListener("click", () => logout());
 
   async function loadProfile() {
     const { data, error } = await supabaseClient
@@ -650,7 +747,9 @@
   }
 
   // ---------------- Step 1 ----------------
-  document.getElementById("s1-next").addEventListener("click", async () => {
+  // Shared by Next and Save & finish later — Step 1's fields are all
+  // NOT NULL on mt_profiles, so both buttons require the same validation.
+  function getStep1Fields() {
     const fullName = document.getElementById("s1-full-name").value.trim();
     const gender = document.getElementById("s1-gender").value;
     const dob = document.getElementById("s1-dob").value;
@@ -665,25 +764,25 @@
     // form rather than ever attempting a save with one of them missing.
     if (!fullName) {
       toast("Please enter the name of the candidate.", "error");
-      return;
+      return null;
     }
     if (!gender) {
       toast("Please select gender", "error");
-      return;
+      return null;
     }
     if (!dob) {
       toast("Please enter date of birth.", "error");
-      return;
+      return null;
     }
     if (!heightCm || !weight || !marital || !diet) {
       toast("Please fill in all required fields.", "error");
-      return;
+      return null;
     }
 
     const ageError = checkAgeRule(dob, normaliseCode(gender));
     if (ageError) {
       toast(ageError, "error");
-      return;
+      return null;
     }
 
     const payload = {
@@ -702,34 +801,53 @@
     const signupData = JSON.parse(localStorage.getItem("mt_signup") || "{}");
     if (signupData.managed_by) payload.managed_by = normaliseCode(signupData.managed_by);
 
+    return payload;
+  }
+
+  document.getElementById("s1-next").addEventListener("click", async () => {
+    const payload = getStep1Fields();
+    if (!payload) return;
     const ok = await saveProfileStep(1, payload);
     if (ok) goToStep(2);
   });
 
+  document.getElementById("s1-save-later").addEventListener("click", async () => {
+    const payload = getStep1Fields();
+    if (!payload) return;
+    const ok = await saveProfileStep(1, payload);
+    if (ok) showSaveLaterScreen();
+  });
+
   // ---------------- Step 2 ----------------
-  document.getElementById("s2-back").addEventListener("click", () => goToStep(1));
-  document.getElementById("s2-next").addEventListener("click", async () => {
-    const sect = document.getElementById("s2-sect").value;
-    const city = document.getElementById("s2-city").value.trim();
-    const state = document.getElementById("s2-state").value.trim();
-
-    if (!sect || !city || !state) {
-      toast("Please fill in Sect, City and State.", "error");
-      return;
-    }
-
-    const payload = {
-      sect: sect,
+  // Save & finish later intentionally skips the required-field check below
+  // — sect/city/state are nullable on mt_profiles, so a partial save here
+  // is safe; the missing-fields panel is what tracks incompleteness.
+  function getStep2Fields() {
+    return {
+      sect: document.getElementById("s2-sect").value,
       sub_caste: document.getElementById("s2-sub-caste").value.trim() || null,
       gotra: document.getElementById("s2-gotra").value.trim() || null,
-      city: city,
-      state: state,
+      city: document.getElementById("s2-city").value.trim(),
+      state: document.getElementById("s2-state").value.trim(),
       country: document.getElementById("s2-country").value.trim() || "India",
       native_place: document.getElementById("s2-native-place").value.trim() || null
     };
+  }
 
+  document.getElementById("s2-back").addEventListener("click", () => goToStep(1));
+  document.getElementById("s2-next").addEventListener("click", async () => {
+    const payload = getStep2Fields();
+    if (!payload.sect || !payload.city || !payload.state) {
+      toast("Please fill in Sect, City and State.", "error");
+      return;
+    }
     const ok = await saveProfileStep(2, payload);
     if (ok) goToStep(3);
+  });
+
+  document.getElementById("s2-save-later").addEventListener("click", async () => {
+    const ok = await saveProfileStep(2, getStep2Fields());
+    if (ok) showSaveLaterScreen();
   });
 
   // ---------------- Step 3 ----------------
@@ -737,35 +855,39 @@
     document.getElementById("s3-about-count").textContent = e.target.value.length;
   });
 
-  document.getElementById("s3-back").addEventListener("click", () => goToStep(2));
-  document.getElementById("s3-next").addEventListener("click", async () => {
-    const education = document.getElementById("s3-education").value;
-    const profession = document.getElementById("s3-profession").value;
-    const income = document.getElementById("s3-income").value;
-
-    if (!education || !profession || !income) {
-      toast("Please choose Education, Profession and Annual income.", "error");
-      return;
-    }
-
-    const payload = {
-      education: education,
+  function getStep3Fields() {
+    return {
+      education: document.getElementById("s3-education").value,
       education_detail: document.getElementById("s3-education-detail").value.trim() || null,
-      profession: profession,
+      profession: document.getElementById("s3-profession").value,
       occupation_detail: document.getElementById("s3-occupation-detail").value.trim() || null,
-      annual_income: income,
+      annual_income: document.getElementById("s3-income").value || null,
       hobbies: document.getElementById("s3-hobbies").value.trim() || null,
       about: document.getElementById("s3-about").value.trim() || null
     };
+  }
 
+  document.getElementById("s3-back").addEventListener("click", () => goToStep(2));
+  document.getElementById("s3-next").addEventListener("click", async () => {
+    const payload = getStep3Fields();
+    if (!payload.education || !payload.profession || !payload.annual_income) {
+      toast("Please choose Education, Profession and Annual income.", "error");
+      return;
+    }
     const ok = await saveProfileStep(3, payload);
     if (ok) goToStep(4);
   });
 
+  document.getElementById("s3-save-later").addEventListener("click", async () => {
+    const ok = await saveProfileStep(3, getStep3Fields());
+    if (ok) showSaveLaterScreen();
+  });
+
   // ---------------- Step 4 ----------------
-  document.getElementById("s4-back").addEventListener("click", () => goToStep(3));
-  document.getElementById("s4-next").addEventListener("click", async () => {
-    const payload = {
+  // No required fields on this step, so Next and Save & finish later
+  // behave identically.
+  function getStep4Fields() {
+    return {
       father_name: document.getElementById("s4-father-name").value.trim() || null,
       father_occupation: document.getElementById("s4-father-occupation").value.trim() || null,
       father_living: document.getElementById("s4-father-status").value || null,
@@ -777,9 +899,17 @@
       family_type: document.getElementById("s4-family-type").value || null,
       mosal: document.getElementById("s4-mosal").value.trim() || null
     };
+  }
 
-    const ok = await saveProfileStep(4, payload);
+  document.getElementById("s4-back").addEventListener("click", () => goToStep(3));
+  document.getElementById("s4-next").addEventListener("click", async () => {
+    const ok = await saveProfileStep(4, getStep4Fields());
     if (ok) goToStep(5);
+  });
+
+  document.getElementById("s4-save-later").addEventListener("click", async () => {
+    const ok = await saveProfileStep(4, getStep4Fields());
+    if (ok) showSaveLaterScreen();
   });
 
   // ---------------- Step 5 ----------------
@@ -787,28 +917,20 @@
     document.getElementById("s5-special-count").textContent = e.target.value.length;
   });
 
-  document.getElementById("s5-back").addEventListener("click", () => goToStep(4));
-  document.getElementById("s5-next").addEventListener("click", async () => {
+  // Save & finish later intentionally skips the age-range check below —
+  // pref_age_min/max are nullable on mt_profiles, so leaving this step
+  // blank is fine; the missing-fields panel tracks it as outstanding.
+  function getStep5Fields() {
     const ageMin = document.getElementById("s5-age-min").value;
     const ageMax = document.getElementById("s5-age-max").value;
-
-    if (!ageMin || !ageMax) {
-      toast("Please fill in the age range you are looking for.", "error");
-      return;
-    }
-    if (Number(ageMin) > Number(ageMax)) {
-      toast("Age 'from' cannot be greater than age 'to'.", "error");
-      return;
-    }
-
     const heightMin = document.getElementById("s5-height-min").value;
     const heightMax = document.getElementById("s5-height-max").value;
     const weightMin = document.getElementById("s5-weight-min").value;
     const weightMax = document.getElementById("s5-weight-max").value;
 
-    const payload = {
-      pref_age_min: Number(ageMin),
-      pref_age_max: Number(ageMax),
+    return {
+      pref_age_min: ageMin ? Number(ageMin) : null,
+      pref_age_max: ageMax ? Number(ageMax) : null,
       pref_height_min: heightMin ? Number(heightMin) : null,
       pref_height_max: heightMax ? Number(heightMax) : null,
       pref_weight_min: weightMin ? Number(weightMin) : null,
@@ -820,9 +942,26 @@
       pref_city: document.getElementById("s5-city").value.trim() || null,
       pref_special: document.getElementById("s5-special").value.trim() || null
     };
+  }
 
+  document.getElementById("s5-back").addEventListener("click", () => goToStep(4));
+  document.getElementById("s5-next").addEventListener("click", async () => {
+    const payload = getStep5Fields();
+    if (payload.pref_age_min === null || payload.pref_age_max === null) {
+      toast("Please fill in the age range you are looking for.", "error");
+      return;
+    }
+    if (payload.pref_age_min > payload.pref_age_max) {
+      toast("Age 'from' cannot be greater than age 'to'.", "error");
+      return;
+    }
     const ok = await saveProfileStep(5, payload);
     if (ok) goToStep(6);
+  });
+
+  document.getElementById("s5-save-later").addEventListener("click", async () => {
+    const ok = await saveProfileStep(5, getStep5Fields());
+    if (ok) showSaveLaterScreen();
   });
 
   // ---------------- Step 6: contact ----------------
@@ -888,6 +1027,7 @@
 
     toast("Contact details saved.", "success");
     refreshVerifySection();
+    refreshCompletionState();
   });
 
   // ---------------- Step 6: photos ----------------
@@ -979,6 +1119,7 @@
 
     toast("Bio-data uploaded.", "success");
     await renderBiodataSection();
+    await refreshCompletionState();
   }
 
   async function deleteBiodata(path) {
@@ -996,15 +1137,15 @@
 
     toast("Bio-data removed.", "success");
     await renderBiodataSection();
+    await refreshCompletionState();
   }
 
-  // ---------------- Finish ----------------
+  // ---------------- Submit ----------------
+  // The button itself stays disabled (via refreshCompletionState) until
+  // nothing is missing, but re-check defensively in case state changed
+  // since the last refresh.
   document.getElementById("s6-finish").addEventListener("click", async () => {
-    const profile = await loadProfile();
-    const contact = await loadContact();
-    const photoCount = photoManager ? await photoManager.countPhotos() : 0;
-
-    const missing = findMissingFields(profile, contact, photoCount);
+    const missing = await refreshCompletionState();
     if (missing.length > 0) {
       const list = missing.map((m) => m.label).join(", ");
       toast("Please complete: " + list, "error");
@@ -1012,8 +1153,8 @@
       return;
     }
 
-    const finishPayload = normaliseCodes({ profile_complete: true });
-    console.log("Step 6 (Finish) UPDATE — payload sent to Supabase:", finishPayload);
+    const finishPayload = normaliseCodes({ profile_complete: true, draft_step: null });
+    console.log("Step 6 (Submit) UPDATE — payload sent to Supabase:", finishPayload);
     const { error } = await supabaseClient
       .from("mt_profiles")
       .update(finishPayload)
@@ -1024,8 +1165,11 @@
       return;
     }
 
+    showSubmitSuccessScreen();
     queueToast("Your profile is live!", "success");
-    window.location.href = "browse.html";
+    setTimeout(() => {
+      window.location.href = "browse.html";
+    }, 1200);
   });
 
   // Wires the Male/Female tap buttons. Clicks are ignored once gender has
@@ -1178,12 +1322,22 @@
     const contact = await loadContact();
     await prefillForm(profile, contact);
 
-    photoManager = createPhotoManager(document.getElementById("s6-photo-manager"), currentUser.id);
+    photoManager = createPhotoManager(document.getElementById("s6-photo-manager"), currentUser.id, refreshCompletionState);
     await photoManager.render();
     await refreshVerifySection();
     await renderBiodataSection();
+    await refreshCompletionState();
 
-    goToStep(1);
+    // Resume at draft_step (routeAfterLogin() already sends any
+    // profile_complete=false user here, so this is the only entry point).
+    const resumeStep = profile && profile.draft_step
+      ? Math.min(Math.max(Number(profile.draft_step), 1), TOTAL_STEPS)
+      : 1;
+    if (resumeStep > 1) {
+      document.getElementById("resume-banner-step").textContent = resumeStep;
+      document.getElementById("resume-banner").style.display = "block";
+    }
+    goToStep(resumeStep);
   })();
 </script>
 
