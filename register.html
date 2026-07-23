@@ -430,11 +430,15 @@
   };
 
   // ---------------- Populate dropdowns ----------------
+  // Accepts either plain strings (value === label) or [label, code] pairs
+  // (e.g. DIET_OPTIONS, MARITAL_STATUS_OPTIONS) where the code is what
+  // gets saved to the database.
   function fillSelect(selectEl, values) {
     values.forEach((v) => {
+      const isPair = Array.isArray(v);
       const opt = document.createElement("option");
-      opt.value = v;
-      opt.textContent = v;
+      opt.value = isPair ? v[1] : v;
+      opt.textContent = isPair ? v[0] : v;
       selectEl.appendChild(opt);
     });
   }
@@ -815,7 +819,7 @@
     const gender = (profile && profile.gender) || signupData.gender || "";
     document.getElementById("s1-full-name").value = fullName;
     document.getElementById("s1-gender").value = gender;
-    document.getElementById("s1-gender-display").textContent = gender || "—";
+    document.getElementById("s1-gender-display").textContent = GENDER_LABELS[gender] || gender || "—";
 
     if (profile) {
       if (profile.dob) document.getElementById("s1-dob").value = profile.dob;

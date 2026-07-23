@@ -417,11 +417,15 @@
   let currentUser = null;
   let photoManager = null;
 
+  // Accepts either plain strings (value === label) or [label, code] pairs
+  // (e.g. DIET_OPTIONS, MARITAL_STATUS_OPTIONS) where the code is what
+  // gets saved to the database.
   function fillSelect(selectEl, values) {
     values.forEach((v) => {
+      const isPair = Array.isArray(v);
       const opt = document.createElement("option");
-      opt.value = v;
-      opt.textContent = v;
+      opt.value = isPair ? v[1] : v;
+      opt.textContent = isPair ? v[0] : v;
       selectEl.appendChild(opt);
     });
   }
@@ -515,7 +519,7 @@
     if (profile) {
       document.getElementById("mp-full-name").value = profile.full_name || "";
       document.getElementById("mp-gender").value = profile.gender || "";
-      document.getElementById("mp-gender-display").textContent = profile.gender || "—";
+      document.getElementById("mp-gender-display").textContent = GENDER_LABELS[profile.gender] || profile.gender || "—";
       if (profile.dob) document.getElementById("mp-dob").value = profile.dob;
       if (profile.birth_time) document.getElementById("mp-birth-time").value = profile.birth_time;
       document.getElementById("mp-birth-place").value = profile.birth_place || "";

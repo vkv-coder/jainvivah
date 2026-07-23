@@ -13,9 +13,27 @@ const SECT_OPTIONS = [
   "Other"
 ];
 
-const DIET_OPTIONS = ["Jain", "Vegetarian", "Vegan", "Other"];
+// mt_profiles has check constraints that only accept these exact lowercase
+// codes. Options below are [label, code] pairs: the label is shown to the
+// member, the code is what gets stored (and is used as the <option value>,
+// so no conversion is needed at save time).
+const DIET_OPTIONS = [
+  ["Jain", "jain"],
+  ["Vegetarian", "veg"],
+  ["Vegan", "vegan"],
+  ["Other", "other"]
+];
 
-const MARITAL_STATUS_OPTIONS = ["Unmarried", "Divorced", "Widow", "Widower"];
+const MARITAL_STATUS_OPTIONS = [
+  ["Unmarried", "unmarried"],
+  ["Divorced", "divorced"],
+  ["Widow", "widow"],
+  ["Widower", "widower"]
+];
+
+// Codes accepted by mt_profiles.gender, mapped back to a friendly label
+// for display (e.g. the locked gender box on register.html/myprofile.html).
+const GENDER_LABELS = { male: "Male", female: "Female" };
 
 const FAMILY_TYPE_OPTIONS = ["Joint", "Nuclear"];
 
@@ -55,14 +73,15 @@ function buildHeightOptions() {
 // ---------------------------------------------------------------------
 
 // Jain Vivah's minimum-age rule: women must be 18+, men must be 21+.
+// gender is the lowercase code ("male" / "female") stored in mt_profiles.
 // Returns an error message string, or null if the date of birth is fine.
 function checkAgeRule(dob, gender) {
   const age = calcAge(dob);
   if (age === null) return "Please enter a valid date of birth.";
-  if (gender === "Female" && age < 18) {
+  if (gender === "female" && age < 18) {
     return "Sorry, a woman's profile can only be created at age 18 or above.";
   }
-  if (gender === "Male" && age < 21) {
+  if (gender === "male" && age < 21) {
     return "Sorry, a man's profile can only be created at age 21 or above.";
   }
   return null;
