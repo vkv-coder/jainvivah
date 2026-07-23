@@ -31,8 +31,9 @@
     <h3>Basic details</h3>
 
     <div class="mt-field">
-      <label for="mp-full-name">Full name *</label>
-      <input type="text" id="mp-full-name" required>
+      <label for="mp-full-name">Name of boy / girl *</label>
+      <input type="text" id="mp-full-name" required autocomplete="off">
+      <div class="mt-hint">Name of the candidate</div>
     </div>
 
     <div class="mt-field">
@@ -615,7 +616,7 @@
       return;
     }
 
-    const ageError = checkAgeRule(dob, gender);
+    const ageError = checkAgeRule(dob, normaliseCode(gender));
     if (ageError) {
       toast(ageError, "error");
       return;
@@ -639,8 +640,8 @@
       birth_place: document.getElementById("mp-birth-place").value.trim() || null,
       height_cm: Number(heightCm),
       weight_kg: Number(weight),
-      marital_status: marital,
-      diet: diet,
+      marital_status: normaliseCode(marital),
+      diet: normaliseCode(diet),
       sect: sect,
       sub_caste: document.getElementById("mp-sub-caste").value.trim() || null,
       gotra: document.getElementById("mp-gotra").value.trim() || null,
@@ -663,7 +664,7 @@
       pref_weight_max: weightMax ? Number(weightMax) : null,
       pref_education: getCheckedChipValues(document.getElementById("mp-pref-education-chips")),
       pref_profession: getCheckedChipValues(document.getElementById("mp-pref-profession-chips")),
-      pref_diet: document.getElementById("mp-pref-diet").value || null,
+      pref_diet: document.getElementById("mp-pref-diet").value ? normaliseCode(document.getElementById("mp-pref-diet").value) : null,
       pref_income: document.getElementById("mp-pref-income").value || null,
       pref_city: document.getElementById("mp-pref-city").value.trim() || null,
       pref_special: document.getElementById("mp-pref-special").value.trim() || null,

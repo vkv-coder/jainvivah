@@ -39,8 +39,9 @@
     <!-- ============ STEP 1: BASIC (OPEN) ============ -->
     <section class="mt-step" data-step="1">
       <div class="mt-field">
-        <label for="s1-full-name">Full name *</label>
-        <input type="text" id="s1-full-name" required>
+        <label for="s1-full-name">Name of boy / girl *</label>
+        <input type="text" id="s1-full-name" required autocomplete="off">
+        <div class="mt-hint">Name of the candidate</div>
       </div>
 
       <div class="mt-field">
@@ -572,7 +573,9 @@
       return;
     }
 
-    const ageError = checkAgeRule(dob, gender);
+    const genderCode = normaliseCode(gender);
+
+    const ageError = checkAgeRule(dob, genderCode);
     if (ageError) {
       toast(ageError, "error");
       return;
@@ -580,19 +583,19 @@
 
     const payload = {
       full_name: fullName,
-      gender: gender,
+      gender: genderCode,
       dob: dob,
       birth_time: birthTime || null,
       birth_place: birthPlace || null,
       height_cm: Number(heightCm),
       weight_kg: Number(weight),
-      marital_status: marital,
-      diet: diet
+      marital_status: normaliseCode(marital),
+      diet: normaliseCode(diet)
     };
 
     // Carry over managed_by from signup, once, without asking the member again.
     const signupData = JSON.parse(localStorage.getItem("mt_signup") || "{}");
-    if (signupData.managed_by) payload.managed_by = signupData.managed_by;
+    if (signupData.managed_by) payload.managed_by = normaliseCode(signupData.managed_by);
 
     const ok = await saveProfile(payload);
     if (ok) goToStep(2);
@@ -707,7 +710,7 @@
       pref_weight_max: weightMax ? Number(weightMax) : null,
       pref_education: getCheckedChipValues(document.getElementById("s5-education-chips")),
       pref_profession: getCheckedChipValues(document.getElementById("s5-profession-chips")),
-      pref_diet: document.getElementById("s5-diet").value || null,
+      pref_diet: document.getElementById("s5-diet").value ? normaliseCode(document.getElementById("s5-diet").value) : null,
       pref_income: document.getElementById("s5-income").value || null,
       pref_city: document.getElementById("s5-city").value.trim() || null,
       pref_special: document.getElementById("s5-special").value.trim() || null
@@ -816,7 +819,9 @@
     const signupData = JSON.parse(localStorage.getItem("mt_signup") || "{}");
 
     const fullName = (profile && profile.full_name) || signupData.full_name || "";
-    const gender = (profile && profile.gender) || signupData.gender || "";
+    // Lowercase here too, so an older mt_signup cached before the fix
+    // (e.g. "Male") still resolves to a valid, saveable code.
+    const gender = normaliseCode((profile && profile.gender) || signupData.gender || "");
     document.getElementById("s1-full-name").value = fullName;
     document.getElementById("s1-gender").value = gender;
     document.getElementById("s1-gender-display").textContent = GENDER_LABELS[gender] || gender || "—";

@@ -35,6 +35,15 @@ const MARITAL_STATUS_OPTIONS = [
 // for display (e.g. the locked gender box on register.html/myprofile.html).
 const GENDER_LABELS = { male: "Male", female: "Female" };
 
+// mt_profiles' check constraints only accept exact lowercase codes for
+// gender, diet, marital_status and managed_by. The dropdowns already use
+// the code as their <option value>, but this is applied a final time,
+// right before every write, as a safety net against stale/mixed-case
+// values (e.g. an older cached mt_signup in localStorage).
+function normaliseCode(value) {
+  return (value || "").toString().trim().toLowerCase();
+}
+
 const FAMILY_TYPE_OPTIONS = ["Joint", "Nuclear"];
 
 const LIVING_STATUS_OPTIONS = ["Living", "Late"];

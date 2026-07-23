@@ -263,6 +263,12 @@
     submitBtn.disabled = true;
     submitBtn.textContent = "Creating account...";
 
+    // mt_profiles' check constraints only accept lowercase codes for
+    // gender and managed_by — the option/button values are already
+    // lowercase, but this is applied again here as a safety net.
+    const genderCode = selectedGender.trim().toLowerCase();
+    const managedByCode = managedBy.trim().toLowerCase();
+
     const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
@@ -270,9 +276,9 @@
         emailRedirectTo: APP_URL + "/index.html",
         data: {
           full_name: fullName,
-          gender: selectedGender,
+          gender: genderCode,
           sect: sect,
-          managed_by: managedBy
+          managed_by: managedByCode
         }
       }
     });
@@ -288,9 +294,9 @@
     // Stash the basics so register.html can prefill them without asking again.
     localStorage.setItem("mt_signup", JSON.stringify({
       full_name: fullName,
-      gender: selectedGender,
+      gender: genderCode,
       sect: sect,
-      managed_by: managedBy
+      managed_by: managedByCode
     }));
 
     if (data.session) {
