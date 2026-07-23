@@ -1,17 +1,12 @@
 // Shared logic for Jain Vivah. Loaded by every page, after config.js and
 // the Supabase CDN script.
 //
-// IMPORTANT ASSUMPTION: this batch only knows the *names* of the tables
-// (mt_profiles, mt_admins), not their exact columns, because the tables
-// already exist in Supabase and were not created by this code. We assume:
-//   - mt_profiles has a primary key column "id" that equals auth.uid()
-//     (the standard Supabase pattern: id uuid references auth.users(id)),
-//     plus a boolean column "profile_complete".
-//   - mt_admins has a column "id" that equals auth.uid() for the admin user.
-// If your tables use different column names (e.g. "user_id"), change the
-// two constants below and everything else keeps working.
-const PROFILES_ID_COLUMN = "id";
-const ADMINS_ID_COLUMN = "id";
+// Confirmed schema (Rotary_Events Supabase project):
+//   - mt_profiles.user_id -> uuid, equals auth.uid()
+//   - mt_profiles.profile_complete -> boolean
+//   - mt_admins.user_id -> uuid, equals auth.uid()
+const PROFILES_ID_COLUMN = "user_id";
+const ADMINS_ID_COLUMN = "user_id";
 
 // One shared Supabase client for the whole app.
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
