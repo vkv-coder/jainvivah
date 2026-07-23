@@ -205,15 +205,15 @@
       </div>
 
       <div class="mt-field">
-        <label for="s4-father-occupation">Father's occupation</label>
-        <input type="text" id="s4-father-occupation">
-      </div>
-
-      <div class="mt-field">
-        <label for="s4-father-status">Father's status</label>
+        <label for="s4-father-status">Father</label>
         <select id="s4-father-status">
           <option value="">Choose one</option>
         </select>
+      </div>
+
+      <div class="mt-field" id="s4-father-occupation-wrap">
+        <label for="s4-father-occupation">Father's occupation</label>
+        <input type="text" id="s4-father-occupation">
       </div>
 
       <div class="mt-field">
@@ -222,15 +222,15 @@
       </div>
 
       <div class="mt-field">
-        <label for="s4-mother-occupation">Mother's occupation</label>
-        <input type="text" id="s4-mother-occupation">
-      </div>
-
-      <div class="mt-field">
-        <label for="s4-mother-status">Mother's status</label>
+        <label for="s4-mother-status">Mother</label>
         <select id="s4-mother-status">
           <option value="">Choose one</option>
         </select>
+      </div>
+
+      <div class="mt-field" id="s4-mother-occupation-wrap">
+        <label for="s4-mother-occupation">Mother's occupation</label>
+        <input type="text" id="s4-mother-occupation">
       </div>
 
       <div class="mt-field">
@@ -430,6 +430,25 @@
     6: "Contact & photos"
   };
 
+  // Hides a parent's occupation field (and clears it, so a hidden value
+  // never gets saved) whenever that parent's status is set to "Late".
+  // Called once to wire the change listener, and again on prefill/init
+  // to match whatever status is already selected.
+  function setupParentOccupationToggle(statusSelectId, wrapId, inputId) {
+    const statusSelect = document.getElementById(statusSelectId);
+    const wrap = document.getElementById(wrapId);
+    const input = document.getElementById(inputId);
+
+    function sync() {
+      const isLate = statusSelect.value === "Late";
+      wrap.style.display = isLate ? "none" : "block";
+      if (isLate) input.value = "";
+    }
+
+    statusSelect.addEventListener("change", sync);
+    sync();
+  }
+
   // ---------------- Populate dropdowns ----------------
   // Accepts either plain strings (value === label) or [label, code] pairs
   // (e.g. DIET_OPTIONS, MARITAL_STATUS_OPTIONS) where the code is what
@@ -499,6 +518,9 @@
     fillSelect(document.getElementById("s4-father-status"), LIVING_STATUS_OPTIONS);
     fillSelect(document.getElementById("s4-mother-status"), LIVING_STATUS_OPTIONS);
     fillSelect(document.getElementById("s4-family-type"), FAMILY_TYPE_OPTIONS);
+
+    setupParentOccupationToggle("s4-father-status", "s4-father-occupation-wrap", "s4-father-occupation");
+    setupParentOccupationToggle("s4-mother-status", "s4-mother-occupation-wrap", "s4-mother-occupation");
     fillSelect(document.getElementById("s5-diet"), DIET_OPTIONS);
     fillSelect(document.getElementById("s5-income"), ANNUAL_INCOME_OPTIONS);
 
@@ -857,9 +879,11 @@
       if (profile.father_name) document.getElementById("s4-father-name").value = profile.father_name;
       if (profile.father_occupation) document.getElementById("s4-father-occupation").value = profile.father_occupation;
       if (profile.father_living) document.getElementById("s4-father-status").value = profile.father_living;
+      document.getElementById("s4-father-status").dispatchEvent(new Event("change"));
       if (profile.mother_name) document.getElementById("s4-mother-name").value = profile.mother_name;
       if (profile.mother_occupation) document.getElementById("s4-mother-occupation").value = profile.mother_occupation;
       if (profile.mother_living) document.getElementById("s4-mother-status").value = profile.mother_living;
+      document.getElementById("s4-mother-status").dispatchEvent(new Event("change"));
       if (profile.brothers) document.getElementById("s4-brothers").value = profile.brothers;
       if (profile.sisters) document.getElementById("s4-sisters").value = profile.sisters;
       if (profile.family_type) document.getElementById("s4-family-type").value = profile.family_type;

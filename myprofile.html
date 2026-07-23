@@ -263,15 +263,15 @@
     </div>
 
     <div class="mt-field">
-      <label for="mp-father-occupation">Father's occupation</label>
-      <input type="text" id="mp-father-occupation">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-father-status">Father's status</label>
+      <label for="mp-father-status">Father</label>
       <select id="mp-father-status">
         <option value="">Choose one</option>
       </select>
+    </div>
+
+    <div class="mt-field" id="mp-father-occupation-wrap">
+      <label for="mp-father-occupation">Father's occupation</label>
+      <input type="text" id="mp-father-occupation">
     </div>
 
     <div class="mt-field">
@@ -280,15 +280,15 @@
     </div>
 
     <div class="mt-field">
-      <label for="mp-mother-occupation">Mother's occupation</label>
-      <input type="text" id="mp-mother-occupation">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-mother-status">Mother's status</label>
+      <label for="mp-mother-status">Mother</label>
       <select id="mp-mother-status">
         <option value="">Choose one</option>
       </select>
+    </div>
+
+    <div class="mt-field" id="mp-mother-occupation-wrap">
+      <label for="mp-mother-occupation">Mother's occupation</label>
+      <input type="text" id="mp-mother-occupation">
     </div>
 
     <div class="mt-field">
@@ -418,6 +418,25 @@
   let currentUser = null;
   let photoManager = null;
 
+  // Hides a parent's occupation field (and clears it, so a hidden value
+  // never gets saved) whenever that parent's status is set to "Late".
+  // Called once to wire the change listener, and again on prefill to
+  // match whatever status is already saved.
+  function setupParentOccupationToggle(statusSelectId, wrapId, inputId) {
+    const statusSelect = document.getElementById(statusSelectId);
+    const wrap = document.getElementById(wrapId);
+    const input = document.getElementById(inputId);
+
+    function sync() {
+      const isLate = statusSelect.value === "Late";
+      wrap.style.display = isLate ? "none" : "block";
+      if (isLate) input.value = "";
+    }
+
+    statusSelect.addEventListener("change", sync);
+    sync();
+  }
+
   // Accepts either plain strings (value === label) or [label, code] pairs
   // (e.g. DIET_OPTIONS, MARITAL_STATUS_OPTIONS) where the code is what
   // gets saved to the database.
@@ -485,6 +504,9 @@
     fillSelect(document.getElementById("mp-income"), ANNUAL_INCOME_OPTIONS);
     fillSelect(document.getElementById("mp-father-status"), LIVING_STATUS_OPTIONS);
     fillSelect(document.getElementById("mp-mother-status"), LIVING_STATUS_OPTIONS);
+
+    setupParentOccupationToggle("mp-father-status", "mp-father-occupation-wrap", "mp-father-occupation");
+    setupParentOccupationToggle("mp-mother-status", "mp-mother-occupation-wrap", "mp-mother-occupation");
     fillSelect(document.getElementById("mp-family-type"), FAMILY_TYPE_OPTIONS);
     fillSelect(document.getElementById("mp-pref-diet"), DIET_OPTIONS);
     fillSelect(document.getElementById("mp-pref-income"), ANNUAL_INCOME_OPTIONS);
@@ -563,9 +585,11 @@
       document.getElementById("mp-father-name").value = profile.father_name || "";
       document.getElementById("mp-father-occupation").value = profile.father_occupation || "";
       if (profile.father_living) document.getElementById("mp-father-status").value = profile.father_living;
+      document.getElementById("mp-father-status").dispatchEvent(new Event("change"));
       document.getElementById("mp-mother-name").value = profile.mother_name || "";
       document.getElementById("mp-mother-occupation").value = profile.mother_occupation || "";
       if (profile.mother_living) document.getElementById("mp-mother-status").value = profile.mother_living;
+      document.getElementById("mp-mother-status").dispatchEvent(new Event("change"));
       document.getElementById("mp-brothers").value = profile.brothers || "";
       document.getElementById("mp-sisters").value = profile.sisters || "";
       if (profile.family_type) document.getElementById("mp-family-type").value = profile.family_type;
