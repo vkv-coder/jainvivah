@@ -23,9 +23,12 @@
 
   <div class="mt-card">
 
-    <div class="mt-section-title">
-      <h3>Basic details</h3>
+    <!-- ============ OPEN: BASIC ============ -->
+    <div class="mt-group-heading">
+      <span class="mt-group-tag mt-group-tag-open">OPEN</span>
+      <span class="mt-group-note">Visible to other members</span>
     </div>
+    <h3>Basic details</h3>
 
     <div class="mt-field">
       <label for="mp-full-name">Full name *</label>
@@ -62,8 +65,8 @@
     </div>
 
     <div class="mt-field">
-      <label for="mp-weight">Weight (kg)</label>
-      <input type="number" id="mp-weight" min="20" max="200" step="1">
+      <label for="mp-weight">Weight (kg) *</label>
+      <input type="number" id="mp-weight" min="20" max="200" step="1" required>
     </div>
 
     <div class="mt-field">
@@ -80,9 +83,8 @@
       </select>
     </div>
 
-    <div class="mt-section-title">
-      <h3>Community & location</h3>
-    </div>
+    <!-- ============ OPEN: COMMUNITY & LOCATION ============ -->
+    <h3 class="mt-section-title">Community & location</h3>
 
     <div class="mt-field">
       <label for="mp-sect">Sect *</label>
@@ -121,9 +123,8 @@
       <input type="text" id="mp-native-place">
     </div>
 
-    <div class="mt-section-title">
-      <h3>Education & work</h3>
-    </div>
+    <!-- ============ OPEN: EDUCATION & WORK ============ -->
+    <h3 class="mt-section-title">Education & work</h3>
 
     <div class="mt-field">
       <label for="mp-education">Education *</label>
@@ -150,14 +151,109 @@
     </div>
 
     <div class="mt-field">
-      <label for="mp-income">Annual income (optional)</label>
-      <select id="mp-income">
-        <option value="">Prefer not to say</option>
+      <label for="mp-income">Annual income *</label>
+      <select id="mp-income" required>
+        <option value="" disabled selected>Choose one</option>
       </select>
     </div>
 
-    <div class="mt-section-title">
-      <h3>Family</h3>
+    <div class="mt-field">
+      <label for="mp-hobbies">Hobbies</label>
+      <textarea id="mp-hobbies" rows="2"></textarea>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-about">About</label>
+      <textarea id="mp-about" rows="4" maxlength="500"></textarea>
+      <div class="mt-char-counter"><span id="mp-about-count">0</span>/500</div>
+    </div>
+
+    <!-- ============ OPEN: LOOKING FOR ============ -->
+    <h3 class="mt-section-title">Looking for</h3>
+
+    <div class="mt-field">
+      <label>Age range *</label>
+      <div class="mt-range-row">
+        <div class="mt-field">
+          <input type="number" id="mp-pref-age-min" min="18" max="80" placeholder="From" required>
+        </div>
+        <div class="mt-field">
+          <input type="number" id="mp-pref-age-max" min="18" max="80" placeholder="To" required>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-field">
+      <label>Height range</label>
+      <div class="mt-range-row">
+        <div class="mt-field">
+          <select id="mp-pref-height-min"><option value="">From</option></select>
+        </div>
+        <div class="mt-field">
+          <select id="mp-pref-height-max"><option value="">To</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-field">
+      <label>Weight range (kg)</label>
+      <div class="mt-range-row">
+        <div class="mt-field">
+          <input type="number" id="mp-pref-weight-min" min="20" max="200" placeholder="From">
+        </div>
+        <div class="mt-field">
+          <input type="number" id="mp-pref-weight-max" min="20" max="200" placeholder="To">
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-field">
+      <label>Education (choose any that apply)</label>
+      <div class="mt-chip-group" id="mp-pref-education-chips"></div>
+    </div>
+
+    <div class="mt-field">
+      <label>Profession (choose any that apply)</label>
+      <div class="mt-chip-group" id="mp-pref-profession-chips"></div>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-pref-diet">Diet preference</label>
+      <select id="mp-pref-diet">
+        <option value="">No preference</option>
+      </select>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-pref-income">Expected annual income</label>
+      <select id="mp-pref-income">
+        <option value="">No preference</option>
+      </select>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-pref-city">City or area preference</label>
+      <input type="text" id="mp-pref-city">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-pref-special">Any special requirement</label>
+      <textarea id="mp-pref-special" rows="3" maxlength="300"></textarea>
+      <div class="mt-char-counter"><span id="mp-pref-special-count">0</span>/300</div>
+    </div>
+
+    <button type="button" class="mt-btn mt-btn-primary" id="mp-save-profile">Save profile</button>
+
+    <!-- ============ HIDDEN UNTIL ACCEPTED: FAMILY ============ -->
+    <div class="mt-group-heading">
+      <span class="mt-group-tag mt-group-tag-hidden">HIDDEN UNTIL ACCEPTED</span>
+      <span class="mt-group-note">Shown only once you accept an interest</span>
+    </div>
+    <h3>Family</h3>
+
+    <div class="mt-lock-box">
+      The details on this page are not shown to anyone. They become visible only
+      to a member whose interest you have accepted.
     </div>
 
     <div class="mt-field">
@@ -171,6 +267,13 @@
     </div>
 
     <div class="mt-field">
+      <label for="mp-father-status">Father's status</label>
+      <select id="mp-father-status">
+        <option value="">Choose one</option>
+      </select>
+    </div>
+
+    <div class="mt-field">
       <label for="mp-mother-name">Mother's name</label>
       <input type="text" id="mp-mother-name">
     </div>
@@ -181,8 +284,20 @@
     </div>
 
     <div class="mt-field">
-      <label for="mp-siblings">Siblings</label>
-      <textarea id="mp-siblings" rows="2"></textarea>
+      <label for="mp-mother-status">Mother's status</label>
+      <select id="mp-mother-status">
+        <option value="">Choose one</option>
+      </select>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-brothers">Brothers</label>
+      <input type="text" id="mp-brothers" placeholder="e.g. 1 elder, married">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-sisters">Sisters</label>
+      <input type="text" id="mp-sisters" placeholder="e.g. 2 younger, both unmarried">
     </div>
 
     <div class="mt-field">
@@ -197,24 +312,10 @@
       <input type="text" id="mp-mosal">
     </div>
 
-    <div class="mt-field">
-      <label for="mp-hobbies">Hobbies</label>
-      <textarea id="mp-hobbies" rows="2"></textarea>
-    </div>
+    <!-- ============ HIDDEN UNTIL ACCEPTED: CONTACT ============ -->
+    <h3 class="mt-section-title">Contact</h3>
 
-    <div class="mt-field">
-      <label for="mp-about">About</label>
-      <textarea id="mp-about" rows="4" maxlength="500"></textarea>
-      <div class="mt-char-counter"><span id="mp-about-count">0</span>/500</div>
-    </div>
-
-    <button type="button" class="mt-btn mt-btn-primary" id="mp-save-profile">Save profile</button>
-
-    <div class="mt-section-title">
-      <h3>Contact</h3>
-    </div>
-
-    <div class="mt-reassurance">
+    <div class="mt-lock-box">
       Your mobile number and address are never shown to any member.
       They are shared only when you accept someone's interest.
     </div>
@@ -250,11 +351,25 @@
       <p class="mt-hint">Send this ready message from the same mobile number. Your number will be marked verified within a few hours.</p>
     </div>
 
+    <!-- ============ PHOTOS ============ -->
     <div class="mt-section-title">
       <h3>Photos</h3>
+
+      <div class="mt-shield-box">
+        <strong>How your photos are protected</strong>
+        <ul>
+          <li>Only logged-in members with a complete profile can see them</li>
+          <li>Downloading and right-click saving are disabled</li>
+          <li>Every photo carries a faint watermark showing the mobile number of the member viewing it</li>
+          <li>So if a photo is ever misused, it can be traced to that exact person</li>
+          <li>Photos are never public and never appear on Google</li>
+        </ul>
+      </div>
+
       <div id="mp-photo-manager"></div>
     </div>
 
+    <!-- ============ VISIBILITY ============ -->
     <div class="mt-section-title">
       <h3>Profile visibility</h3>
       <div class="mt-switch-row">
@@ -311,13 +426,50 @@
     });
   }
 
+  function fillChipGroup(containerEl, values, namePrefix) {
+    containerEl.innerHTML = values
+      .map(
+        (v, i) =>
+          '<label class="mt-chip" data-value="' + escapeHtml(v) + '">' +
+          '<input type="checkbox" value="' + escapeHtml(v) + '" id="' + namePrefix + "-" + i + '">' +
+          escapeHtml(v) +
+          "</label>"
+      )
+      .join("");
+
+    containerEl.querySelectorAll(".mt-chip").forEach((chip) => {
+      const checkbox = chip.querySelector("input");
+      checkbox.addEventListener("change", () => {
+        chip.classList.toggle("mt-chip-selected", checkbox.checked);
+      });
+    });
+  }
+
+  function getCheckedChipValues(containerEl) {
+    return Array.from(containerEl.querySelectorAll("input:checked")).map((cb) => cb.value);
+  }
+
+  function setCheckedChipValues(containerEl, values) {
+    if (!values) return;
+    containerEl.querySelectorAll("input").forEach((cb) => {
+      if (values.includes(cb.value)) {
+        cb.checked = true;
+        cb.closest(".mt-chip").classList.add("mt-chip-selected");
+      }
+    });
+  }
+
   function populateDropdowns() {
     const heightSelect = document.getElementById("mp-height");
+    const heightMin = document.getElementById("mp-pref-height-min");
+    const heightMax = document.getElementById("mp-pref-height-max");
     buildHeightOptions().forEach((h) => {
-      const opt = document.createElement("option");
-      opt.value = h.cm;
-      opt.textContent = h.label;
-      heightSelect.appendChild(opt);
+      [heightSelect, heightMin, heightMax].forEach((sel) => {
+        const opt = document.createElement("option");
+        opt.value = h.cm;
+        opt.textContent = h.label;
+        sel.appendChild(opt);
+      });
     });
 
     fillSelect(document.getElementById("mp-marital"), MARITAL_STATUS_OPTIONS);
@@ -326,7 +478,14 @@
     fillSelect(document.getElementById("mp-education"), EDUCATION_OPTIONS);
     fillSelect(document.getElementById("mp-profession"), PROFESSION_OPTIONS);
     fillSelect(document.getElementById("mp-income"), ANNUAL_INCOME_OPTIONS);
+    fillSelect(document.getElementById("mp-father-status"), LIVING_STATUS_OPTIONS);
+    fillSelect(document.getElementById("mp-mother-status"), LIVING_STATUS_OPTIONS);
     fillSelect(document.getElementById("mp-family-type"), FAMILY_TYPE_OPTIONS);
+    fillSelect(document.getElementById("mp-pref-diet"), DIET_OPTIONS);
+    fillSelect(document.getElementById("mp-pref-income"), ANNUAL_INCOME_OPTIONS);
+
+    fillChipGroup(document.getElementById("mp-pref-education-chips"), EDUCATION_OPTIONS, "mp-edu");
+    fillChipGroup(document.getElementById("mp-pref-profession-chips"), PROFESSION_OPTIONS, "mp-prof");
   }
 
   async function loadProfile() {
@@ -378,17 +537,34 @@
       if (profile.profession) document.getElementById("mp-profession").value = profile.profession;
       document.getElementById("mp-occupation-detail").value = profile.occupation_detail || "";
       if (profile.annual_income) document.getElementById("mp-income").value = profile.annual_income;
-
-      document.getElementById("mp-father-name").value = profile.father_name || "";
-      document.getElementById("mp-father-occupation").value = profile.father_occupation || "";
-      document.getElementById("mp-mother-name").value = profile.mother_name || "";
-      document.getElementById("mp-mother-occupation").value = profile.mother_occupation || "";
-      document.getElementById("mp-siblings").value = profile.siblings || "";
-      if (profile.family_type) document.getElementById("mp-family-type").value = profile.family_type;
-      document.getElementById("mp-mosal").value = profile.mosal || "";
       document.getElementById("mp-hobbies").value = profile.hobbies || "";
       document.getElementById("mp-about").value = profile.about || "";
       document.getElementById("mp-about-count").textContent = (profile.about || "").length;
+
+      if (profile.pref_age_min) document.getElementById("mp-pref-age-min").value = profile.pref_age_min;
+      if (profile.pref_age_max) document.getElementById("mp-pref-age-max").value = profile.pref_age_max;
+      if (profile.pref_height_min) document.getElementById("mp-pref-height-min").value = profile.pref_height_min;
+      if (profile.pref_height_max) document.getElementById("mp-pref-height-max").value = profile.pref_height_max;
+      if (profile.pref_weight_min) document.getElementById("mp-pref-weight-min").value = profile.pref_weight_min;
+      if (profile.pref_weight_max) document.getElementById("mp-pref-weight-max").value = profile.pref_weight_max;
+      setCheckedChipValues(document.getElementById("mp-pref-education-chips"), profile.pref_education);
+      setCheckedChipValues(document.getElementById("mp-pref-profession-chips"), profile.pref_profession);
+      if (profile.pref_diet) document.getElementById("mp-pref-diet").value = profile.pref_diet;
+      if (profile.pref_income) document.getElementById("mp-pref-income").value = profile.pref_income;
+      document.getElementById("mp-pref-city").value = profile.pref_city || "";
+      document.getElementById("mp-pref-special").value = profile.pref_special || "";
+      document.getElementById("mp-pref-special-count").textContent = (profile.pref_special || "").length;
+
+      document.getElementById("mp-father-name").value = profile.father_name || "";
+      document.getElementById("mp-father-occupation").value = profile.father_occupation || "";
+      if (profile.father_living) document.getElementById("mp-father-status").value = profile.father_living;
+      document.getElementById("mp-mother-name").value = profile.mother_name || "";
+      document.getElementById("mp-mother-occupation").value = profile.mother_occupation || "";
+      if (profile.mother_living) document.getElementById("mp-mother-status").value = profile.mother_living;
+      document.getElementById("mp-brothers").value = profile.brothers || "";
+      document.getElementById("mp-sisters").value = profile.sisters || "";
+      if (profile.family_type) document.getElementById("mp-family-type").value = profile.family_type;
+      document.getElementById("mp-mosal").value = profile.mosal || "";
 
       document.getElementById("mp-pause-toggle").checked = !!profile.is_paused;
     }
@@ -404,6 +580,9 @@
   document.getElementById("mp-about").addEventListener("input", (e) => {
     document.getElementById("mp-about-count").textContent = e.target.value.length;
   });
+  document.getElementById("mp-pref-special").addEventListener("input", (e) => {
+    document.getElementById("mp-pref-special-count").textContent = e.target.value.length;
+  });
 
   // ---------------- Save profile ----------------
   document.getElementById("mp-save-profile").addEventListener("click", async () => {
@@ -411,6 +590,7 @@
     const gender = document.getElementById("mp-gender").value;
     const dob = document.getElementById("mp-dob").value;
     const heightCm = document.getElementById("mp-height").value;
+    const weight = document.getElementById("mp-weight").value;
     const marital = document.getElementById("mp-marital").value;
     const diet = document.getElementById("mp-diet").value;
     const sect = document.getElementById("mp-sect").value;
@@ -418,8 +598,15 @@
     const state = document.getElementById("mp-state").value.trim();
     const education = document.getElementById("mp-education").value;
     const profession = document.getElementById("mp-profession").value;
+    const income = document.getElementById("mp-income").value;
+    const prefAgeMin = document.getElementById("mp-pref-age-min").value;
+    const prefAgeMax = document.getElementById("mp-pref-age-max").value;
 
-    if (!fullName || !dob || !heightCm || !marital || !diet || !sect || !city || !state || !education || !profession) {
+    if (
+      !fullName || !dob || !heightCm || !weight || !marital || !diet ||
+      !sect || !city || !state || !education || !profession || !income ||
+      !prefAgeMin || !prefAgeMax
+    ) {
       toast("Please fill in all fields marked with *.", "error");
       return;
     }
@@ -430,6 +617,16 @@
       return;
     }
 
+    if (Number(prefAgeMin) > Number(prefAgeMax)) {
+      toast("Looking for: age 'from' cannot be greater than age 'to'.", "error");
+      return;
+    }
+
+    const heightMin = document.getElementById("mp-pref-height-min").value;
+    const heightMax = document.getElementById("mp-pref-height-max").value;
+    const weightMin = document.getElementById("mp-pref-weight-min").value;
+    const weightMax = document.getElementById("mp-pref-weight-max").value;
+
     const payload = {
       user_id: currentUser.id,
       full_name: fullName,
@@ -437,7 +634,7 @@
       birth_time: document.getElementById("mp-birth-time").value || null,
       birth_place: document.getElementById("mp-birth-place").value.trim() || null,
       height_cm: Number(heightCm),
-      weight_kg: document.getElementById("mp-weight").value ? Number(document.getElementById("mp-weight").value) : null,
+      weight_kg: Number(weight),
       marital_status: marital,
       diet: diet,
       sect: sect,
@@ -451,16 +648,31 @@
       education_detail: document.getElementById("mp-education-detail").value.trim() || null,
       profession: profession,
       occupation_detail: document.getElementById("mp-occupation-detail").value.trim() || null,
-      annual_income: document.getElementById("mp-income").value || null,
+      annual_income: income,
+      hobbies: document.getElementById("mp-hobbies").value.trim() || null,
+      about: document.getElementById("mp-about").value.trim() || null,
+      pref_age_min: Number(prefAgeMin),
+      pref_age_max: Number(prefAgeMax),
+      pref_height_min: heightMin ? Number(heightMin) : null,
+      pref_height_max: heightMax ? Number(heightMax) : null,
+      pref_weight_min: weightMin ? Number(weightMin) : null,
+      pref_weight_max: weightMax ? Number(weightMax) : null,
+      pref_education: getCheckedChipValues(document.getElementById("mp-pref-education-chips")),
+      pref_profession: getCheckedChipValues(document.getElementById("mp-pref-profession-chips")),
+      pref_diet: document.getElementById("mp-pref-diet").value || null,
+      pref_income: document.getElementById("mp-pref-income").value || null,
+      pref_city: document.getElementById("mp-pref-city").value.trim() || null,
+      pref_special: document.getElementById("mp-pref-special").value.trim() || null,
       father_name: document.getElementById("mp-father-name").value.trim() || null,
       father_occupation: document.getElementById("mp-father-occupation").value.trim() || null,
+      father_living: document.getElementById("mp-father-status").value || null,
       mother_name: document.getElementById("mp-mother-name").value.trim() || null,
       mother_occupation: document.getElementById("mp-mother-occupation").value.trim() || null,
-      siblings: document.getElementById("mp-siblings").value.trim() || null,
+      mother_living: document.getElementById("mp-mother-status").value || null,
+      brothers: document.getElementById("mp-brothers").value.trim() || null,
+      sisters: document.getElementById("mp-sisters").value.trim() || null,
       family_type: document.getElementById("mp-family-type").value || null,
-      mosal: document.getElementById("mp-mosal").value.trim() || null,
-      hobbies: document.getElementById("mp-hobbies").value.trim() || null,
-      about: document.getElementById("mp-about").value.trim() || null
+      mosal: document.getElementById("mp-mosal").value.trim() || null
     };
 
     const { error } = await supabaseClient.from("mt_profiles").upsert(payload, { onConflict: "user_id" });

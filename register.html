@@ -25,12 +25,18 @@
     <div class="mt-progress-step" data-step="3"></div>
     <div class="mt-progress-step" data-step="4"></div>
     <div class="mt-progress-step" data-step="5"></div>
+    <div class="mt-progress-step" data-step="6"></div>
   </div>
-  <div class="mt-progress-label" id="progress-label">Step 1 of 5 — Basic details</div>
+  <div class="mt-progress-label" id="progress-label">Step 1 of 6 — Basic details</div>
+
+  <div class="mt-visibility-banner">
+    Only the details marked <strong>OPEN</strong> are visible to other members.
+    Family details and your contact number stay hidden until you accept someone's interest.
+  </div>
 
   <div class="mt-card">
 
-    <!-- ============ STEP 1: BASIC ============ -->
+    <!-- ============ STEP 1: BASIC (OPEN) ============ -->
     <section class="mt-step" data-step="1">
       <div class="mt-field">
         <label for="s1-full-name">Full name *</label>
@@ -39,7 +45,7 @@
 
       <div class="mt-field">
         <label>Gender</label>
-        <div class="mt-locked-value" id="s1-gender-display" style="padding:12px 14px; background:#F5EDE3; border-radius:10px; font-weight:600;"></div>
+        <div id="s1-gender-display" style="padding:12px 14px; background:#F5EDE3; border-radius:10px; font-weight:600;"></div>
         <div class="mt-hint">Set at sign up and cannot be changed here.</div>
         <input type="hidden" id="s1-gender">
       </div>
@@ -67,8 +73,8 @@
       </div>
 
       <div class="mt-field">
-        <label for="s1-weight">Weight (kg)</label>
-        <input type="number" id="s1-weight" min="20" max="200" step="1">
+        <label for="s1-weight">Weight (kg) *</label>
+        <input type="number" id="s1-weight" min="20" max="200" step="1" required>
       </div>
 
       <div class="mt-field">
@@ -90,7 +96,7 @@
       </div>
     </section>
 
-    <!-- ============ STEP 2: COMMUNITY & LOCATION ============ -->
+    <!-- ============ STEP 2: COMMUNITY & LOCATION (OPEN) ============ -->
     <section class="mt-step" data-step="2" style="display:none;">
       <div class="mt-field">
         <label for="s2-sect">Sect *</label>
@@ -135,7 +141,7 @@
       </div>
     </section>
 
-    <!-- ============ STEP 3: EDUCATION & WORK ============ -->
+    <!-- ============ STEP 3: EDUCATION & WORK (OPEN) ============ -->
     <section class="mt-step" data-step="3" style="display:none;">
       <div class="mt-field">
         <label for="s3-education">Education *</label>
@@ -162,10 +168,21 @@
       </div>
 
       <div class="mt-field">
-        <label for="s3-income">Annual income (optional)</label>
-        <select id="s3-income">
-          <option value="">Prefer not to say</option>
+        <label for="s3-income">Annual income *</label>
+        <select id="s3-income" required>
+          <option value="" disabled selected>Choose one</option>
         </select>
+      </div>
+
+      <div class="mt-field">
+        <label for="s3-hobbies">Hobbies</label>
+        <textarea id="s3-hobbies" rows="2"></textarea>
+      </div>
+
+      <div class="mt-field">
+        <label for="s3-about">About</label>
+        <textarea id="s3-about" rows="4" maxlength="500"></textarea>
+        <div class="mt-char-counter"><span id="s3-about-count">0</span>/500</div>
       </div>
 
       <div class="mt-step-nav">
@@ -174,8 +191,13 @@
       </div>
     </section>
 
-    <!-- ============ STEP 4: FAMILY ============ -->
+    <!-- ============ STEP 4: FAMILY (LOCKED) ============ -->
     <section class="mt-step" data-step="4" style="display:none;">
+      <div class="mt-lock-box">
+        The details on this page are not shown to anyone. They become visible only
+        to a member whose interest you have accepted.
+      </div>
+
       <div class="mt-field">
         <label for="s4-father-name">Father's name</label>
         <input type="text" id="s4-father-name">
@@ -184,6 +206,13 @@
       <div class="mt-field">
         <label for="s4-father-occupation">Father's occupation</label>
         <input type="text" id="s4-father-occupation">
+      </div>
+
+      <div class="mt-field">
+        <label for="s4-father-status">Father's status</label>
+        <select id="s4-father-status">
+          <option value="">Choose one</option>
+        </select>
       </div>
 
       <div class="mt-field">
@@ -197,8 +226,20 @@
       </div>
 
       <div class="mt-field">
-        <label for="s4-siblings">Siblings</label>
-        <textarea id="s4-siblings" rows="2" placeholder="e.g. 1 elder brother, married"></textarea>
+        <label for="s4-mother-status">Mother's status</label>
+        <select id="s4-mother-status">
+          <option value="">Choose one</option>
+        </select>
+      </div>
+
+      <div class="mt-field">
+        <label for="s4-brothers">Brothers</label>
+        <input type="text" id="s4-brothers" placeholder="e.g. 1 elder, married">
+      </div>
+
+      <div class="mt-field">
+        <label for="s4-sisters">Sisters</label>
+        <input type="text" id="s4-sisters" placeholder="e.g. 2 younger, both unmarried">
       </div>
 
       <div class="mt-field">
@@ -213,70 +254,150 @@
         <input type="text" id="s4-mosal">
       </div>
 
-      <div class="mt-field">
-        <label for="s4-hobbies">Hobbies</label>
-        <textarea id="s4-hobbies" rows="2"></textarea>
-      </div>
-
-      <div class="mt-field">
-        <label for="s4-about">About</label>
-        <textarea id="s4-about" rows="4" maxlength="500"></textarea>
-        <div class="mt-char-counter"><span id="s4-about-count">0</span>/500</div>
-      </div>
-
       <div class="mt-step-nav">
         <button type="button" class="mt-btn mt-btn-outline" id="s4-back">Back</button>
         <button type="button" class="mt-btn mt-btn-primary" id="s4-next">Next</button>
       </div>
     </section>
 
-    <!-- ============ STEP 5: CONTACT & PHOTOS ============ -->
+    <!-- ============ STEP 5: LOOKING FOR (OPEN) ============ -->
     <section class="mt-step" data-step="5" style="display:none;">
+      <div class="mt-field">
+        <label>Age range *</label>
+        <div class="mt-range-row">
+          <div class="mt-field">
+            <input type="number" id="s5-age-min" min="18" max="80" placeholder="From" required>
+          </div>
+          <div class="mt-field">
+            <input type="number" id="s5-age-max" min="18" max="80" placeholder="To" required>
+          </div>
+        </div>
+      </div>
 
-      <div class="mt-reassurance">
+      <div class="mt-field">
+        <label>Height range</label>
+        <div class="mt-range-row">
+          <div class="mt-field">
+            <select id="s5-height-min"><option value="">From</option></select>
+          </div>
+          <div class="mt-field">
+            <select id="s5-height-max"><option value="">To</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-field">
+        <label>Weight range (kg)</label>
+        <div class="mt-range-row">
+          <div class="mt-field">
+            <input type="number" id="s5-weight-min" min="20" max="200" placeholder="From">
+          </div>
+          <div class="mt-field">
+            <input type="number" id="s5-weight-max" min="20" max="200" placeholder="To">
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-field">
+        <label>Education (choose any that apply)</label>
+        <div class="mt-chip-group" id="s5-education-chips"></div>
+      </div>
+
+      <div class="mt-field">
+        <label>Profession (choose any that apply)</label>
+        <div class="mt-chip-group" id="s5-profession-chips"></div>
+      </div>
+
+      <div class="mt-field">
+        <label for="s5-diet">Diet preference</label>
+        <select id="s5-diet">
+          <option value="">No preference</option>
+        </select>
+      </div>
+
+      <div class="mt-field">
+        <label for="s5-income">Expected annual income</label>
+        <select id="s5-income">
+          <option value="">No preference</option>
+        </select>
+      </div>
+
+      <div class="mt-field">
+        <label for="s5-city">City or area preference</label>
+        <input type="text" id="s5-city">
+      </div>
+
+      <div class="mt-field">
+        <label for="s5-special">Any special requirement</label>
+        <textarea id="s5-special" rows="3" maxlength="300"></textarea>
+        <div class="mt-char-counter"><span id="s5-special-count">0</span>/300</div>
+      </div>
+
+      <div class="mt-step-nav">
+        <button type="button" class="mt-btn mt-btn-outline" id="s5-back">Back</button>
+        <button type="button" class="mt-btn mt-btn-primary" id="s5-next">Next</button>
+      </div>
+    </section>
+
+    <!-- ============ STEP 6: CONTACT & PHOTOS ============ -->
+    <section class="mt-step" data-step="6" style="display:none;">
+
+      <div class="mt-lock-box">
         Your mobile number and address are never shown to any member.
         They are shared only when you accept someone's interest.
       </div>
 
       <div class="mt-field">
-        <label for="s5-mobile">Mobile *</label>
-        <input type="tel" id="s5-mobile" inputmode="numeric" maxlength="10" placeholder="10 digit mobile number" required>
+        <label for="s6-mobile">Mobile *</label>
+        <input type="tel" id="s6-mobile" inputmode="numeric" maxlength="10" placeholder="10 digit mobile number" required>
       </div>
 
       <div class="mt-field">
-        <label for="s5-alt-mobile">Alternate mobile</label>
-        <input type="tel" id="s5-alt-mobile" inputmode="numeric" maxlength="10">
+        <label for="s6-alt-mobile">Alternate mobile</label>
+        <input type="tel" id="s6-alt-mobile" inputmode="numeric" maxlength="10">
       </div>
 
       <div class="mt-field">
-        <label for="s5-email">Email</label>
-        <input type="email" id="s5-email">
+        <label for="s6-email">Email</label>
+        <input type="email" id="s6-email">
       </div>
 
       <div class="mt-field">
-        <label for="s5-address">Address</label>
-        <textarea id="s5-address" rows="2"></textarea>
+        <label for="s6-address">Address</label>
+        <textarea id="s6-address" rows="2"></textarea>
       </div>
 
-      <button type="button" class="mt-btn mt-btn-outline" id="s5-save-contact">Save contact details</button>
+      <button type="button" class="mt-btn mt-btn-outline" id="s6-save-contact">Save contact details</button>
 
-      <div id="s5-verify-section" style="margin-top:20px; display:none;">
+      <div id="s6-verify-section" style="margin-top:20px; display:none;">
         <div class="mt-field">
           <label>Mobile verification</label>
-          <div><span class="mt-badge" id="s5-verify-badge">Not verified</span></div>
+          <div><span class="mt-badge" id="s6-verify-badge">Not verified</span></div>
         </div>
-        <a href="#" target="_blank" class="mt-btn mt-btn-gold" id="s5-whatsapp-btn">Verify on WhatsApp</a>
+        <a href="#" target="_blank" class="mt-btn mt-btn-gold" id="s6-whatsapp-btn">Verify on WhatsApp</a>
         <p class="mt-hint">Send this ready message from the same mobile number. Your number will be marked verified within a few hours.</p>
       </div>
 
       <div class="mt-section-title">
         <h3>Photos</h3>
-        <div id="s5-photo-manager"></div>
+
+        <div class="mt-shield-box">
+          <strong>How your photos are protected</strong>
+          <ul>
+            <li>Only logged-in members with a complete profile can see them</li>
+            <li>Downloading and right-click saving are disabled</li>
+            <li>Every photo carries a faint watermark showing the mobile number of the member viewing it</li>
+            <li>So if a photo is ever misused, it can be traced to that exact person</li>
+            <li>Photos are never public and never appear on Google</li>
+          </ul>
+        </div>
+
+        <div id="s6-photo-manager"></div>
       </div>
 
       <div class="mt-step-nav">
-        <button type="button" class="mt-btn mt-btn-outline" id="s5-back">Back</button>
-        <button type="button" class="mt-btn mt-btn-primary" id="s5-finish">Finish</button>
+        <button type="button" class="mt-btn mt-btn-outline" id="s6-back">Back</button>
+        <button type="button" class="mt-btn mt-btn-primary" id="s6-finish">Finish</button>
       </div>
     </section>
 
@@ -298,17 +419,18 @@
 <script>
   let currentUser = null;
   let currentStep = 1;
-  const TOTAL_STEPS = 5;
+  const TOTAL_STEPS = 6;
   const STEP_LABELS = {
     1: "Basic details",
     2: "Community & location",
     3: "Education & work",
     4: "Family",
-    5: "Contact & photos"
+    5: "Looking for",
+    6: "Contact & photos"
   };
 
   // ---------------- Populate dropdowns ----------------
-  function fillSelect(selectEl, values, keepFirstOption) {
+  function fillSelect(selectEl, values) {
     values.forEach((v) => {
       const opt = document.createElement("option");
       opt.value = v;
@@ -317,13 +439,50 @@
     });
   }
 
+  function fillChipGroup(containerEl, values, namePrefix) {
+    containerEl.innerHTML = values
+      .map(
+        (v, i) =>
+          '<label class="mt-chip" data-value="' + escapeHtml(v) + '">' +
+          '<input type="checkbox" value="' + escapeHtml(v) + '" id="' + namePrefix + "-" + i + '">' +
+          escapeHtml(v) +
+          "</label>"
+      )
+      .join("");
+
+    containerEl.querySelectorAll(".mt-chip").forEach((chip) => {
+      const checkbox = chip.querySelector("input");
+      checkbox.addEventListener("change", () => {
+        chip.classList.toggle("mt-chip-selected", checkbox.checked);
+      });
+    });
+  }
+
+  function getCheckedChipValues(containerEl) {
+    return Array.from(containerEl.querySelectorAll("input:checked")).map((cb) => cb.value);
+  }
+
+  function setCheckedChipValues(containerEl, values) {
+    if (!values) return;
+    containerEl.querySelectorAll("input").forEach((cb) => {
+      if (values.includes(cb.value)) {
+        cb.checked = true;
+        cb.closest(".mt-chip").classList.add("mt-chip-selected");
+      }
+    });
+  }
+
   function populateDropdowns() {
     const heightSelect = document.getElementById("s1-height");
+    const heightMin = document.getElementById("s5-height-min");
+    const heightMax = document.getElementById("s5-height-max");
     buildHeightOptions().forEach((h) => {
-      const opt = document.createElement("option");
-      opt.value = h.cm;
-      opt.textContent = h.label;
-      heightSelect.appendChild(opt);
+      [heightSelect, heightMin, heightMax].forEach((sel) => {
+        const opt = document.createElement("option");
+        opt.value = h.cm;
+        opt.textContent = h.label;
+        sel.appendChild(opt);
+      });
     });
 
     fillSelect(document.getElementById("s1-marital"), MARITAL_STATUS_OPTIONS);
@@ -332,7 +491,14 @@
     fillSelect(document.getElementById("s3-education"), EDUCATION_OPTIONS);
     fillSelect(document.getElementById("s3-profession"), PROFESSION_OPTIONS);
     fillSelect(document.getElementById("s3-income"), ANNUAL_INCOME_OPTIONS);
+    fillSelect(document.getElementById("s4-father-status"), LIVING_STATUS_OPTIONS);
+    fillSelect(document.getElementById("s4-mother-status"), LIVING_STATUS_OPTIONS);
     fillSelect(document.getElementById("s4-family-type"), FAMILY_TYPE_OPTIONS);
+    fillSelect(document.getElementById("s5-diet"), DIET_OPTIONS);
+    fillSelect(document.getElementById("s5-income"), ANNUAL_INCOME_OPTIONS);
+
+    fillChipGroup(document.getElementById("s5-education-chips"), EDUCATION_OPTIONS, "s5-edu");
+    fillChipGroup(document.getElementById("s5-profession-chips"), PROFESSION_OPTIONS, "s5-prof");
   }
 
   // ---------------- Step navigation ----------------
@@ -397,7 +563,7 @@
     const marital = document.getElementById("s1-marital").value;
     const diet = document.getElementById("s1-diet").value;
 
-    if (!fullName || !dob || !heightCm || !marital || !diet) {
+    if (!fullName || !dob || !heightCm || !weight || !marital || !diet) {
       toast("Please fill in all required fields.", "error");
       return;
     }
@@ -415,7 +581,7 @@
       birth_time: birthTime || null,
       birth_place: birthPlace || null,
       height_cm: Number(heightCm),
-      weight_kg: weight ? Number(weight) : null,
+      weight_kg: Number(weight),
       marital_status: marital,
       diet: diet
     };
@@ -455,13 +621,18 @@
   });
 
   // ---------------- Step 3 ----------------
+  document.getElementById("s3-about").addEventListener("input", (e) => {
+    document.getElementById("s3-about-count").textContent = e.target.value.length;
+  });
+
   document.getElementById("s3-back").addEventListener("click", () => goToStep(2));
   document.getElementById("s3-next").addEventListener("click", async () => {
     const education = document.getElementById("s3-education").value;
     const profession = document.getElementById("s3-profession").value;
+    const income = document.getElementById("s3-income").value;
 
-    if (!education || !profession) {
-      toast("Please choose Education and Profession.", "error");
+    if (!education || !profession || !income) {
+      toast("Please choose Education, Profession and Annual income.", "error");
       return;
     }
 
@@ -470,7 +641,9 @@
       education_detail: document.getElementById("s3-education-detail").value.trim() || null,
       profession: profession,
       occupation_detail: document.getElementById("s3-occupation-detail").value.trim() || null,
-      annual_income: document.getElementById("s3-income").value || null
+      annual_income: income,
+      hobbies: document.getElementById("s3-hobbies").value.trim() || null,
+      about: document.getElementById("s3-about").value.trim() || null
     };
 
     const ok = await saveProfile(payload);
@@ -478,36 +651,76 @@
   });
 
   // ---------------- Step 4 ----------------
-  document.getElementById("s4-about").addEventListener("input", (e) => {
-    document.getElementById("s4-about-count").textContent = e.target.value.length;
-  });
-
   document.getElementById("s4-back").addEventListener("click", () => goToStep(3));
   document.getElementById("s4-next").addEventListener("click", async () => {
     const payload = {
       father_name: document.getElementById("s4-father-name").value.trim() || null,
       father_occupation: document.getElementById("s4-father-occupation").value.trim() || null,
+      father_living: document.getElementById("s4-father-status").value || null,
       mother_name: document.getElementById("s4-mother-name").value.trim() || null,
       mother_occupation: document.getElementById("s4-mother-occupation").value.trim() || null,
-      siblings: document.getElementById("s4-siblings").value.trim() || null,
+      mother_living: document.getElementById("s4-mother-status").value || null,
+      brothers: document.getElementById("s4-brothers").value.trim() || null,
+      sisters: document.getElementById("s4-sisters").value.trim() || null,
       family_type: document.getElementById("s4-family-type").value || null,
-      mosal: document.getElementById("s4-mosal").value.trim() || null,
-      hobbies: document.getElementById("s4-hobbies").value.trim() || null,
-      about: document.getElementById("s4-about").value.trim() || null
+      mosal: document.getElementById("s4-mosal").value.trim() || null
     };
 
     const ok = await saveProfile(payload);
     if (ok) goToStep(5);
   });
 
-  // ---------------- Step 5: contact ----------------
+  // ---------------- Step 5 ----------------
+  document.getElementById("s5-special").addEventListener("input", (e) => {
+    document.getElementById("s5-special-count").textContent = e.target.value.length;
+  });
+
   document.getElementById("s5-back").addEventListener("click", () => goToStep(4));
+  document.getElementById("s5-next").addEventListener("click", async () => {
+    const ageMin = document.getElementById("s5-age-min").value;
+    const ageMax = document.getElementById("s5-age-max").value;
+
+    if (!ageMin || !ageMax) {
+      toast("Please fill in the age range you are looking for.", "error");
+      return;
+    }
+    if (Number(ageMin) > Number(ageMax)) {
+      toast("Age 'from' cannot be greater than age 'to'.", "error");
+      return;
+    }
+
+    const heightMin = document.getElementById("s5-height-min").value;
+    const heightMax = document.getElementById("s5-height-max").value;
+    const weightMin = document.getElementById("s5-weight-min").value;
+    const weightMax = document.getElementById("s5-weight-max").value;
+
+    const payload = {
+      pref_age_min: Number(ageMin),
+      pref_age_max: Number(ageMax),
+      pref_height_min: heightMin ? Number(heightMin) : null,
+      pref_height_max: heightMax ? Number(heightMax) : null,
+      pref_weight_min: weightMin ? Number(weightMin) : null,
+      pref_weight_max: weightMax ? Number(weightMax) : null,
+      pref_education: getCheckedChipValues(document.getElementById("s5-education-chips")),
+      pref_profession: getCheckedChipValues(document.getElementById("s5-profession-chips")),
+      pref_diet: document.getElementById("s5-diet").value || null,
+      pref_income: document.getElementById("s5-income").value || null,
+      pref_city: document.getElementById("s5-city").value.trim() || null,
+      pref_special: document.getElementById("s5-special").value.trim() || null
+    };
+
+    const ok = await saveProfile(payload);
+    if (ok) goToStep(6);
+  });
+
+  // ---------------- Step 6: contact ----------------
+  document.getElementById("s6-back").addEventListener("click", () => goToStep(5));
 
   async function refreshVerifySection() {
     const contact = await loadContact();
     if (contact && contact.mobile) {
-      document.getElementById("s5-verify-section").style.display = "block";
-      const badge = document.getElementById("s5-verify-badge");
+      document.getElementById("s6-verify-section").style.display = "block";
+      const badge = document.getElementById("s6-verify-badge");
       if (contact.mobile_verified) {
         badge.textContent = "Verified";
         badge.className = "mt-badge mt-badge-verified";
@@ -524,15 +737,15 @@
       }
       const waLink =
         "https://wa.me/" + WHATSAPP_VERIFY_NUMBER + "?text=" + encodeURIComponent("VERIFY " + code);
-      document.getElementById("s5-whatsapp-btn").href = waLink;
+      document.getElementById("s6-whatsapp-btn").href = waLink;
     }
   }
 
-  document.getElementById("s5-save-contact").addEventListener("click", async () => {
-    const mobile = document.getElementById("s5-mobile").value.trim();
-    const altMobile = document.getElementById("s5-alt-mobile").value.trim();
-    const email = document.getElementById("s5-email").value.trim();
-    const address = document.getElementById("s5-address").value.trim();
+  document.getElementById("s6-save-contact").addEventListener("click", async () => {
+    const mobile = document.getElementById("s6-mobile").value.trim();
+    const altMobile = document.getElementById("s6-alt-mobile").value.trim();
+    const email = document.getElementById("s6-email").value.trim();
+    const address = document.getElementById("s6-address").value.trim();
 
     if (!/^\d{10}$/.test(mobile)) {
       toast("Please enter a valid 10 digit mobile number.", "error");
@@ -563,11 +776,11 @@
     refreshVerifySection();
   });
 
-  // ---------------- Step 5: photos ----------------
+  // ---------------- Step 6: photos ----------------
   let photoManager = null;
 
   // ---------------- Finish ----------------
-  document.getElementById("s5-finish").addEventListener("click", async () => {
+  document.getElementById("s6-finish").addEventListener("click", async () => {
     const profile = await loadProfile();
     const contact = await loadContact();
     const photoCount = photoManager ? await photoManager.countPhotos() : 0;
@@ -626,30 +839,49 @@
       if (profile.profession) document.getElementById("s3-profession").value = profile.profession;
       if (profile.occupation_detail) document.getElementById("s3-occupation-detail").value = profile.occupation_detail;
       if (profile.annual_income) document.getElementById("s3-income").value = profile.annual_income;
+      if (profile.hobbies) document.getElementById("s3-hobbies").value = profile.hobbies;
+      if (profile.about) {
+        document.getElementById("s3-about").value = profile.about;
+        document.getElementById("s3-about-count").textContent = profile.about.length;
+      }
 
       if (profile.father_name) document.getElementById("s4-father-name").value = profile.father_name;
       if (profile.father_occupation) document.getElementById("s4-father-occupation").value = profile.father_occupation;
+      if (profile.father_living) document.getElementById("s4-father-status").value = profile.father_living;
       if (profile.mother_name) document.getElementById("s4-mother-name").value = profile.mother_name;
       if (profile.mother_occupation) document.getElementById("s4-mother-occupation").value = profile.mother_occupation;
-      if (profile.siblings) document.getElementById("s4-siblings").value = profile.siblings;
+      if (profile.mother_living) document.getElementById("s4-mother-status").value = profile.mother_living;
+      if (profile.brothers) document.getElementById("s4-brothers").value = profile.brothers;
+      if (profile.sisters) document.getElementById("s4-sisters").value = profile.sisters;
       if (profile.family_type) document.getElementById("s4-family-type").value = profile.family_type;
       if (profile.mosal) document.getElementById("s4-mosal").value = profile.mosal;
-      if (profile.hobbies) document.getElementById("s4-hobbies").value = profile.hobbies;
-      if (profile.about) {
-        document.getElementById("s4-about").value = profile.about;
-        document.getElementById("s4-about-count").textContent = profile.about.length;
+
+      if (profile.pref_age_min) document.getElementById("s5-age-min").value = profile.pref_age_min;
+      if (profile.pref_age_max) document.getElementById("s5-age-max").value = profile.pref_age_max;
+      if (profile.pref_height_min) document.getElementById("s5-height-min").value = profile.pref_height_min;
+      if (profile.pref_height_max) document.getElementById("s5-height-max").value = profile.pref_height_max;
+      if (profile.pref_weight_min) document.getElementById("s5-weight-min").value = profile.pref_weight_min;
+      if (profile.pref_weight_max) document.getElementById("s5-weight-max").value = profile.pref_weight_max;
+      setCheckedChipValues(document.getElementById("s5-education-chips"), profile.pref_education);
+      setCheckedChipValues(document.getElementById("s5-profession-chips"), profile.pref_profession);
+      if (profile.pref_diet) document.getElementById("s5-diet").value = profile.pref_diet;
+      if (profile.pref_income) document.getElementById("s5-income").value = profile.pref_income;
+      if (profile.pref_city) document.getElementById("s5-city").value = profile.pref_city;
+      if (profile.pref_special) {
+        document.getElementById("s5-special").value = profile.pref_special;
+        document.getElementById("s5-special-count").textContent = profile.pref_special.length;
       }
     } else {
       document.getElementById("s2-sect").value = signupData.sect || "";
     }
 
     if (contact) {
-      if (contact.mobile) document.getElementById("s5-mobile").value = contact.mobile;
-      if (contact.alt_mobile) document.getElementById("s5-alt-mobile").value = contact.alt_mobile;
-      document.getElementById("s5-email").value = contact.email || currentUser.email || "";
-      if (contact.address) document.getElementById("s5-address").value = contact.address;
+      if (contact.mobile) document.getElementById("s6-mobile").value = contact.mobile;
+      if (contact.alt_mobile) document.getElementById("s6-alt-mobile").value = contact.alt_mobile;
+      document.getElementById("s6-email").value = contact.email || currentUser.email || "";
+      if (contact.address) document.getElementById("s6-address").value = contact.address;
     } else {
-      document.getElementById("s5-email").value = currentUser.email || "";
+      document.getElementById("s6-email").value = currentUser.email || "";
     }
   }
 
@@ -665,7 +897,7 @@
     const contact = await loadContact();
     await prefillForm(profile, contact);
 
-    photoManager = createPhotoManager(document.getElementById("s5-photo-manager"), currentUser.id);
+    photoManager = createPhotoManager(document.getElementById("s6-photo-manager"), currentUser.id);
     await photoManager.render();
     await refreshVerifySection();
 

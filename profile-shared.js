@@ -19,10 +19,12 @@ const MARITAL_STATUS_OPTIONS = ["Unmarried", "Divorced", "Widow", "Widower"];
 
 const FAMILY_TYPE_OPTIONS = ["Joint", "Nuclear"];
 
+const LIVING_STATUS_OPTIONS = ["Living", "Late"];
+
 const EDUCATION_OPTIONS = [
   "Below Graduate", "B.Com", "B.A", "B.Sc", "B.E/B.Tech", "BBA", "BCA",
-  "CA", "CS", "MBBS", "LLB", "M.Com", "M.A", "M.Sc", "M.E/M.Tech", "MBA",
-  "CA Final", "PhD", "Other"
+  "CA", "CS", "MBBS", "BDS", "LLB", "M.Com", "M.A", "M.Sc", "M.E/M.Tech",
+  "MBA", "PhD", "Other"
 ];
 
 const PROFESSION_OPTIONS = [
@@ -31,11 +33,12 @@ const PROFESSION_OPTIONS = [
 ];
 
 const ANNUAL_INCOME_OPTIONS = [
-  "Below ₹2 Lakh", "₹2–5 Lakh", "₹5–10 Lakh", "₹10–15 Lakh", "₹15–25 Lakh",
-  "₹25–50 Lakh", "₹50 Lakh – 1 Crore", "Above ₹1 Crore"
+  "Below 3 Lakh", "3-5 Lakh", "5-10 Lakh", "10-15 Lakh", "15-25 Lakh",
+  "25-50 Lakh", "Above 50 Lakh"
 ];
 
-// Height dropdown: 4'6" to 6'6", stored as centimetres.
+// Height dropdown: 4'6" to 6'6", stored as centimetres. Used for the
+// member's own height and for the "looking for" height range.
 function buildHeightOptions() {
   const options = [];
   for (let totalInches = 54; totalInches <= 78; totalInches++) {
@@ -66,13 +69,15 @@ function checkAgeRule(dob, gender) {
 }
 
 // Fields required (marked *) on each step, and a friendly label for
-// telling the member exactly what is missing.
+// telling the member exactly what is missing. Family (step 4) has no
+// required fields.
 const REQUIRED_FIELDS = {
   1: [
     ["full_name", "Full name"],
     ["gender", "Gender"],
     ["dob", "Date of birth"],
     ["height_cm", "Height"],
+    ["weight_kg", "Weight"],
     ["marital_status", "Marital status"],
     ["diet", "Diet"]
   ],
@@ -83,18 +88,24 @@ const REQUIRED_FIELDS = {
   ],
   3: [
     ["education", "Education"],
-    ["profession", "Profession"]
+    ["profession", "Profession"],
+    ["annual_income", "Annual income"]
+  ],
+  5: [
+    ["pref_age_min", "Looking for: age from"],
+    ["pref_age_max", "Looking for: age to"]
   ]
 };
 
-// Checks a profile row against every required field across steps 1-3,
-// plus mobile (from the contact row) and at least one photo.
+// Checks a profile row against every required field across steps 1-3 and
+// 5, plus mobile (from the contact row) and at least one photo (step 6).
 // Returns an array of { step, label } for anything missing (empty array
 // means the profile is complete and ready to submit).
 function findMissingFields(profile, contact, photoCount) {
   const missing = [];
 
-  [1, 2, 3].forEach((step) => {
+  Object.keys(REQUIRED_FIELDS).forEach((stepKey) => {
+    const step = Number(stepKey);
     REQUIRED_FIELDS[step].forEach(([field, label]) => {
       const value = profile ? profile[field] : null;
       if (value === null || value === undefined || value === "") {
@@ -104,10 +115,10 @@ function findMissingFields(profile, contact, photoCount) {
   });
 
   if (!contact || !contact.mobile) {
-    missing.push({ step: 5, label: "Mobile number" });
+    missing.push({ step: 6, label: "Mobile number" });
   }
   if (!photoCount || photoCount < 1) {
-    missing.push({ step: 5, label: "At least one photo" });
+    missing.push({ step: 6, label: "At least one photo" });
   }
 
   return missing;
@@ -167,7 +178,7 @@ function resizeImageToBlob(file) {
 }
 
 // ---------------------------------------------------------------------
-// Photo manager — identical UI/behaviour used by register.html (step 5)
+// Photo manager — identical UI/behaviour used by register.html (step 6)
 // and myprofile.html. Renders into containerEl and wires up its own
 // upload/delete/set-primary handlers.
 // ---------------------------------------------------------------------
@@ -206,7 +217,10 @@ function createPhotoManager(containerEl, userId, onChange) {
     let html = '<div class="mt-photo-grid">';
     withUrls.forEach(({ photo, url }) => {
       html += '<div class="mt-photo-item">';
-      html += '<img src="' + escapeHtml(url) + '" alt="Profile photo">';
+      // draggable=false and oncontextmenu=false are a basic deterrent
+      // against casual right-click-save / drag-out of the thumbnail.
+      html +=
+        '<img src="' + escapeHtml(url) + '" alt="Profile photo" draggable="false" oncontextmenu="return false">';
       if (photo.is_primary) {
         html += '<span class="mt-photo-badge">Primary</span>';
       }
