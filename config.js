@@ -7,6 +7,11 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const APP_NAME = "Jain Vivah";
 const SUPPORT_EMAIL = "vkvcoder.support@gmail.com";
 
+// This Supabase project is shared with other apps, so its dashboard Site URL
+// points elsewhere. Every auth call that sends an email must pass its own
+// redirect explicitly, built from this.
+const APP_URL = "https://jainvivah.anyapps.in";
+
 // WhatsApp number members message to verify their mobile (manual process).
 // Replace with the real number, in international format with no + or spaces
 // (e.g. "919812345678").

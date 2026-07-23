@@ -221,7 +221,9 @@
       return;
     }
 
-    const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: APP_URL + "/reset.html"
+    });
     if (error) {
       toast(error.message, "error");
     } else {
@@ -265,6 +267,7 @@
       email,
       password,
       options: {
+        emailRedirectTo: APP_URL + "/index.html",
         data: {
           full_name: fullName,
           gender: selectedGender,

@@ -11,6 +11,7 @@ const SHELL_FILES = [
   "terms.html",
   "register.html",
   "myprofile.html",
+  "reset.html",
   "styles.css",
   "app.js",
   "config.js",

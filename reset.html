@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Reset Password — Jain Vivah</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="mt-header">
+  <div class="mt-logo">Jain Vivah</div>
+  <div class="mt-tagline">Reset your password</div>
+</div>
+
+<div class="mt-page">
+
+  <div class="mt-card" id="reset-form-card">
+    <div class="mt-field">
+      <label for="reset-password">New password</label>
+      <div class="mt-password-wrap">
+        <input type="password" id="reset-password" required minlength="8" autocomplete="new-password">
+        <button type="button" class="mt-password-toggle" data-target="reset-password">Show</button>
+      </div>
+      <div class="mt-hint">Minimum 8 characters.</div>
+    </div>
+
+    <div class="mt-field">
+      <label for="reset-confirm-password">Confirm new password</label>
+      <div class="mt-password-wrap">
+        <input type="password" id="reset-confirm-password" required minlength="8" autocomplete="new-password">
+        <button type="button" class="mt-password-toggle" data-target="reset-confirm-password">Show</button>
+      </div>
+    </div>
+
+    <button type="button" class="mt-btn mt-btn-primary" id="reset-submit">Update password</button>
+  </div>
+
+  <div class="mt-card" id="reset-invalid-card" style="display:none;">
+    <p>This password reset link is invalid or has expired.</p>
+    <p><a href="index.html">Return to login and request a new one</a>.</p>
+  </div>
+
+</div>
+
+<div class="mt-footer">
+  <div>
+    <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a>
+  </div>
+  <div class="mt-brand">AnyApps.in</div>
+  <div>Support: <a href="mailto:vkvcoder.support@gmail.com">vkvcoder.support@gmail.com</a></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+  // ---------------- Password show/hide ----------------
+  document.querySelectorAll(".mt-password-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const input = document.getElementById(btn.dataset.target);
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      btn.textContent = isHidden ? "Hide" : "Show";
+    });
+  });
+
+  // ---------------- Update password ----------------
+  document.getElementById("reset-submit").addEventListener("click", async () => {
+    const password = document.getElementById("reset-password").value;
+    const confirmPassword = document.getElementById("reset-confirm-password").value;
+
+    if (password.length < 8) {
+      toast("Password must be at least 8 characters.", "error");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast("Passwords do not match.", "error");
+      return;
+    }
+
+    const submitBtn = document.getElementById("reset-submit");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Updating...";
+
+    const { error } = await supabaseClient.auth.updateUser({ password: password });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Update password";
+
+    if (error) {
+      toast(error.message, "error");
+      return;
+    }
+
+    queueToast("Your password has been updated.", "success");
+    window.location.href = "index.html";
+  });
+
+  // ---------------- Only show the form if this link carried a valid recovery session ----------------
+  (async () => {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+      document.getElementById("reset-form-card").style.display = "none";
+      document.getElementById("reset-invalid-card").style.display = "block";
+    }
+  })();
+</script>
+
+</body>
+</html>
