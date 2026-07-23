@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Jain Vivah — Matrimonial for the Jain Community</title>
+<meta name="description" content="Jain Vivah — a matrimonial platform built for the Jain community.">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7B1E3B">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="mt-header">
+  <div class="mt-logo">Jain Vivah</div>
+  <div class="mt-tagline">A dignified matrimonial space for the Jain community</div>
+</div>
+
+<div class="mt-page">
+
+  <div class="mt-tabs">
+    <div class="mt-tab mt-tab-active" id="tab-login" onclick="mtShowTab('login')">Login</div>
+    <div class="mt-tab" id="tab-signup" onclick="mtShowTab('signup')">Sign up</div>
+  </div>
+
+  <!-- ============ LOGIN ============ -->
+  <div class="mt-tab-panel mt-tab-panel-active" id="panel-login">
+    <form class="mt-card" id="login-form">
+      <div class="mt-field">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" required autocomplete="email">
+      </div>
+
+      <div class="mt-field">
+        <label for="login-password">Password</label>
+        <div class="mt-password-wrap">
+          <input type="password" id="login-password" required autocomplete="current-password">
+          <button type="button" class="mt-password-toggle" data-target="login-password">Show</button>
+        </div>
+      </div>
+
+      <button type="submit" class="mt-btn mt-btn-primary" id="login-submit">Login</button>
+
+      <p class="mt-center" style="margin-top: 14px;">
+        <a href="#" id="forgot-password-link">Forgot password?</a>
+      </p>
+    </form>
+  </div>
+
+  <!-- ============ SIGNUP ============ -->
+  <div class="mt-tab-panel" id="panel-signup">
+    <form class="mt-card" id="signup-form">
+
+      <div class="mt-field">
+        <label for="su-name">Full name</label>
+        <input type="text" id="su-name" required autocomplete="name">
+      </div>
+
+      <div class="mt-field">
+        <label for="su-email">Email</label>
+        <input type="email" id="su-email" required autocomplete="email">
+      </div>
+
+      <div class="mt-field">
+        <label for="su-password">Password</label>
+        <div class="mt-password-wrap">
+          <input type="password" id="su-password" required minlength="8" autocomplete="new-password">
+          <button type="button" class="mt-password-toggle" data-target="su-password">Show</button>
+        </div>
+        <div class="mt-hint">Minimum 8 characters.</div>
+      </div>
+
+      <div class="mt-field">
+        <label for="su-confirm-password">Confirm password</label>
+        <div class="mt-password-wrap">
+          <input type="password" id="su-confirm-password" required minlength="8" autocomplete="new-password">
+          <button type="button" class="mt-password-toggle" data-target="su-confirm-password">Show</button>
+        </div>
+      </div>
+
+      <div class="mt-field">
+        <label for="su-managed-by">This profile is for</label>
+        <select id="su-managed-by" required>
+          <option value="" disabled selected>Choose one</option>
+          <option value="Self">Self</option>
+          <option value="Son">Son</option>
+          <option value="Daughter">Daughter</option>
+          <option value="Brother">Brother</option>
+          <option value="Sister">Sister</option>
+          <option value="Relative">Relative</option>
+        </select>
+      </div>
+
+      <div class="mt-field">
+        <label>Gender of the person</label>
+        <div class="mt-choice-group" id="su-gender-group">
+          <button type="button" class="mt-choice" data-value="Male">Male</button>
+          <button type="button" class="mt-choice" data-value="Female">Female</button>
+        </div>
+      </div>
+
+      <div class="mt-field">
+        <label for="su-sect">Sect</label>
+        <select id="su-sect" required>
+          <option value="" disabled selected>Choose one</option>
+          <option value="Shwetambar Murtipujak">Shwetambar Murtipujak</option>
+          <option value="Shwetambar Sthanakvasi">Shwetambar Sthanakvasi</option>
+          <option value="Shwetambar Terapanthi">Shwetambar Terapanthi</option>
+          <option value="Digambar">Digambar</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="mt-checkbox-row">
+        <input type="checkbox" id="su-confirm-jain">
+        <label for="su-confirm-jain">I confirm that this profile is of a person belonging to the Jain community.</label>
+      </div>
+
+      <div class="mt-checkbox-row">
+        <input type="checkbox" id="su-confirm-terms">
+        <label for="su-confirm-terms">
+          I have read and accept the <a href="privacy.html" target="_blank">Privacy Policy</a> and
+          <a href="terms.html" target="_blank">Terms</a>, and I consent to my details being shown to other verified members.
+        </label>
+      </div>
+
+      <button type="submit" class="mt-btn mt-btn-primary" id="signup-submit" disabled>Create account</button>
+    </form>
+  </div>
+
+</div>
+
+<div class="mt-footer">
+  <div>
+    <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a>
+  </div>
+  <div class="mt-brand">AnyApps.in</div>
+  <div>Support: <a href="mailto:vkvcoder.support@gmail.com">vkvcoder.support@gmail.com</a></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+  // ---------------- Tabs ----------------
+  function mtShowTab(name) {
+    document.getElementById("tab-login").classList.toggle("mt-tab-active", name === "login");
+    document.getElementById("tab-signup").classList.toggle("mt-tab-active", name === "signup");
+    document.getElementById("panel-login").classList.toggle("mt-tab-panel-active", name === "login");
+    document.getElementById("panel-signup").classList.toggle("mt-tab-panel-active", name === "signup");
+  }
+
+  // ---------------- Password show/hide ----------------
+  document.querySelectorAll(".mt-password-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const input = document.getElementById(btn.dataset.target);
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      btn.textContent = isHidden ? "Hide" : "Show";
+    });
+  });
+
+  // ---------------- Gender choice buttons ----------------
+  let selectedGender = "";
+  document.querySelectorAll("#su-gender-group .mt-choice").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedGender = btn.dataset.value;
+      document.querySelectorAll("#su-gender-group .mt-choice").forEach((b) => {
+        b.classList.toggle("mt-choice-selected", b === btn);
+      });
+    });
+  });
+
+  // ---------------- Enable signup button only when both checkboxes are ticked ----------------
+  const jainCheckbox = document.getElementById("su-confirm-jain");
+  const termsCheckbox = document.getElementById("su-confirm-terms");
+  const signupSubmit = document.getElementById("signup-submit");
+
+  function updateSignupButtonState() {
+    signupSubmit.disabled = !(jainCheckbox.checked && termsCheckbox.checked);
+  }
+  jainCheckbox.addEventListener("change", updateSignupButtonState);
+  termsCheckbox.addEventListener("change", updateSignupButtonState);
+
+  // ---------------- Login ----------------
+  document.getElementById("login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value;
+    const submitBtn = document.getElementById("login-submit");
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Logging in...";
+
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Login";
+
+    if (error) {
+      toast(error.message, "error");
+      return;
+    }
+
+    toast("Welcome back!", "success");
+    routeAfterLogin();
+  });
+
+  // ---------------- Forgot password ----------------
+  document.getElementById("forgot-password-link").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("login-email").value.trim();
+    if (!email) {
+      toast("Enter your email above first, then tap Forgot password.", "error");
+      return;
+    }
+
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+    if (error) {
+      toast(error.message, "error");
+    } else {
+      toast("Password reset link sent to your email.", "success");
+    }
+  });
+
+  // ---------------- Signup ----------------
+  document.getElementById("signup-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const fullName = document.getElementById("su-name").value.trim();
+    const email = document.getElementById("su-email").value.trim();
+    const password = document.getElementById("su-password").value;
+    const confirmPassword = document.getElementById("su-confirm-password").value;
+    const managedBy = document.getElementById("su-managed-by").value;
+    const sect = document.getElementById("su-sect").value;
+
+    if (!fullName || !email || !password || !managedBy || !selectedGender || !sect) {
+      toast("Please fill in all fields.", "error");
+      return;
+    }
+    if (password.length < 8) {
+      toast("Password must be at least 8 characters.", "error");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast("Passwords do not match.", "error");
+      return;
+    }
+    if (!jainCheckbox.checked || !termsCheckbox.checked) {
+      toast("Please tick both confirmation boxes to continue.", "error");
+      return;
+    }
+
+    const submitBtn = document.getElementById("signup-submit");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Creating account...";
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          gender: selectedGender,
+          sect: sect,
+          managed_by: managedBy
+        }
+      }
+    });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Create account";
+
+    if (error) {
+      toast(error.message, "error");
+      return;
+    }
+
+    // Stash the basics so register.html can prefill them without asking again.
+    localStorage.setItem("mt_signup", JSON.stringify({
+      full_name: fullName,
+      gender: selectedGender,
+      sect: sect,
+      managed_by: managedBy
+    }));
+
+    if (data.session) {
+      // Email confirmation is off for this project — go straight in.
+      toast("Account created!", "success");
+      routeAfterLogin();
+    } else {
+      // Standard case: Supabase requires the confirmation link before a session exists.
+      document.getElementById("signup-form").innerHTML =
+        '<p class="mt-center">Almost there! We have sent a confirmation link to <strong>' +
+        escapeHtml(email) +
+        '</strong>. Please open it, then come back and log in from the Login tab.</p>';
+    }
+  });
+
+  // ---------------- If already logged in, skip straight past this page ----------------
+  (async () => {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+      routeAfterLogin();
+    }
+  })();
+</script>
+
+</body>
+</html>

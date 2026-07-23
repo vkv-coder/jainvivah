@@ -1,0 +1,388 @@
+/* ============================================================
+   Jain Vivah — shared design system
+   Mobile first. Dignified and warm, not a generic startup look.
+   ============================================================ */
+
+:root {
+  --maroon: #7B1E3B;
+  --maroon-dark: #5E1730;
+  --cream: #FDF8F3;
+  --gold: #C8A34A;
+  --charcoal: #2B2B2B;
+  --white: #FFFFFF;
+  --border: #E8DCC8;
+  --success: #2E7D32;
+  --error: #B3261E;
+
+  --font-heading: "Playfair Display", Georgia, serif;
+  --font-body: "Mulish", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --radius: 14px;
+  --shadow: 0 2px 10px rgba(43, 43, 43, 0.08), 0 1px 3px rgba(43, 43, 43, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--cream);
+  color: var(--charcoal);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  color: var(--maroon);
+  margin: 0 0 0.5em;
+  line-height: 1.25;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+a {
+  color: var(--maroon);
+}
+
+/* ---------------- Layout ---------------- */
+
+.mt-page {
+  flex: 1;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.mt-header {
+  text-align: center;
+  padding: 24px 16px 8px;
+}
+
+.mt-header .mt-logo {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--maroon);
+}
+
+.mt-header .mt-tagline {
+  color: #6b5a4e;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* ---------------- Card ---------------- */
+
+.mt-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+/* ---------------- Buttons ---------------- */
+
+.mt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.05s ease, opacity 0.15s ease;
+  text-decoration: none;
+}
+
+.mt-btn:active {
+  transform: scale(0.98);
+}
+
+.mt-btn-primary {
+  background: var(--maroon);
+  color: var(--white);
+}
+
+.mt-btn-primary:hover {
+  background: var(--maroon-dark);
+}
+
+.mt-btn-primary:disabled {
+  background: #c9a9b4;
+  cursor: not-allowed;
+}
+
+.mt-btn-outline {
+  background: transparent;
+  color: var(--maroon);
+  border: 1.5px solid var(--maroon);
+}
+
+.mt-btn-gold {
+  background: var(--gold);
+  color: var(--white);
+}
+
+/* ---------------- Forms ---------------- */
+
+.mt-field {
+  margin-bottom: 16px;
+}
+
+.mt-field label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: var(--charcoal);
+}
+
+.mt-field input[type="text"],
+.mt-field input[type="email"],
+.mt-field input[type="password"],
+.mt-field input[type="date"],
+.mt-field input[type="number"],
+.mt-field select,
+.mt-field textarea {
+  width: 100%;
+  font-size: 16px; /* keeps iOS Safari from zooming on focus */
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--charcoal);
+  font-family: var(--font-body);
+}
+
+.mt-field input:focus,
+.mt-field select:focus,
+.mt-field textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.mt-hint {
+  font-size: 13px;
+  color: #8a7a6d;
+  margin-top: 4px;
+}
+
+.mt-error-text {
+  font-size: 13px;
+  color: var(--error);
+  margin-top: 4px;
+}
+
+/* Password field with a show/hide toggle button inside it */
+.mt-password-wrap {
+  position: relative;
+}
+
+.mt-password-wrap input {
+  padding-right: 56px;
+}
+
+.mt-password-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--maroon);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 10px;
+}
+
+/* Two large tap buttons, e.g. for gender selection */
+.mt-choice-group {
+  display: flex;
+  gap: 10px;
+}
+
+.mt-choice {
+  flex: 1;
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  color: var(--charcoal);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mt-choice.mt-choice-selected {
+  border-color: var(--maroon);
+  background: var(--maroon);
+  color: var(--white);
+}
+
+/* Checkbox rows for consent text */
+.mt-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.mt-checkbox-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--maroon);
+}
+
+.mt-checkbox-row label {
+  font-size: 14px;
+  color: var(--charcoal);
+}
+
+/* ---------------- Tabs (login / signup) ---------------- */
+
+.mt-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1.5px solid var(--maroon);
+}
+
+.mt-tab {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  background: var(--white);
+  color: var(--maroon);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.mt-tab.mt-tab-active {
+  background: var(--maroon);
+  color: var(--white);
+}
+
+.mt-tab-panel {
+  display: none;
+}
+
+.mt-tab-panel.mt-tab-panel-active {
+  display: block;
+}
+
+/* ---------------- Footer ---------------- */
+
+.mt-footer {
+  text-align: center;
+  padding: 24px 16px;
+  font-size: 13px;
+  color: #8a7a6d;
+}
+
+.mt-footer a {
+  color: var(--maroon);
+  text-decoration: underline;
+  margin: 0 6px;
+}
+
+.mt-footer .mt-brand {
+  margin-top: 6px;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+/* ---------------- Toast ---------------- */
+
+#mt-toast-container {
+  position: fixed;
+  top: 12px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.mt-toast {
+  max-width: 90%;
+  background: var(--charcoal);
+  color: var(--white);
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  box-shadow: var(--shadow);
+  transform: translateY(-16px);
+  opacity: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.mt-toast-show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.mt-toast-success {
+  background: var(--success);
+}
+
+.mt-toast-error {
+  background: var(--error);
+}
+
+.mt-toast-info {
+  background: var(--charcoal);
+}
+
+/* ---------------- Misc ---------------- */
+
+.mt-center {
+  text-align: center;
+}
+
+.mt-muted {
+  color: #8a7a6d;
+}
+
+.mt-legal {
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.mt-legal h2 {
+  margin-top: 1.4em;
+  font-size: 19px;
+}
+
+@media (min-width: 480px) {
+  .mt-page {
+    padding-top: 32px;
+  }
+}
