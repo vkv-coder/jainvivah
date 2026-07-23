@@ -13,7 +13,10 @@
 </head>
 <body>
 
+<div class="mt-invocation-strip">🙏 || Jai Jinendra || 🙏</div>
+
 <div class="mt-header">
+  <button type="button" class="mt-header-logout" onclick="logout()">Logout</button>
   <div class="mt-logo">Jain Vivah</div>
 </div>
 
@@ -28,6 +31,10 @@
     <div class="mt-progress-step" data-step="6"></div>
   </div>
   <div class="mt-progress-label" id="progress-label">Step 1 of 6 — Basic details</div>
+
+  <p class="mt-hint" style="margin-top:-10px;">
+    <a href="#" id="start-over-link">Start over (testing)</a>
+  </p>
 
   <div class="mt-visibility-banner">
     Only the details marked <strong>OPEN</strong> are visible to other members.
@@ -51,11 +58,6 @@
         <input type="hidden" id="s1-gender">
       </div>
 
-      <div class="mt-field" id="s1-created-by-name-wrap" style="display:none;">
-        <label for="s1-created-by-name">Managed by (Name) *</label>
-        <input type="text" id="s1-created-by-name" autocomplete="off">
-        <div class="mt-hint">Name of the person managing this profile</div>
-      </div>
 
       <div class="mt-field">
         <label for="s1-dob">Date of birth *</label>
@@ -551,11 +553,16 @@
   }
 
   // ---------------- Save helpers ----------------
+  // Every write to mt_profiles goes through here, and every write is run
+  // through normaliseCodes() first — no exceptions — so an invalid or
+  // stale gender/diet/marital_status/managed_by value can never reach
+  // the database.
   async function saveProfile(fields) {
     fields.user_id = currentUser.id;
-    const { error } = await supabaseClient.from("mt_profiles").upsert(fields, { onConflict: "user_id" });
+    const cleaned = normaliseCodes(fields);
+    const { error } = await supabaseClient.from("mt_profiles").upsert(cleaned, { onConflict: "user_id" });
     if (error) {
-      toast("Could not save: " + error.message, "error");
+      toast(describeSaveError(error, cleaned), "error");
       return false;
     }
     return true;
@@ -596,23 +603,12 @@
     const marital = document.getElementById("s1-marital").value;
     const diet = document.getElementById("s1-diet").value;
 
-    // Visibility of this field was already decided during prefill, from
-    // whichever "managed by" value was chosen at signup.
-    const createdByNameVisible = document.getElementById("s1-created-by-name-wrap").style.display !== "none";
-    const createdByName = document.getElementById("s1-created-by-name").value.trim();
-
     if (!fullName || !dob || !heightCm || !weight || !marital || !diet) {
       toast("Please fill in all required fields.", "error");
       return;
     }
-    if (createdByNameVisible && !createdByName) {
-      toast("Please enter the name of the person managing this profile.", "error");
-      return;
-    }
 
-    const genderCode = normaliseCode(gender);
-
-    const ageError = checkAgeRule(dob, genderCode);
+    const ageError = checkAgeRule(dob, normaliseCode(gender));
     if (ageError) {
       toast(ageError, "error");
       return;
@@ -620,15 +616,14 @@
 
     const payload = {
       full_name: fullName,
-      gender: genderCode,
+      gender: gender,
       dob: dob,
       birth_time: birthTime || null,
       birth_place: birthPlace || null,
       height_cm: Number(heightCm),
       weight_kg: Number(weight),
-      marital_status: normaliseCode(marital),
-      diet: normaliseCode(diet),
-      created_by_name: createdByNameVisible ? createdByName : null
+      marital_status: marital,
+      diet: diet
     };
 
     // Carry over managed_by from signup, once, without asking the member again.
@@ -778,7 +773,7 @@
       let code = profile && profile.profile_code;
       if (!code) {
         code = generateProfileCode(currentUser.id);
-        await supabaseClient.from("mt_profiles").update({ profile_code: code }).eq("user_id", currentUser.id);
+        await supabaseClient.from("mt_profiles").update(normaliseCodes({ profile_code: code })).eq("user_id", currentUser.id);
       }
       const waLink =
         "https://wa.me/" + WHATSAPP_VERIFY_NUMBER + "?text=" + encodeURIComponent("VERIFY " + code);
@@ -838,13 +833,14 @@
       return;
     }
 
+    const finishPayload = normaliseCodes({ profile_complete: true });
     const { error } = await supabaseClient
       .from("mt_profiles")
-      .update({ profile_complete: true })
+      .update(finishPayload)
       .eq("user_id", currentUser.id);
 
     if (error) {
-      toast("Could not finish your profile: " + error.message, "error");
+      toast(describeSaveError(error, finishPayload), "error");
       return;
     }
 
@@ -863,17 +859,6 @@
     document.getElementById("s1-full-name").value = fullName;
     document.getElementById("s1-gender").value = gender;
     document.getElementById("s1-gender-display").textContent = GENDER_LABELS[gender] || gender || "—";
-
-    const managedByCode = normaliseCode((profile && profile.managed_by) || signupData.managed_by || "");
-    const createdByNameWrap = document.getElementById("s1-created-by-name-wrap");
-    const createdByNameInput = document.getElementById("s1-created-by-name");
-    if (managedByCode && managedByCode !== "self") {
-      createdByNameWrap.style.display = "block";
-      createdByNameInput.value = (profile && profile.created_by_name) || signupData.created_by_name || "";
-    } else {
-      createdByNameWrap.style.display = "none";
-      createdByNameInput.value = "";
-    }
 
     if (profile) {
       if (profile.dob) document.getElementById("s1-dob").value = profile.dob;
@@ -945,12 +930,41 @@
     }
   }
 
+  // Cleans up a possibly-stale mt_signup the moment the page loads, so
+  // nothing downstream (prefill or a draft save) ever reads a bad value
+  // out of it — e.g. an older cached "Male" or "Son".
+  function cleanStoredSignupData() {
+    const raw = localStorage.getItem("mt_signup");
+    if (!raw) return;
+    let signupData;
+    try {
+      signupData = JSON.parse(raw);
+    } catch (e) {
+      localStorage.removeItem("mt_signup");
+      return;
+    }
+    normaliseCodes(signupData);
+    localStorage.setItem("mt_signup", JSON.stringify(signupData));
+  }
+
+  // Testing convenience only: clears the locally-cached signup draft and
+  // reloads the form. This does NOT delete anything already saved to
+  // Supabase — it just resets what this browser has cached locally, so a
+  // fresh reload re-reads whatever the account's mt_profiles row
+  // currently holds.
+  document.getElementById("start-over-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    localStorage.removeItem("mt_signup");
+    window.location.reload();
+  });
+
   // ---------------- Page init ----------------
   (async () => {
     const session = await requireAuth();
     if (!session) return;
     currentUser = session.user;
 
+    cleanStoredSignupData();
     populateDropdowns();
 
     const profile = await loadProfile();

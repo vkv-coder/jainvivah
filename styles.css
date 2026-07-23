@@ -58,6 +58,17 @@ a {
 
 /* ---------------- Layout ---------------- */
 
+/* Invocation strip: first element in <body>, present on every page. */
+.mt-invocation-strip {
+  background: var(--maroon);
+  color: var(--white);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 6px 10px;
+}
+
 .mt-page {
   flex: 1;
   width: 100%;
@@ -67,8 +78,24 @@ a {
 }
 
 .mt-header {
+  position: relative;
   text-align: center;
   padding: 24px 16px 8px;
+}
+
+/* Small logout link tucked into the header's top-right corner. */
+.mt-header-logout {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--maroon);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 6px;
 }
 
 .mt-header .mt-logo {
@@ -384,6 +411,35 @@ a {
 @media (min-width: 480px) {
   .mt-page {
     padding-top: 32px;
+  }
+}
+
+/* Tighten vertical rhythm on phones so a short page (e.g. login) fits
+   without scrolling. Button height and input font size are untouched. */
+@media (max-width: 480px) {
+  .mt-header {
+    padding: 10px 16px 4px;
+  }
+
+  .mt-page {
+    padding: 10px 16px 16px;
+  }
+
+  .mt-card {
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+
+  .mt-tabs {
+    margin-bottom: 10px;
+  }
+
+  .mt-field {
+    margin-bottom: 8px;
+  }
+
+  .mt-footer {
+    padding: 10px 16px;
   }
 }
 

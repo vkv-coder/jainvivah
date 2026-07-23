@@ -69,7 +69,79 @@ async function isAdmin() {
 
 async function logout() {
   await supabaseClient.auth.signOut();
+
+  // Clear mt_signup and any other locally-cached draft data so the next
+  // login (by this member or anyone else on this device) never inherits
+  // stale values.
+  Object.keys(localStorage)
+    .filter((key) => key.startsWith("mt_"))
+    .forEach((key) => localStorage.removeItem(key));
+
   window.location.href = "index.html";
+}
+
+// ---------------------------------------------------------------------
+// mt_profiles has check constraints that only accept exact lowercase
+// codes for these five columns. This is the single place that enforces
+// that — every insert/update to mt_profiles in register.html and
+// myprofile.html must run its payload through this first, with no
+// exceptions, so an invalid value can never reach Supabase.
+// ---------------------------------------------------------------------
+const CODE_FIELD_RULES = {
+  gender: { allowed: ["male", "female"], legacy: {} },
+  diet: { allowed: ["jain", "veg", "vegan", "other"], legacy: {} },
+  marital_status: { allowed: ["unmarried", "divorced", "widow", "widower"], legacy: {} },
+  managed_by: {
+    allowed: ["self", "father", "mother", "brother", "sister", "relative"],
+    // Older signups offered "Son"/"Daughter", which have no matching code —
+    // the closest honest mapping is "a parent manages this profile".
+    legacy: { son: "father", daughter: "father" }
+  },
+  pref_diet: { allowed: ["jain", "veg", "vegan", "other"], legacy: {} }
+};
+
+// Mutates (and returns) row in place: for each of the five constrained
+// fields present on it, trims + lowercases the value, applies the legacy
+// mapping, and DELETES the key entirely if the result is empty or still
+// not in the allowed list. Never lets "" or an invalid value through.
+function normaliseCodes(row) {
+  Object.keys(CODE_FIELD_RULES).forEach((field) => {
+    if (!(field in row)) return;
+
+    const rule = CODE_FIELD_RULES[field];
+    let value = row[field];
+    value = value === null || value === undefined ? "" : String(value).trim().toLowerCase();
+    if (rule.legacy[value]) value = rule.legacy[value];
+
+    if (!value || !rule.allowed.includes(value)) {
+      delete row[field];
+    } else {
+      row[field] = value;
+    }
+  });
+
+  return row;
+}
+
+// Builds a specific, actionable error message from a failed Supabase
+// write, naming the column and the value that triggered it wherever
+// that can be determined from the error text — and always logs the
+// full payload that was actually sent, for debugging.
+function describeSaveError(error, payload) {
+  console.log("Supabase save failed. Payload sent:", payload);
+
+  if (!error) return "Something went wrong. Please try again.";
+
+  const match = /violates check constraint "([a-z0-9_]+)_check"/i.exec(error.message || "");
+  if (match && payload) {
+    const constraintName = match[1];
+    const column = Object.keys(payload).find((key) => constraintName.endsWith("_" + key));
+    if (column) {
+      return 'Could not save: ' + column + ' = "' + payload[column] + '" is not allowed';
+    }
+  }
+
+  return "Could not save: " + error.message;
 }
 
 // ---------------------------------------------------------------------
