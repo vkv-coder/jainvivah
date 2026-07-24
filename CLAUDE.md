@@ -292,12 +292,21 @@ In order:
 - **Batch 1 — Foundation:** `config.js`, `app.js`, `index.html` (login +
   signup), `privacy.html`, `terms.html`, `reset.html`, `styles.css`,
   `manifest.json`, `sw.js`, icons
-- **Batch 2 — Profile:** `register.html` (6-step wizard), `myprofile.html`,
-  photo upload with browser-side compression to ~150 KB, bio-data attachment,
-  draft save and resume, review screen, logout
+- **Batch 2 — Profile:** `register.html` (5-step wizard), `myprofile.html`,
+  photo upload with browser-side compression to ~150 KB, bio-data attachment
+  (also editable from `myprofile.html`), draft save and resume, review
+  screen, logout
 - Icons: interlocking rings in cream and gold on maroon
 - Invocation strip `🙏 || Jai Jinendra || 🙏` on every page — chosen over a
   Shwetambar Murtipujak invocation because the app serves all four sects
+- **Form deliberately trimmed to mandatory fields only (24 Jul 2026):** the
+  Family step (father/mother, brothers/sisters, mosal) and every other
+  non-mandatory field were removed outright — Jain bio-data PDFs already
+  carry that detail (relatives, their phone numbers, etc.), so instead of
+  retyping it the app just accepts an optional bio-data PDF upload. The
+  wizard is 5 steps now: Basic, Community & Location, Education & Work,
+  My Preference (age range only), Contact & Photos. Contact number/email
+  are still only revealed on interest acceptance (Batch 4).
 
 ### Not built yet
 
@@ -325,7 +334,7 @@ Mobile first. Dignified and warm, not a generic startup gradient look.
 
 ## 7. Open items
 
-- [ ] Full end-to-end test of the 6-step form, draft resume and submit
+- [ ] Full end-to-end test of the 5-step form, draft resume and submit
 - [ ] Set the real `WHATSAPP_VERIFY_NUMBER` in `config.js`
 - [ ] Create the Telegram bot for this app (`JainVivahBot`) via @BotFather
 - [ ] Photo watermark — Batch 3
