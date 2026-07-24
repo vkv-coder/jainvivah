@@ -343,9 +343,37 @@ Mobile first. Dignified and warm, not a generic startup gradient look.
 
 ## 8. Standing preferences
 
+### For the planning conversation (not for Claude Code)
+
+Requirements are discussed and approved in a separate planning conversation
+before Claude Code ever sees them. These two describe *that* process:
+
 - Interpret the requirement, narrate the understanding, and wait for an
   explicit 🟢 before writing code
-- Prefer complete file replacements over partial edits
+- Prefer complete file replacements over partial edits (this is about how
+  code is shown in that planning chat, not about this repo)
+
+**By the time an instruction reaches Claude Code, the green light has
+already been given.** Claude Code must not ask for approval again — it
+should build what the prompt says. Claude Code has the actual repo, so it
+should edit files directly and iterate in place; that is correct and
+preferred, not "partial edits" to be avoided.
+
+### For Claude Code (build execution) — these apply directly
+
+- Never create a trigger on `auth.users`
+- All SQL is add-only. No `DROP`, no `CASCADE`, no `ALTER` on tables
+  belonging to other apps
+- Every database object starts with `mt_`
+- A 400 from a read probe does not prove a column is missing — row-level
+  security can also return 400. Check `information_schema.columns` before
+  concluding anything is absent (see §3 for the exact query)
+- Never put keys, passwords or SMTP credentials in any file in this repo.
+  It is public
+- Ask before assuming a column name. Do not guess — confirm it first
 - Always fetch the live file before changing it — never edit from memory
+
+### Contacts and branding
+
 - Support email: `vkvcoder.support@gmail.com`
 - Public-facing branding: **AnyApps.in**
