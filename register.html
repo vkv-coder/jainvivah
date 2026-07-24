@@ -29,21 +29,27 @@
       <div class="mt-progress-step" data-step="3"></div>
       <div class="mt-progress-step" data-step="4"></div>
       <div class="mt-progress-step" data-step="5"></div>
-      <div class="mt-progress-step" data-step="6"></div>
     </div>
-    <div class="mt-progress-label" id="progress-label">Step 1 of 6 — Basic details</div>
+    <div class="mt-progress-label" id="progress-label">Step 1 of 5 — Basic details</div>
 
     <p class="mt-hint" style="margin-top:-10px;">
       <a href="#" id="start-over-link">Start over (testing)</a>
     </p>
 
     <div class="mt-reassurance" id="resume-banner" style="display:none;">
-      Welcome back. You had reached Step <span id="resume-banner-step"></span> of 6.
+      Welcome back. You had reached Step <span id="resume-banner-step"></span> of 5.
     </div>
 
     <div class="mt-visibility-banner">
       Only the details marked <strong>OPEN</strong> are visible to other members.
-      Family details and your contact number stay hidden until you accept someone's interest.
+      Your contact number stays hidden until you accept someone's interest.
+    </div>
+
+    <div class="mt-visibility-banner">
+      This form only asks what's needed for a first look. Extended family
+      details, relatives and their phone numbers are not collected here —
+      if you already have a bio-data PDF, attach it in the last step instead
+      of retyping everything.
     </div>
 
     <details class="mt-missing-panel" id="missing-panel" style="display:none;">
@@ -77,16 +83,6 @@
       <div class="mt-field">
         <label for="s1-dob">Date of birth *</label>
         <input type="date" id="s1-dob" required>
-      </div>
-
-      <div class="mt-field">
-        <label for="s1-birth-time">Birth time</label>
-        <input type="time" id="s1-birth-time">
-      </div>
-
-      <div class="mt-field">
-        <label for="s1-birth-place">Birth place</label>
-        <input type="text" id="s1-birth-place">
       </div>
 
       <div class="mt-field">
@@ -131,16 +127,6 @@
       </div>
 
       <div class="mt-field">
-        <label for="s2-sub-caste">Sub caste</label>
-        <input type="text" id="s2-sub-caste">
-      </div>
-
-      <div class="mt-field">
-        <label for="s2-gotra">Gotra</label>
-        <input type="text" id="s2-gotra">
-      </div>
-
-      <div class="mt-field">
         <label for="s2-city">City *</label>
         <input type="text" id="s2-city" required>
       </div>
@@ -148,16 +134,6 @@
       <div class="mt-field">
         <label for="s2-state">State *</label>
         <input type="text" id="s2-state" required>
-      </div>
-
-      <div class="mt-field">
-        <label for="s2-country">Country</label>
-        <input type="text" id="s2-country" value="India">
-      </div>
-
-      <div class="mt-field">
-        <label for="s2-native-place">Native place</label>
-        <input type="text" id="s2-native-place">
       </div>
 
       <div class="mt-step-nav">
@@ -177,20 +153,10 @@
       </div>
 
       <div class="mt-field">
-        <label for="s3-education-detail">Education detail</label>
-        <input type="text" id="s3-education-detail" placeholder="e.g. college / specialisation">
-      </div>
-
-      <div class="mt-field">
         <label for="s3-profession">Profession *</label>
         <select id="s3-profession" required>
           <option value="" disabled selected>Choose one</option>
         </select>
-      </div>
-
-      <div class="mt-field">
-        <label for="s3-occupation-detail">Occupation detail</label>
-        <input type="text" id="s3-occupation-detail" placeholder="e.g. company / role">
       </div>
 
       <div class="mt-field">
@@ -200,17 +166,6 @@
         </select>
       </div>
 
-      <div class="mt-field">
-        <label for="s3-hobbies">Hobbies</label>
-        <textarea id="s3-hobbies" rows="2"></textarea>
-      </div>
-
-      <div class="mt-field">
-        <label for="s3-about">About</label>
-        <textarea id="s3-about" rows="4" maxlength="500"></textarea>
-        <div class="mt-char-counter"><span id="s3-about-count">0</span>/500</div>
-      </div>
-
       <div class="mt-step-nav">
         <button type="button" class="mt-btn mt-btn-outline" id="s3-back">Back</button>
         <button type="button" class="mt-btn mt-btn-primary" id="s3-next">Next</button>
@@ -218,78 +173,11 @@
       <button type="button" class="mt-btn mt-btn-outline" id="s3-save-later" style="margin-top:10px; width:100%;">Save &amp; finish later</button>
     </section>
 
-    <!-- ============ STEP 4: FAMILY (LOCKED) ============ -->
+    <!-- ============ STEP 4 (was 5): MY PREFERENCE (OPEN) ============ -->
+    <!-- Element ids keep their original "s5-" prefix from before the Family
+         step was removed — only the logical step number (data-step, and the
+         step argument passed to saveProfileStep/goToStep) changed to 4. -->
     <section class="mt-step" data-step="4" style="display:none;">
-      <div class="mt-lock-box">
-        The details on this page are not shown to anyone. They become visible only
-        to a member whose interest you have accepted.
-      </div>
-
-      <div class="mt-field">
-        <label for="s4-father-name">Father's name</label>
-        <input type="text" id="s4-father-name">
-      </div>
-
-      <div class="mt-field">
-        <label for="s4-father-status">Father</label>
-        <select id="s4-father-status">
-          <option value="">Choose one</option>
-        </select>
-      </div>
-
-      <div class="mt-field" id="s4-father-occupation-wrap">
-        <label for="s4-father-occupation">Father's occupation</label>
-        <input type="text" id="s4-father-occupation">
-      </div>
-
-      <div class="mt-field">
-        <label for="s4-mother-name">Mother's name</label>
-        <input type="text" id="s4-mother-name">
-      </div>
-
-      <div class="mt-field">
-        <label for="s4-mother-status">Mother</label>
-        <select id="s4-mother-status">
-          <option value="">Choose one</option>
-        </select>
-      </div>
-
-      <div class="mt-field" id="s4-mother-occupation-wrap">
-        <label for="s4-mother-occupation">Mother's occupation</label>
-        <input type="text" id="s4-mother-occupation">
-      </div>
-
-      <div class="mt-field">
-        <label for="s4-brothers">Brothers</label>
-        <input type="text" id="s4-brothers" placeholder="e.g. 1 elder, married">
-      </div>
-
-      <div class="mt-field">
-        <label for="s4-sisters">Sisters</label>
-        <input type="text" id="s4-sisters" placeholder="e.g. 2 younger, both unmarried">
-      </div>
-
-      <div class="mt-field">
-        <label for="s4-family-type">Family type</label>
-        <select id="s4-family-type">
-          <option value="">Choose one</option>
-        </select>
-      </div>
-
-      <div class="mt-field">
-        <label for="s4-mosal">Mosal / maternal family</label>
-        <input type="text" id="s4-mosal">
-      </div>
-
-      <div class="mt-step-nav">
-        <button type="button" class="mt-btn mt-btn-outline" id="s4-back">Back</button>
-        <button type="button" class="mt-btn mt-btn-primary" id="s4-next">Next</button>
-      </div>
-      <button type="button" class="mt-btn mt-btn-outline" id="s4-save-later" style="margin-top:10px; width:100%;">Save &amp; finish later</button>
-    </section>
-
-    <!-- ============ STEP 5: LOOKING FOR (OPEN) ============ -->
-    <section class="mt-step" data-step="5" style="display:none;">
       <div class="mt-field">
         <label>Age range *</label>
         <div class="mt-range-row">
@@ -302,65 +190,6 @@
         </div>
       </div>
 
-      <div class="mt-field">
-        <label>Height range</label>
-        <div class="mt-range-row">
-          <div class="mt-field">
-            <select id="s5-height-min"><option value="">From</option></select>
-          </div>
-          <div class="mt-field">
-            <select id="s5-height-max"><option value="">To</option></select>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-field">
-        <label>Weight range (kg)</label>
-        <div class="mt-range-row">
-          <div class="mt-field">
-            <input type="number" id="s5-weight-min" min="20" max="200" placeholder="From">
-          </div>
-          <div class="mt-field">
-            <input type="number" id="s5-weight-max" min="20" max="200" placeholder="To">
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-field">
-        <label>Education (choose any that apply)</label>
-        <div class="mt-chip-group" id="s5-education-chips"></div>
-      </div>
-
-      <div class="mt-field">
-        <label>Profession (choose any that apply)</label>
-        <div class="mt-chip-group" id="s5-profession-chips"></div>
-      </div>
-
-      <div class="mt-field">
-        <label for="s5-diet">Diet preference</label>
-        <select id="s5-diet">
-          <option value="">No preference</option>
-        </select>
-      </div>
-
-      <div class="mt-field">
-        <label for="s5-income">Expected annual income</label>
-        <select id="s5-income">
-          <option value="">No preference</option>
-        </select>
-      </div>
-
-      <div class="mt-field">
-        <label for="s5-city">City or area preference</label>
-        <input type="text" id="s5-city">
-      </div>
-
-      <div class="mt-field">
-        <label for="s5-special">Any special requirement</label>
-        <textarea id="s5-special" rows="3" maxlength="300"></textarea>
-        <div class="mt-char-counter"><span id="s5-special-count">0</span>/300</div>
-      </div>
-
       <div class="mt-step-nav">
         <button type="button" class="mt-btn mt-btn-outline" id="s5-back">Back</button>
         <button type="button" class="mt-btn mt-btn-primary" id="s5-next">Next</button>
@@ -368,12 +197,14 @@
       <button type="button" class="mt-btn mt-btn-outline" id="s5-save-later" style="margin-top:10px; width:100%;">Save &amp; finish later</button>
     </section>
 
-    <!-- ============ STEP 6: CONTACT & PHOTOS ============ -->
-    <section class="mt-step" data-step="6" style="display:none;">
+    <!-- ============ STEP 5 (was 6): CONTACT & PHOTOS ============ -->
+    <!-- Element ids keep their original "s6-" prefix — only the logical
+         step number changed to 5. -->
+    <section class="mt-step" data-step="5" style="display:none;">
 
       <div class="mt-lock-box">
-        Your mobile number and address are never shown to any member.
-        They are shared only when you accept someone's interest.
+        Your mobile number is never shown to any member.
+        It is shared only when you accept someone's interest.
       </div>
 
       <div class="mt-field">
@@ -382,18 +213,8 @@
       </div>
 
       <div class="mt-field">
-        <label for="s6-alt-mobile">Alternate mobile</label>
-        <input type="tel" id="s6-alt-mobile" inputmode="numeric" maxlength="10">
-      </div>
-
-      <div class="mt-field">
         <label for="s6-email">Email</label>
         <input type="email" id="s6-email">
-      </div>
-
-      <div class="mt-field">
-        <label for="s6-address">Address</label>
-        <textarea id="s6-address" rows="2"></textarea>
       </div>
 
       <button type="button" class="mt-btn mt-btn-outline" id="s6-save-contact">Save contact details</button>
@@ -428,9 +249,11 @@
         <h3>Full Bio-data (optional)</h3>
 
         <div class="mt-lock-box">
-          This file is NOT shown to other members. It is shared only with a member
-          whose interest you have accepted. Most bio-data sheets carry your mobile
-          number and address, so it stays locked like your contact details.
+          Don't want to retype every family detail? Attach your existing
+          bio-data PDF here instead — parents, siblings, mosal and other
+          relatives, exactly as you already have it. This file is NOT shown
+          to other members. It is shared only with a member whose interest
+          you have accepted, alongside your contact number.
         </div>
 
         <div id="s6-biodata-manager"></div>
@@ -473,34 +296,14 @@
 <script>
   let currentUser = null;
   let currentStep = 1;
-  const TOTAL_STEPS = 6;
+  const TOTAL_STEPS = 5;
   const STEP_LABELS = {
     1: "Basic details",
     2: "Community & location",
     3: "Education & work",
-    4: "Family",
-    5: "My Preference",
-    6: "Contact & photos"
+    4: "My Preference",
+    5: "Contact & photos"
   };
-
-  // Hides a parent's occupation field (and clears it, so a hidden value
-  // never gets saved) whenever that parent's status is set to "Late".
-  // Called once to wire the change listener, and again on prefill/init
-  // to match whatever status is already selected.
-  function setupParentOccupationToggle(statusSelectId, wrapId, inputId) {
-    const statusSelect = document.getElementById(statusSelectId);
-    const wrap = document.getElementById(wrapId);
-    const input = document.getElementById(inputId);
-
-    function sync() {
-      const isLate = statusSelect.value === "Late";
-      wrap.style.display = isLate ? "none" : "block";
-      if (isLate) input.value = "";
-    }
-
-    statusSelect.addEventListener("change", sync);
-    sync();
-  }
 
   // ---------------- Populate dropdowns ----------------
   // Accepts either plain strings (value === label) or [label, code] pairs
@@ -516,50 +319,13 @@
     });
   }
 
-  function fillChipGroup(containerEl, values, namePrefix) {
-    containerEl.innerHTML = values
-      .map(
-        (v, i) =>
-          '<label class="mt-chip" data-value="' + escapeHtml(v) + '">' +
-          '<input type="checkbox" value="' + escapeHtml(v) + '" id="' + namePrefix + "-" + i + '">' +
-          escapeHtml(v) +
-          "</label>"
-      )
-      .join("");
-
-    containerEl.querySelectorAll(".mt-chip").forEach((chip) => {
-      const checkbox = chip.querySelector("input");
-      checkbox.addEventListener("change", () => {
-        chip.classList.toggle("mt-chip-selected", checkbox.checked);
-      });
-    });
-  }
-
-  function getCheckedChipValues(containerEl) {
-    return Array.from(containerEl.querySelectorAll("input:checked")).map((cb) => cb.value);
-  }
-
-  function setCheckedChipValues(containerEl, values) {
-    if (!values) return;
-    containerEl.querySelectorAll("input").forEach((cb) => {
-      if (values.includes(cb.value)) {
-        cb.checked = true;
-        cb.closest(".mt-chip").classList.add("mt-chip-selected");
-      }
-    });
-  }
-
   function populateDropdowns() {
     const heightSelect = document.getElementById("s1-height");
-    const heightMin = document.getElementById("s5-height-min");
-    const heightMax = document.getElementById("s5-height-max");
     buildHeightOptions().forEach((h) => {
-      [heightSelect, heightMin, heightMax].forEach((sel) => {
-        const opt = document.createElement("option");
-        opt.value = h.cm;
-        opt.textContent = h.label;
-        sel.appendChild(opt);
-      });
+      const opt = document.createElement("option");
+      opt.value = h.cm;
+      opt.textContent = h.label;
+      heightSelect.appendChild(opt);
     });
 
     fillSelect(document.getElementById("s1-marital"), MARITAL_STATUS_OPTIONS);
@@ -568,17 +334,6 @@
     fillSelect(document.getElementById("s3-education"), EDUCATION_OPTIONS);
     fillSelect(document.getElementById("s3-profession"), PROFESSION_OPTIONS);
     fillSelect(document.getElementById("s3-income"), ANNUAL_INCOME_OPTIONS);
-    fillSelect(document.getElementById("s4-father-status"), LIVING_STATUS_OPTIONS);
-    fillSelect(document.getElementById("s4-mother-status"), LIVING_STATUS_OPTIONS);
-    fillSelect(document.getElementById("s4-family-type"), FAMILY_TYPE_OPTIONS);
-
-    setupParentOccupationToggle("s4-father-status", "s4-father-occupation-wrap", "s4-father-occupation");
-    setupParentOccupationToggle("s4-mother-status", "s4-mother-occupation-wrap", "s4-mother-occupation");
-    fillSelect(document.getElementById("s5-diet"), DIET_OPTIONS);
-    fillSelect(document.getElementById("s5-income"), ANNUAL_INCOME_OPTIONS);
-
-    fillChipGroup(document.getElementById("s5-education-chips"), EDUCATION_OPTIONS, "s5-edu");
-    fillChipGroup(document.getElementById("s5-profession-chips"), PROFESSION_OPTIONS, "s5-prof");
   }
 
   // ---------------- Step navigation ----------------
@@ -660,11 +415,11 @@
     return true;
   }
 
-  // ---------------- "What is still needed" panel + Step 6 submit gate ----------------
+  // ---------------- "What is still needed" panel + submit gate ----------------
   // Single source of truth for completion state — refreshes the
-  // collapsible panel shown above every step and the Step 6 submit
-  // button/list, from one set of fresh reads. Called after every save so
-  // both stay live. Returns the current missing list.
+  // collapsible panel shown above every step and the submit button/list,
+  // from one set of fresh reads. Called after every save so both stay
+  // live. Returns the current missing list.
   async function refreshCompletionState() {
     const profile = await loadProfile();
     const contact = await loadContact();
@@ -753,8 +508,6 @@
     const fullName = document.getElementById("s1-full-name").value.trim();
     const gender = document.getElementById("s1-gender").value;
     const dob = document.getElementById("s1-dob").value;
-    const birthTime = document.getElementById("s1-birth-time").value;
-    const birthPlace = document.getElementById("s1-birth-place").value.trim();
     const heightCm = document.getElementById("s1-height").value;
     const weight = document.getElementById("s1-weight").value;
     const marital = document.getElementById("s1-marital").value;
@@ -789,8 +542,6 @@
       full_name: fullName,
       gender: gender,
       dob: dob,
-      birth_time: birthTime || null,
-      birth_place: birthPlace || null,
       height_cm: Number(heightCm),
       weight_kg: Number(weight),
       marital_status: marital,
@@ -819,18 +570,12 @@
   });
 
   // ---------------- Step 2 ----------------
-  // Save & finish later intentionally skips the required-field check below
-  // — sect/city/state are nullable on mt_profiles, so a partial save here
-  // is safe; the missing-fields panel is what tracks incompleteness.
   function getStep2Fields() {
     return {
       sect: document.getElementById("s2-sect").value,
-      sub_caste: document.getElementById("s2-sub-caste").value.trim() || null,
-      gotra: document.getElementById("s2-gotra").value.trim() || null,
       city: document.getElementById("s2-city").value.trim(),
       state: document.getElementById("s2-state").value.trim(),
-      country: document.getElementById("s2-country").value.trim() || "India",
-      native_place: document.getElementById("s2-native-place").value.trim() || null
+      country: "India"
     };
   }
 
@@ -851,19 +596,11 @@
   });
 
   // ---------------- Step 3 ----------------
-  document.getElementById("s3-about").addEventListener("input", (e) => {
-    document.getElementById("s3-about-count").textContent = e.target.value.length;
-  });
-
   function getStep3Fields() {
     return {
       education: document.getElementById("s3-education").value,
-      education_detail: document.getElementById("s3-education-detail").value.trim() || null,
       profession: document.getElementById("s3-profession").value,
-      occupation_detail: document.getElementById("s3-occupation-detail").value.trim() || null,
-      annual_income: document.getElementById("s3-income").value || null,
-      hobbies: document.getElementById("s3-hobbies").value.trim() || null,
-      about: document.getElementById("s3-about").value.trim() || null
+      annual_income: document.getElementById("s3-income").value || null
     };
   }
 
@@ -883,68 +620,20 @@
     if (ok) showSaveLaterScreen();
   });
 
-  // ---------------- Step 4 ----------------
-  // No required fields on this step, so Next and Save & finish later
-  // behave identically.
-  function getStep4Fields() {
-    return {
-      father_name: document.getElementById("s4-father-name").value.trim() || null,
-      father_occupation: document.getElementById("s4-father-occupation").value.trim() || null,
-      father_living: document.getElementById("s4-father-status").value || null,
-      mother_name: document.getElementById("s4-mother-name").value.trim() || null,
-      mother_occupation: document.getElementById("s4-mother-occupation").value.trim() || null,
-      mother_living: document.getElementById("s4-mother-status").value || null,
-      brothers: document.getElementById("s4-brothers").value.trim() || null,
-      sisters: document.getElementById("s4-sisters").value.trim() || null,
-      family_type: document.getElementById("s4-family-type").value || null,
-      mosal: document.getElementById("s4-mosal").value.trim() || null
-    };
-  }
-
-  document.getElementById("s4-back").addEventListener("click", () => goToStep(3));
-  document.getElementById("s4-next").addEventListener("click", async () => {
-    const ok = await saveProfileStep(4, getStep4Fields());
-    if (ok) goToStep(5);
-  });
-
-  document.getElementById("s4-save-later").addEventListener("click", async () => {
-    const ok = await saveProfileStep(4, getStep4Fields());
-    if (ok) showSaveLaterScreen();
-  });
-
-  // ---------------- Step 5 ----------------
-  document.getElementById("s5-special").addEventListener("input", (e) => {
-    document.getElementById("s5-special-count").textContent = e.target.value.length;
-  });
-
+  // ---------------- Step 4 (My Preference) ----------------
   // Save & finish later intentionally skips the age-range check below —
   // pref_age_min/max are nullable on mt_profiles, so leaving this step
   // blank is fine; the missing-fields panel tracks it as outstanding.
   function getStep5Fields() {
     const ageMin = document.getElementById("s5-age-min").value;
     const ageMax = document.getElementById("s5-age-max").value;
-    const heightMin = document.getElementById("s5-height-min").value;
-    const heightMax = document.getElementById("s5-height-max").value;
-    const weightMin = document.getElementById("s5-weight-min").value;
-    const weightMax = document.getElementById("s5-weight-max").value;
-
     return {
       pref_age_min: ageMin ? Number(ageMin) : null,
-      pref_age_max: ageMax ? Number(ageMax) : null,
-      pref_height_min: heightMin ? Number(heightMin) : null,
-      pref_height_max: heightMax ? Number(heightMax) : null,
-      pref_weight_min: weightMin ? Number(weightMin) : null,
-      pref_weight_max: weightMax ? Number(weightMax) : null,
-      pref_education: getCheckedChipValues(document.getElementById("s5-education-chips")),
-      pref_profession: getCheckedChipValues(document.getElementById("s5-profession-chips")),
-      pref_diet: document.getElementById("s5-diet").value ? normaliseCode(document.getElementById("s5-diet").value) : null,
-      pref_income: document.getElementById("s5-income").value || null,
-      pref_city: document.getElementById("s5-city").value.trim() || null,
-      pref_special: document.getElementById("s5-special").value.trim() || null
+      pref_age_max: ageMax ? Number(ageMax) : null
     };
   }
 
-  document.getElementById("s5-back").addEventListener("click", () => goToStep(4));
+  document.getElementById("s5-back").addEventListener("click", () => goToStep(3));
   document.getElementById("s5-next").addEventListener("click", async () => {
     const payload = getStep5Fields();
     if (payload.pref_age_min === null || payload.pref_age_max === null) {
@@ -955,17 +644,17 @@
       toast("Age 'from' cannot be greater than age 'to'.", "error");
       return;
     }
-    const ok = await saveProfileStep(5, payload);
-    if (ok) goToStep(6);
+    const ok = await saveProfileStep(4, payload);
+    if (ok) goToStep(5);
   });
 
   document.getElementById("s5-save-later").addEventListener("click", async () => {
-    const ok = await saveProfileStep(5, getStep5Fields());
+    const ok = await saveProfileStep(4, getStep5Fields());
     if (ok) showSaveLaterScreen();
   });
 
-  // ---------------- Step 6: contact ----------------
-  document.getElementById("s6-back").addEventListener("click", () => goToStep(5));
+  // ---------------- Step 5: contact ----------------
+  document.getElementById("s6-back").addEventListener("click", () => goToStep(4));
 
   async function refreshVerifySection() {
     const contact = await loadContact();
@@ -985,7 +674,7 @@
       if (!code) {
         code = generateProfileCode(currentUser.id);
         const codePayload = normaliseCodes({ profile_code: code });
-        console.log("Step 6 (profile_code) UPDATE — payload sent to Supabase:", codePayload);
+        console.log("Step 5 (profile_code) UPDATE — payload sent to Supabase:", codePayload);
         await supabaseClient.from("mt_profiles").update(codePayload).eq("user_id", currentUser.id);
       }
       const waLink =
@@ -996,16 +685,10 @@
 
   document.getElementById("s6-save-contact").addEventListener("click", async () => {
     const mobile = document.getElementById("s6-mobile").value.trim();
-    const altMobile = document.getElementById("s6-alt-mobile").value.trim();
     const email = document.getElementById("s6-email").value.trim();
-    const address = document.getElementById("s6-address").value.trim();
 
     if (!/^\d{10}$/.test(mobile)) {
       toast("Please enter a valid 10 digit mobile number.", "error");
-      return;
-    }
-    if (altMobile && !/^\d{10}$/.test(altMobile)) {
-      toast("Alternate mobile must be a valid 10 digit number.", "error");
       return;
     }
 
@@ -1013,9 +696,7 @@
       {
         user_id: currentUser.id,
         mobile: mobile,
-        alt_mobile: altMobile || null,
-        email: email || null,
-        address: address || null
+        email: email || null
       },
       { onConflict: "user_id" }
     );
@@ -1030,10 +711,10 @@
     refreshCompletionState();
   });
 
-  // ---------------- Step 6: photos ----------------
+  // ---------------- Step 5: photos ----------------
   let photoManager = null;
 
-  // ---------------- Step 6: bio-data (optional, one file, PDF or image) ----------------
+  // ---------------- Step 5: bio-data (optional, one file, PDF or image) ----------------
   const BIODATA_BUCKET = "mt-photos";
   const MAX_BIODATA_BYTES = 5 * 1024 * 1024;
 
@@ -1109,7 +790,7 @@
     }
 
     const payload = normaliseCodes({ biodata_path: path });
-    console.log("Step 6 (biodata) UPDATE — payload sent to Supabase:", payload);
+    console.log("Step 5 (biodata) UPDATE — payload sent to Supabase:", payload);
     const { error } = await supabaseClient.from("mt_profiles").update(payload).eq("user_id", currentUser.id);
 
     if (error) {
@@ -1127,7 +808,7 @@
     await supabaseClient.storage.from(BIODATA_BUCKET).remove([path]);
 
     const payload = normaliseCodes({ biodata_path: null });
-    console.log("Step 6 (biodata delete) UPDATE — payload sent to Supabase:", payload);
+    console.log("Step 5 (biodata delete) UPDATE — payload sent to Supabase:", payload);
     const { error } = await supabaseClient.from("mt_profiles").update(payload).eq("user_id", currentUser.id);
 
     if (error) {
@@ -1154,7 +835,7 @@
     }
 
     const finishPayload = normaliseCodes({ profile_complete: true, draft_step: null });
-    console.log("Step 6 (Submit) UPDATE — payload sent to Supabase:", finishPayload);
+    console.log("Step 5 (Submit) UPDATE — payload sent to Supabase:", finishPayload);
     const { error } = await supabaseClient
       .from("mt_profiles")
       .update(finishPayload)
@@ -1213,69 +894,28 @@
 
     if (profile) {
       if (profile.dob) document.getElementById("s1-dob").value = profile.dob;
-      if (profile.birth_time) document.getElementById("s1-birth-time").value = profile.birth_time;
-      if (profile.birth_place) document.getElementById("s1-birth-place").value = profile.birth_place;
       if (profile.height_cm) document.getElementById("s1-height").value = profile.height_cm;
       if (profile.weight_kg) document.getElementById("s1-weight").value = profile.weight_kg;
       if (profile.marital_status) document.getElementById("s1-marital").value = profile.marital_status;
       if (profile.diet) document.getElementById("s1-diet").value = profile.diet;
 
       document.getElementById("s2-sect").value = profile.sect || signupData.sect || "";
-      if (profile.sub_caste) document.getElementById("s2-sub-caste").value = profile.sub_caste;
-      if (profile.gotra) document.getElementById("s2-gotra").value = profile.gotra;
       if (profile.city) document.getElementById("s2-city").value = profile.city;
       if (profile.state) document.getElementById("s2-state").value = profile.state;
-      if (profile.country) document.getElementById("s2-country").value = profile.country;
-      if (profile.native_place) document.getElementById("s2-native-place").value = profile.native_place;
 
       if (profile.education) document.getElementById("s3-education").value = profile.education;
-      if (profile.education_detail) document.getElementById("s3-education-detail").value = profile.education_detail;
       if (profile.profession) document.getElementById("s3-profession").value = profile.profession;
-      if (profile.occupation_detail) document.getElementById("s3-occupation-detail").value = profile.occupation_detail;
       if (profile.annual_income) document.getElementById("s3-income").value = profile.annual_income;
-      if (profile.hobbies) document.getElementById("s3-hobbies").value = profile.hobbies;
-      if (profile.about) {
-        document.getElementById("s3-about").value = profile.about;
-        document.getElementById("s3-about-count").textContent = profile.about.length;
-      }
-
-      if (profile.father_name) document.getElementById("s4-father-name").value = profile.father_name;
-      if (profile.father_occupation) document.getElementById("s4-father-occupation").value = profile.father_occupation;
-      if (profile.father_living) document.getElementById("s4-father-status").value = profile.father_living;
-      document.getElementById("s4-father-status").dispatchEvent(new Event("change"));
-      if (profile.mother_name) document.getElementById("s4-mother-name").value = profile.mother_name;
-      if (profile.mother_occupation) document.getElementById("s4-mother-occupation").value = profile.mother_occupation;
-      if (profile.mother_living) document.getElementById("s4-mother-status").value = profile.mother_living;
-      document.getElementById("s4-mother-status").dispatchEvent(new Event("change"));
-      if (profile.brothers) document.getElementById("s4-brothers").value = profile.brothers;
-      if (profile.sisters) document.getElementById("s4-sisters").value = profile.sisters;
-      if (profile.family_type) document.getElementById("s4-family-type").value = profile.family_type;
-      if (profile.mosal) document.getElementById("s4-mosal").value = profile.mosal;
 
       if (profile.pref_age_min) document.getElementById("s5-age-min").value = profile.pref_age_min;
       if (profile.pref_age_max) document.getElementById("s5-age-max").value = profile.pref_age_max;
-      if (profile.pref_height_min) document.getElementById("s5-height-min").value = profile.pref_height_min;
-      if (profile.pref_height_max) document.getElementById("s5-height-max").value = profile.pref_height_max;
-      if (profile.pref_weight_min) document.getElementById("s5-weight-min").value = profile.pref_weight_min;
-      if (profile.pref_weight_max) document.getElementById("s5-weight-max").value = profile.pref_weight_max;
-      setCheckedChipValues(document.getElementById("s5-education-chips"), profile.pref_education);
-      setCheckedChipValues(document.getElementById("s5-profession-chips"), profile.pref_profession);
-      if (profile.pref_diet) document.getElementById("s5-diet").value = profile.pref_diet;
-      if (profile.pref_income) document.getElementById("s5-income").value = profile.pref_income;
-      if (profile.pref_city) document.getElementById("s5-city").value = profile.pref_city;
-      if (profile.pref_special) {
-        document.getElementById("s5-special").value = profile.pref_special;
-        document.getElementById("s5-special-count").textContent = profile.pref_special.length;
-      }
     } else {
       document.getElementById("s2-sect").value = signupData.sect || "";
     }
 
     if (contact) {
       if (contact.mobile) document.getElementById("s6-mobile").value = contact.mobile;
-      if (contact.alt_mobile) document.getElementById("s6-alt-mobile").value = contact.alt_mobile;
       document.getElementById("s6-email").value = contact.email || currentUser.email || "";
-      if (contact.address) document.getElementById("s6-address").value = contact.address;
     } else {
       document.getElementById("s6-email").value = currentUser.email || "";
     }

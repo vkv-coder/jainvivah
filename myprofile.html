@@ -24,6 +24,13 @@
 
   <h1>My Profile</h1>
 
+  <div class="mt-visibility-banner">
+    This form only asks what's needed for a first look. Extended family
+    details, relatives and their phone numbers are not collected here —
+    if you already have a bio-data PDF, attach it below instead of
+    retyping everything.
+  </div>
+
   <div class="mt-card">
 
     <!-- ============ OPEN: BASIC ============ -->
@@ -59,20 +66,9 @@
       <input type="hidden" id="mp-gender">
     </div>
 
-
     <div class="mt-field">
       <label for="mp-dob">Date of birth *</label>
       <input type="date" id="mp-dob" required>
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-birth-time">Birth time</label>
-      <input type="time" id="mp-birth-time">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-birth-place">Birth place</label>
-      <input type="text" id="mp-birth-place">
     </div>
 
     <div class="mt-field">
@@ -112,16 +108,6 @@
     </div>
 
     <div class="mt-field">
-      <label for="mp-sub-caste">Sub caste</label>
-      <input type="text" id="mp-sub-caste">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-gotra">Gotra</label>
-      <input type="text" id="mp-gotra">
-    </div>
-
-    <div class="mt-field">
       <label for="mp-city">City *</label>
       <input type="text" id="mp-city" required>
     </div>
@@ -129,16 +115,6 @@
     <div class="mt-field">
       <label for="mp-state">State *</label>
       <input type="text" id="mp-state" required>
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-country">Country</label>
-      <input type="text" id="mp-country" value="India">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-native-place">Native place</label>
-      <input type="text" id="mp-native-place">
     </div>
 
     <!-- ============ OPEN: EDUCATION & WORK ============ -->
@@ -152,20 +128,10 @@
     </div>
 
     <div class="mt-field">
-      <label for="mp-education-detail">Education detail</label>
-      <input type="text" id="mp-education-detail">
-    </div>
-
-    <div class="mt-field">
       <label for="mp-profession">Profession *</label>
       <select id="mp-profession" required>
         <option value="" disabled selected>Choose one</option>
       </select>
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-occupation-detail">Occupation detail</label>
-      <input type="text" id="mp-occupation-detail">
     </div>
 
     <div class="mt-field">
@@ -175,18 +141,7 @@
       </select>
     </div>
 
-    <div class="mt-field">
-      <label for="mp-hobbies">Hobbies</label>
-      <textarea id="mp-hobbies" rows="2"></textarea>
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-about">About</label>
-      <textarea id="mp-about" rows="4" maxlength="500"></textarea>
-      <div class="mt-char-counter"><span id="mp-about-count">0</span>/500</div>
-    </div>
-
-    <!-- ============ OPEN: LOOKING FOR ============ -->
+    <!-- ============ OPEN: MY PREFERENCE ============ -->
     <h3 class="mt-section-title">My Preference</h3>
 
     <div class="mt-field">
@@ -201,141 +156,18 @@
       </div>
     </div>
 
-    <div class="mt-field">
-      <label>Height range</label>
-      <div class="mt-range-row">
-        <div class="mt-field">
-          <select id="mp-pref-height-min"><option value="">From</option></select>
-        </div>
-        <div class="mt-field">
-          <select id="mp-pref-height-max"><option value="">To</option></select>
-        </div>
-      </div>
-    </div>
-
-    <div class="mt-field">
-      <label>Weight range (kg)</label>
-      <div class="mt-range-row">
-        <div class="mt-field">
-          <input type="number" id="mp-pref-weight-min" min="20" max="200" placeholder="From">
-        </div>
-        <div class="mt-field">
-          <input type="number" id="mp-pref-weight-max" min="20" max="200" placeholder="To">
-        </div>
-      </div>
-    </div>
-
-    <div class="mt-field">
-      <label>Education (choose any that apply)</label>
-      <div class="mt-chip-group" id="mp-pref-education-chips"></div>
-    </div>
-
-    <div class="mt-field">
-      <label>Profession (choose any that apply)</label>
-      <div class="mt-chip-group" id="mp-pref-profession-chips"></div>
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-pref-diet">Diet preference</label>
-      <select id="mp-pref-diet">
-        <option value="">No preference</option>
-      </select>
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-pref-income">Expected annual income</label>
-      <select id="mp-pref-income">
-        <option value="">No preference</option>
-      </select>
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-pref-city">City or area preference</label>
-      <input type="text" id="mp-pref-city">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-pref-special">Any special requirement</label>
-      <textarea id="mp-pref-special" rows="3" maxlength="300"></textarea>
-      <div class="mt-char-counter"><span id="mp-pref-special-count">0</span>/300</div>
-    </div>
-
     <button type="button" class="mt-btn mt-btn-primary" id="mp-save-profile">Save profile</button>
 
-    <!-- ============ HIDDEN UNTIL ACCEPTED: FAMILY ============ -->
+    <!-- ============ HIDDEN UNTIL ACCEPTED: CONTACT ============ -->
     <div class="mt-group-heading">
       <span class="mt-group-tag mt-group-tag-hidden">HIDDEN UNTIL ACCEPTED</span>
       <span class="mt-group-note">Shown only once you accept an interest</span>
     </div>
-    <h3>Family</h3>
+    <h3>Contact</h3>
 
     <div class="mt-lock-box">
-      The details on this page are not shown to anyone. They become visible only
-      to a member whose interest you have accepted.
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-father-name">Father's name</label>
-      <input type="text" id="mp-father-name">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-father-status">Father</label>
-      <select id="mp-father-status">
-        <option value="">Choose one</option>
-      </select>
-    </div>
-
-    <div class="mt-field" id="mp-father-occupation-wrap">
-      <label for="mp-father-occupation">Father's occupation</label>
-      <input type="text" id="mp-father-occupation">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-mother-name">Mother's name</label>
-      <input type="text" id="mp-mother-name">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-mother-status">Mother</label>
-      <select id="mp-mother-status">
-        <option value="">Choose one</option>
-      </select>
-    </div>
-
-    <div class="mt-field" id="mp-mother-occupation-wrap">
-      <label for="mp-mother-occupation">Mother's occupation</label>
-      <input type="text" id="mp-mother-occupation">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-brothers">Brothers</label>
-      <input type="text" id="mp-brothers" placeholder="e.g. 1 elder, married">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-sisters">Sisters</label>
-      <input type="text" id="mp-sisters" placeholder="e.g. 2 younger, both unmarried">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-family-type">Family type</label>
-      <select id="mp-family-type">
-        <option value="">Choose one</option>
-      </select>
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-mosal">Mosal / maternal family</label>
-      <input type="text" id="mp-mosal">
-    </div>
-
-    <!-- ============ HIDDEN UNTIL ACCEPTED: CONTACT ============ -->
-    <h3 class="mt-section-title">Contact</h3>
-
-    <div class="mt-lock-box">
-      Your mobile number and address are never shown to any member.
-      They are shared only when you accept someone's interest.
+      Your mobile number is never shown to any member.
+      It is shared only when you accept someone's interest.
     </div>
 
     <div class="mt-field">
@@ -344,18 +176,8 @@
     </div>
 
     <div class="mt-field">
-      <label for="mp-alt-mobile">Alternate mobile</label>
-      <input type="tel" id="mp-alt-mobile" inputmode="numeric" maxlength="10">
-    </div>
-
-    <div class="mt-field">
       <label for="mp-email">Email</label>
       <input type="email" id="mp-email">
-    </div>
-
-    <div class="mt-field">
-      <label for="mp-address">Address</label>
-      <textarea id="mp-address" rows="2"></textarea>
     </div>
 
     <button type="button" class="mt-btn mt-btn-outline" id="mp-save-contact">Save contact details</button>
@@ -385,6 +207,21 @@
       </div>
 
       <div id="mp-photo-manager"></div>
+    </div>
+
+    <!-- ============ BIO-DATA ============ -->
+    <div class="mt-section-title">
+      <h3>Full Bio-data (optional)</h3>
+
+      <div class="mt-lock-box">
+        Don't want to retype every family detail? Attach your existing
+        bio-data PDF here instead — parents, siblings, mosal and other
+        relatives, exactly as you already have it. This file is NOT shown
+        to other members. It is shared only with a member whose interest
+        you have accepted, alongside your contact number.
+      </div>
+
+      <div id="mp-biodata-manager"></div>
     </div>
 
     <!-- ============ VISIBILITY ============ -->
@@ -435,25 +272,6 @@
   let currentUser = null;
   let photoManager = null;
 
-  // Hides a parent's occupation field (and clears it, so a hidden value
-  // never gets saved) whenever that parent's status is set to "Late".
-  // Called once to wire the change listener, and again on prefill to
-  // match whatever status is already saved.
-  function setupParentOccupationToggle(statusSelectId, wrapId, inputId) {
-    const statusSelect = document.getElementById(statusSelectId);
-    const wrap = document.getElementById(wrapId);
-    const input = document.getElementById(inputId);
-
-    function sync() {
-      const isLate = statusSelect.value === "Late";
-      wrap.style.display = isLate ? "none" : "block";
-      if (isLate) input.value = "";
-    }
-
-    statusSelect.addEventListener("change", sync);
-    sync();
-  }
-
   // Accepts either plain strings (value === label) or [label, code] pairs
   // (e.g. DIET_OPTIONS, MARITAL_STATUS_OPTIONS) where the code is what
   // gets saved to the database.
@@ -467,50 +285,13 @@
     });
   }
 
-  function fillChipGroup(containerEl, values, namePrefix) {
-    containerEl.innerHTML = values
-      .map(
-        (v, i) =>
-          '<label class="mt-chip" data-value="' + escapeHtml(v) + '">' +
-          '<input type="checkbox" value="' + escapeHtml(v) + '" id="' + namePrefix + "-" + i + '">' +
-          escapeHtml(v) +
-          "</label>"
-      )
-      .join("");
-
-    containerEl.querySelectorAll(".mt-chip").forEach((chip) => {
-      const checkbox = chip.querySelector("input");
-      checkbox.addEventListener("change", () => {
-        chip.classList.toggle("mt-chip-selected", checkbox.checked);
-      });
-    });
-  }
-
-  function getCheckedChipValues(containerEl) {
-    return Array.from(containerEl.querySelectorAll("input:checked")).map((cb) => cb.value);
-  }
-
-  function setCheckedChipValues(containerEl, values) {
-    if (!values) return;
-    containerEl.querySelectorAll("input").forEach((cb) => {
-      if (values.includes(cb.value)) {
-        cb.checked = true;
-        cb.closest(".mt-chip").classList.add("mt-chip-selected");
-      }
-    });
-  }
-
   function populateDropdowns() {
     const heightSelect = document.getElementById("mp-height");
-    const heightMin = document.getElementById("mp-pref-height-min");
-    const heightMax = document.getElementById("mp-pref-height-max");
     buildHeightOptions().forEach((h) => {
-      [heightSelect, heightMin, heightMax].forEach((sel) => {
-        const opt = document.createElement("option");
-        opt.value = h.cm;
-        opt.textContent = h.label;
-        sel.appendChild(opt);
-      });
+      const opt = document.createElement("option");
+      opt.value = h.cm;
+      opt.textContent = h.label;
+      heightSelect.appendChild(opt);
     });
 
     fillSelect(document.getElementById("mp-marital"), MARITAL_STATUS_OPTIONS);
@@ -519,17 +300,6 @@
     fillSelect(document.getElementById("mp-education"), EDUCATION_OPTIONS);
     fillSelect(document.getElementById("mp-profession"), PROFESSION_OPTIONS);
     fillSelect(document.getElementById("mp-income"), ANNUAL_INCOME_OPTIONS);
-    fillSelect(document.getElementById("mp-father-status"), LIVING_STATUS_OPTIONS);
-    fillSelect(document.getElementById("mp-mother-status"), LIVING_STATUS_OPTIONS);
-
-    setupParentOccupationToggle("mp-father-status", "mp-father-occupation-wrap", "mp-father-occupation");
-    setupParentOccupationToggle("mp-mother-status", "mp-mother-occupation-wrap", "mp-mother-occupation");
-    fillSelect(document.getElementById("mp-family-type"), FAMILY_TYPE_OPTIONS);
-    fillSelect(document.getElementById("mp-pref-diet"), DIET_OPTIONS);
-    fillSelect(document.getElementById("mp-pref-income"), ANNUAL_INCOME_OPTIONS);
-
-    fillChipGroup(document.getElementById("mp-pref-education-chips"), EDUCATION_OPTIONS, "mp-edu");
-    fillChipGroup(document.getElementById("mp-pref-profession-chips"), PROFESSION_OPTIONS, "mp-prof");
   }
 
   async function loadProfile() {
@@ -563,56 +333,21 @@
       document.getElementById("mp-gender-display").textContent = GENDER_LABELS[profile.gender] || profile.gender || "—";
 
       if (profile.dob) document.getElementById("mp-dob").value = profile.dob;
-      if (profile.birth_time) document.getElementById("mp-birth-time").value = profile.birth_time;
-      document.getElementById("mp-birth-place").value = profile.birth_place || "";
       if (profile.height_cm) document.getElementById("mp-height").value = profile.height_cm;
       if (profile.weight_kg) document.getElementById("mp-weight").value = profile.weight_kg;
       if (profile.marital_status) document.getElementById("mp-marital").value = profile.marital_status;
       if (profile.diet) document.getElementById("mp-diet").value = profile.diet;
 
       if (profile.sect) document.getElementById("mp-sect").value = profile.sect;
-      document.getElementById("mp-sub-caste").value = profile.sub_caste || "";
-      document.getElementById("mp-gotra").value = profile.gotra || "";
       document.getElementById("mp-city").value = profile.city || "";
       document.getElementById("mp-state").value = profile.state || "";
-      document.getElementById("mp-country").value = profile.country || "India";
-      document.getElementById("mp-native-place").value = profile.native_place || "";
 
       if (profile.education) document.getElementById("mp-education").value = profile.education;
-      document.getElementById("mp-education-detail").value = profile.education_detail || "";
       if (profile.profession) document.getElementById("mp-profession").value = profile.profession;
-      document.getElementById("mp-occupation-detail").value = profile.occupation_detail || "";
       if (profile.annual_income) document.getElementById("mp-income").value = profile.annual_income;
-      document.getElementById("mp-hobbies").value = profile.hobbies || "";
-      document.getElementById("mp-about").value = profile.about || "";
-      document.getElementById("mp-about-count").textContent = (profile.about || "").length;
 
       if (profile.pref_age_min) document.getElementById("mp-pref-age-min").value = profile.pref_age_min;
       if (profile.pref_age_max) document.getElementById("mp-pref-age-max").value = profile.pref_age_max;
-      if (profile.pref_height_min) document.getElementById("mp-pref-height-min").value = profile.pref_height_min;
-      if (profile.pref_height_max) document.getElementById("mp-pref-height-max").value = profile.pref_height_max;
-      if (profile.pref_weight_min) document.getElementById("mp-pref-weight-min").value = profile.pref_weight_min;
-      if (profile.pref_weight_max) document.getElementById("mp-pref-weight-max").value = profile.pref_weight_max;
-      setCheckedChipValues(document.getElementById("mp-pref-education-chips"), profile.pref_education);
-      setCheckedChipValues(document.getElementById("mp-pref-profession-chips"), profile.pref_profession);
-      if (profile.pref_diet) document.getElementById("mp-pref-diet").value = profile.pref_diet;
-      if (profile.pref_income) document.getElementById("mp-pref-income").value = profile.pref_income;
-      document.getElementById("mp-pref-city").value = profile.pref_city || "";
-      document.getElementById("mp-pref-special").value = profile.pref_special || "";
-      document.getElementById("mp-pref-special-count").textContent = (profile.pref_special || "").length;
-
-      document.getElementById("mp-father-name").value = profile.father_name || "";
-      document.getElementById("mp-father-occupation").value = profile.father_occupation || "";
-      if (profile.father_living) document.getElementById("mp-father-status").value = profile.father_living;
-      document.getElementById("mp-father-status").dispatchEvent(new Event("change"));
-      document.getElementById("mp-mother-name").value = profile.mother_name || "";
-      document.getElementById("mp-mother-occupation").value = profile.mother_occupation || "";
-      if (profile.mother_living) document.getElementById("mp-mother-status").value = profile.mother_living;
-      document.getElementById("mp-mother-status").dispatchEvent(new Event("change"));
-      document.getElementById("mp-brothers").value = profile.brothers || "";
-      document.getElementById("mp-sisters").value = profile.sisters || "";
-      if (profile.family_type) document.getElementById("mp-family-type").value = profile.family_type;
-      document.getElementById("mp-mosal").value = profile.mosal || "";
 
       document.getElementById("mp-pause-toggle").checked = !!profile.is_paused;
     }
@@ -620,17 +355,8 @@
     document.getElementById("mp-email").value = (contact && contact.email) || currentUser.email || "";
     if (contact) {
       document.getElementById("mp-mobile").value = contact.mobile || "";
-      document.getElementById("mp-alt-mobile").value = contact.alt_mobile || "";
-      document.getElementById("mp-address").value = contact.address || "";
     }
   }
-
-  document.getElementById("mp-about").addEventListener("input", (e) => {
-    document.getElementById("mp-about-count").textContent = e.target.value.length;
-  });
-  document.getElementById("mp-pref-special").addEventListener("input", (e) => {
-    document.getElementById("mp-pref-special-count").textContent = e.target.value.length;
-  });
 
   // ---------------- Save profile ----------------
   document.getElementById("mp-save-profile").addEventListener("click", async () => {
@@ -671,58 +397,24 @@
       return;
     }
 
-    const heightMin = document.getElementById("mp-pref-height-min").value;
-    const heightMax = document.getElementById("mp-pref-height-max").value;
-    const weightMin = document.getElementById("mp-pref-weight-min").value;
-    const weightMax = document.getElementById("mp-pref-weight-max").value;
-
     const payload = {
       user_id: currentUser.id,
       full_name: fullName,
       managed_by: managedBy,
       dob: dob,
-      birth_time: document.getElementById("mp-birth-time").value || null,
-      birth_place: document.getElementById("mp-birth-place").value.trim() || null,
       height_cm: Number(heightCm),
       weight_kg: Number(weight),
       marital_status: normaliseCode(marital),
       diet: normaliseCode(diet),
       sect: sect,
-      sub_caste: document.getElementById("mp-sub-caste").value.trim() || null,
-      gotra: document.getElementById("mp-gotra").value.trim() || null,
       city: city,
       state: state,
-      country: document.getElementById("mp-country").value.trim() || "India",
-      native_place: document.getElementById("mp-native-place").value.trim() || null,
+      country: "India",
       education: education,
-      education_detail: document.getElementById("mp-education-detail").value.trim() || null,
       profession: profession,
-      occupation_detail: document.getElementById("mp-occupation-detail").value.trim() || null,
       annual_income: income,
-      hobbies: document.getElementById("mp-hobbies").value.trim() || null,
-      about: document.getElementById("mp-about").value.trim() || null,
       pref_age_min: Number(prefAgeMin),
-      pref_age_max: Number(prefAgeMax),
-      pref_height_min: heightMin ? Number(heightMin) : null,
-      pref_height_max: heightMax ? Number(heightMax) : null,
-      pref_weight_min: weightMin ? Number(weightMin) : null,
-      pref_weight_max: weightMax ? Number(weightMax) : null,
-      pref_education: getCheckedChipValues(document.getElementById("mp-pref-education-chips")),
-      pref_profession: getCheckedChipValues(document.getElementById("mp-pref-profession-chips")),
-      pref_diet: document.getElementById("mp-pref-diet").value ? normaliseCode(document.getElementById("mp-pref-diet").value) : null,
-      pref_income: document.getElementById("mp-pref-income").value || null,
-      pref_city: document.getElementById("mp-pref-city").value.trim() || null,
-      pref_special: document.getElementById("mp-pref-special").value.trim() || null,
-      father_name: document.getElementById("mp-father-name").value.trim() || null,
-      father_occupation: document.getElementById("mp-father-occupation").value.trim() || null,
-      father_living: document.getElementById("mp-father-status").value || null,
-      mother_name: document.getElementById("mp-mother-name").value.trim() || null,
-      mother_occupation: document.getElementById("mp-mother-occupation").value.trim() || null,
-      mother_living: document.getElementById("mp-mother-status").value || null,
-      brothers: document.getElementById("mp-brothers").value.trim() || null,
-      sisters: document.getElementById("mp-sisters").value.trim() || null,
-      family_type: document.getElementById("mp-family-type").value || null,
-      mosal: document.getElementById("mp-mosal").value.trim() || null
+      pref_age_max: Number(prefAgeMax)
     };
 
     const cleaned = normaliseCodes(payload);
@@ -764,16 +456,10 @@
 
   document.getElementById("mp-save-contact").addEventListener("click", async () => {
     const mobile = document.getElementById("mp-mobile").value.trim();
-    const altMobile = document.getElementById("mp-alt-mobile").value.trim();
     const email = document.getElementById("mp-email").value.trim();
-    const address = document.getElementById("mp-address").value.trim();
 
     if (!/^\d{10}$/.test(mobile)) {
       toast("Please enter a valid 10 digit mobile number.", "error");
-      return;
-    }
-    if (altMobile && !/^\d{10}$/.test(altMobile)) {
-      toast("Alternate mobile must be a valid 10 digit number.", "error");
       return;
     }
 
@@ -781,9 +467,7 @@
       {
         user_id: currentUser.id,
         mobile: mobile,
-        alt_mobile: altMobile || null,
-        email: email || null,
-        address: address || null
+        email: email || null
       },
       { onConflict: "user_id" }
     );
@@ -797,6 +481,111 @@
     await refreshVerifySection();
     await recomputeCompletion();
   });
+
+  // ---------------- Bio-data (optional, one file, PDF or image) ----------------
+  const BIODATA_BUCKET = "mt-photos";
+  const MAX_BIODATA_BYTES = 5 * 1024 * 1024;
+
+  async function renderBiodataSection() {
+    const container = document.getElementById("mp-biodata-manager");
+    const profile = await loadProfile();
+    const path = profile && profile.biodata_path;
+
+    let html = "";
+    if (path) {
+      const { data } = await supabaseClient.storage.from(BIODATA_BUCKET).createSignedUrl(path, 60);
+      const url = data ? data.signedUrl : "";
+      html += '<p><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">View my uploaded bio-data</a></p>';
+      html += '<div class="mt-step-nav">';
+      html += '<button type="button" class="mt-btn mt-btn-outline" id="mp-biodata-replace-btn">Replace file</button>';
+      html += '<button type="button" class="mt-btn mt-btn-danger" id="mp-biodata-delete-btn">Delete</button>';
+      html += "</div>";
+      html += '<input type="file" id="mp-biodata-input" accept="application/pdf,image/*" style="display:none;">';
+    } else {
+      html +=
+        '<div class="mt-field">' +
+        '<label for="mp-biodata-input">Upload bio-data (PDF or image, max 5 MB)</label>' +
+        '<input type="file" id="mp-biodata-input" accept="application/pdf,image/*">' +
+        "</div>";
+    }
+    container.innerHTML = html;
+
+    const fileInput = document.getElementById("mp-biodata-input");
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (file) await uploadBiodata(file, path);
+    });
+
+    const replaceBtn = document.getElementById("mp-biodata-replace-btn");
+    if (replaceBtn) replaceBtn.addEventListener("click", () => fileInput.click());
+
+    const deleteBtn = document.getElementById("mp-biodata-delete-btn");
+    if (deleteBtn) deleteBtn.addEventListener("click", () => deleteBiodata(path));
+  }
+
+  async function uploadBiodata(file, oldPath) {
+    if (file.size > MAX_BIODATA_BYTES) {
+      toast("That file is too large. Maximum size is 5 MB.", "error");
+      return;
+    }
+
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+    const isImage = file.type.startsWith("image/");
+    if (!isPdf && !isImage) {
+      toast("Please upload a PDF or image file.", "error");
+      return;
+    }
+
+    toast("Uploading bio-data...", "info");
+
+    const extMatch = /\.([a-zA-Z0-9]+)$/.exec(file.name);
+    const ext = extMatch ? extMatch[1].toLowerCase() : isPdf ? "pdf" : "jpg";
+    const path = currentUser.id + "/biodata." + ext;
+
+    // Replacing an existing file whose extension differs from the new one
+    // would otherwise leave the old object orphaned in storage.
+    if (oldPath && oldPath !== path) {
+      await supabaseClient.storage.from(BIODATA_BUCKET).remove([oldPath]);
+    }
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from(BIODATA_BUCKET)
+      .upload(path, file, { contentType: file.type, upsert: true });
+
+    if (uploadError) {
+      toast("Upload failed: " + uploadError.message, "error");
+      return;
+    }
+
+    const payload = normaliseCodes({ biodata_path: path });
+    const { error } = await supabaseClient.from("mt_profiles").update(payload).eq("user_id", currentUser.id);
+
+    if (error) {
+      toast(describeSaveError(error, payload), "error");
+      return;
+    }
+
+    toast("Bio-data uploaded.", "success");
+    await renderBiodataSection();
+    await recomputeCompletion();
+  }
+
+  async function deleteBiodata(path) {
+    if (!path) return;
+    await supabaseClient.storage.from(BIODATA_BUCKET).remove([path]);
+
+    const payload = normaliseCodes({ biodata_path: null });
+    const { error } = await supabaseClient.from("mt_profiles").update(payload).eq("user_id", currentUser.id);
+
+    if (error) {
+      toast(describeSaveError(error, payload), "error");
+      return;
+    }
+
+    toast("Bio-data removed.", "success");
+    await renderBiodataSection();
+    await recomputeCompletion();
+  }
 
   // Recompute profile_complete after any edit, so an incomplete edit never
   // stays marked complete (and vice versa).
@@ -853,6 +642,11 @@
         await supabaseClient.storage.from("mt-photos").remove(photos.map((p) => p.storage_path));
       }
 
+      const profileForBiodata = await loadProfile();
+      if (profileForBiodata && profileForBiodata.biodata_path) {
+        await supabaseClient.storage.from("mt-photos").remove([profileForBiodata.biodata_path]);
+      }
+
       await supabaseClient.from("mt_photos").delete().eq("user_id", currentUser.id);
       await supabaseClient.from("mt_contacts").delete().eq("user_id", currentUser.id);
       await supabaseClient.from("mt_profiles").delete().eq("user_id", currentUser.id);
@@ -882,6 +676,7 @@
     photoManager = createPhotoManager(document.getElementById("mp-photo-manager"), currentUser.id);
     await photoManager.render();
     await refreshVerifySection();
+    await renderBiodataSection();
   })();
 </script>
 

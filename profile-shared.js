@@ -44,10 +44,6 @@ function normaliseCode(value) {
   return (value || "").toString().trim().toLowerCase();
 }
 
-const FAMILY_TYPE_OPTIONS = ["Joint", "Nuclear"];
-
-const LIVING_STATUS_OPTIONS = ["Living", "Late"];
-
 const EDUCATION_OPTIONS = [
   "Below Graduate", "B.Com", "B.A", "B.Sc", "B.E/B.Tech", "BBA", "BCA",
   "CA", "CS", "MBBS", "BDS", "LLB", "M.Com", "M.A", "M.Sc", "M.E/M.Tech",
@@ -97,8 +93,10 @@ function checkAgeRule(dob, gender) {
 }
 
 // Fields required (marked *) on each step, and a friendly label for
-// telling the member exactly what is missing. Family (step 4) has no
-// required fields.
+// telling the member exactly what is missing. Every non-mandatory field
+// (extended family, sub caste, education/occupation detail, hobbies,
+// about, alternate mobile, address, partner-preference details beyond
+// age) was deliberately removed from the form — see CLAUDE.md.
 const REQUIRED_FIELDS = {
   1: [
     ["full_name", "Full name"],
@@ -119,14 +117,14 @@ const REQUIRED_FIELDS = {
     ["profession", "Profession"],
     ["annual_income", "Annual income"]
   ],
-  5: [
+  4: [
     ["pref_age_min", "Looking for: age from"],
     ["pref_age_max", "Looking for: age to"]
   ]
 };
 
-// Checks a profile row against every required field across steps 1-3 and
-// 5, plus mobile (from the contact row) and at least one photo (step 6).
+// Checks a profile row against every required field across steps 1-4,
+// plus mobile (from the contact row) and at least one photo (step 5).
 // Returns an array of { step, label } for anything missing (empty array
 // means the profile is complete and ready to submit).
 function findMissingFields(profile, contact, photoCount) {
@@ -143,10 +141,10 @@ function findMissingFields(profile, contact, photoCount) {
   });
 
   if (!contact || !contact.mobile) {
-    missing.push({ step: 6, label: "Mobile number" });
+    missing.push({ step: 5, label: "Mobile number" });
   }
   if (!photoCount || photoCount < 1) {
-    missing.push({ step: 6, label: "At least one photo" });
+    missing.push({ step: 5, label: "At least one photo" });
   }
 
   return missing;
@@ -206,7 +204,7 @@ function resizeImageToBlob(file) {
 }
 
 // ---------------------------------------------------------------------
-// Photo manager — identical UI/behaviour used by register.html (step 6)
+// Photo manager — identical UI/behaviour used by register.html (step 5)
 // and myprofile.html. Renders into containerEl and wires up its own
 // upload/delete/set-primary handlers.
 // ---------------------------------------------------------------------
