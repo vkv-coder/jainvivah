@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Profile — Jain Vivah</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .pv-back { display: inline-block; margin-bottom: 14px; font-size: 14px; font-weight: 600; text-decoration: none; color: var(--maroon); }
+  .pv-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .pv-photo-item { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 1; background: var(--border); }
+  .pv-photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  .pv-photo-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: #8a7a6d; font-size: 12px; text-align: center; padding: 8px; }
+  .pv-name { margin-bottom: 2px; }
+  .pv-code { font-size: 13px; color: #8a7a6d; margin-bottom: 16px; }
+  .pv-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .pv-row:last-child { border-bottom: none; }
+  .pv-row .pv-label { color: #6b5a4e; font-weight: 600; }
+  .pv-row .pv-value { color: var(--charcoal); text-align: right; max-width: 60%; }
+  .pv-loading, .pv-notfound { text-align: center; padding: 40px 10px; color: #8a7a6d; }
+</style>
+</head>
+<body>
+
+<div class="mt-invocation-strip">🙏 || Jai Jinendra || 🙏</div>
+
+<div class="mt-header">
+  <button type="button" class="mt-header-logout" onclick="logout()">Logout</button>
+  <div class="mt-logo">Jain Vivah</div>
+</div>
+
+<div class="mt-page">
+
+  <a class="pv-back" href="browse.html">&larr; Back to Browse</a>
+
+  <div id="pv-content">
+    <p class="pv-loading">Loading profile...</p>
+  </div>
+
+</div>
+
+<div class="mt-footer">
+  <div><a href="myprofile.html">My Profile</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div>
+  <div class="mt-brand">AnyApps.in</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="profile-shared.js"></script>
+<script>
+  const PHOTOS_BUCKET_PV = "mt-photos";
+
+  // Draws the signed-url photo onto a canvas with a repeating diagonal
+  // watermark carrying the VIEWER's own profile code + today's date, so a
+  // leaked/misused photo can always be traced back to who viewed it. Falls
+  // back to the plain signed URL if canvas export fails for any reason
+  // (e.g. a CORS edge case) rather than showing a broken image.
+  function watermarkPhoto(url, stampText) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+
+          ctx.save();
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate(-Math.PI / 7);
+          ctx.font = Math.max(14, Math.round(canvas.width / 16)) + "px sans-serif";
+          ctx.textAlign = "center";
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = "rgba(0,0,0,0.35)";
+          ctx.fillStyle = "rgba(255,255,255,0.65)";
+
+          const stepY = Math.max(60, canvas.height / 4);
+          for (let y = -canvas.height; y < canvas.height * 1.5; y += stepY) {
+            ctx.strokeText(stampText, 0, y);
+            ctx.fillText(stampText, 0, y);
+          }
+          ctx.restore();
+
+          resolve(canvas.toDataURL("image/jpeg", 0.9));
+        } catch (e) {
+          resolve(url);
+        }
+      };
+      img.onerror = () => resolve(url);
+      img.src = url;
+    });
+  }
+
+  function row(label, value) {
+    if (!value) return "";
+    return (
+      '<div class="pv-row"><div class="pv-label">' + escapeHtml(label) + '</div>' +
+      '<div class="pv-value">' + escapeHtml(value) + "</div></div>"
+    );
+  }
+
+  (async () => {
+    const session = await requireAuth();
+    if (!session) return;
+
+    const params = new URLSearchParams(location.search);
+    const targetId = params.get("id");
+    const contentEl = document.getElementById("pv-content");
+
+    if (!targetId) {
+      contentEl.innerHTML = '<p class="pv-notfound">No profile specified.</p>';
+      return;
+    }
+
+    // My own profile_code is the identity stamped onto every photo I view.
+    const { data: me } = await supabaseClient
+      .from("mt_profiles")
+      .select("profile_code")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+    const myCode = (me && me.profile_code) || session.user.id.slice(0, 8);
+
+    const { data: profile, error } = await supabaseClient
+      .from("mt_profiles")
+      .select("*")
+      .eq("user_id", targetId)
+      .maybeSingle();
+
+    if (error || !profile) {
+      contentEl.innerHTML = '<p class="pv-notfound">This profile is not available — it may be inactive, paused, or you may not be eligible to view it yet.</p>';
+      return;
+    }
+
+    // Fire-and-forget view log — never blocks rendering the profile.
+    supabaseClient.from("mt_views").insert({ viewer_id: session.user.id, viewed_id: targetId }).then(() => {});
+
+    const { data: photos } = await supabaseClient
+      .from("mt_photos")
+      .select("*")
+      .eq("user_id", targetId)
+      .order("sort_order", { ascending: true });
+
+    const stamp = "Viewed by " + myCode + " · " + new Date().toISOString().slice(0, 10);
+
+    let photosHtml = '<div class="pv-photo-grid">';
+    if (photos && photos.length) {
+      const urls = await Promise.all(
+        photos.map(async (p) => {
+          const { data } = await supabaseClient.storage.from(PHOTOS_BUCKET_PV).createSignedUrl(p.storage_path, 90);
+          if (!data) return null;
+          return watermarkPhoto(data.signedUrl, stamp);
+        })
+      );
+      urls.forEach((dataUrl) => {
+        if (!dataUrl) return;
+        photosHtml +=
+          '<div class="pv-photo-item"><img src="' + dataUrl + '" alt="Profile photo" draggable="false" oncontextmenu="return false"></div>';
+      });
+    } else {
+      photosHtml += '<div class="pv-photo-item"><div class="pv-photo-empty">No photo added</div></div>';
+    }
+    photosHtml += "</div>";
+
+    const age = calcAge(profile.dob);
+    const height = profile.height_cm ? cmToFeet(profile.height_cm) : "";
+    const dietLabel = (DIET_OPTIONS.find(([, code]) => code === profile.diet) || [profile.diet])[0];
+    const maritalLabel = (MARITAL_STATUS_OPTIONS.find(([, code]) => code === profile.marital_status) || [profile.marital_status])[0];
+    const location = [profile.city, profile.state, profile.country].filter(Boolean).join(", ");
+
+    contentEl.innerHTML =
+      photosHtml +
+      '<h1 class="pv-name">' + escapeHtml(profile.full_name || "Member") + "</h1>" +
+      '<div class="pv-code">Profile ' + escapeHtml(profile.profile_code || "") + "</div>" +
+      '<div class="mt-card">' +
+      row("Age", age ? age + " years" : "") +
+      row("Height", height) +
+      row("Marital Status", maritalLabel) +
+      row("Diet", dietLabel) +
+      row("Sect", profile.sect) +
+      row("Location", location) +
+      row("Native Place", profile.native_place) +
+      row("Education", profile.education + (profile.education_detail ? " — " + profile.education_detail : "")) +
+      row("Profession", profile.profession + (profile.occupation_detail ? " — " + profile.occupation_detail : "")) +
+      row("Annual Income", profile.annual_income) +
+      row("Hobbies", profile.hobbies) +
+      row("About", profile.about) +
+      "</div>" +
+      '<div class="mt-reassurance">Interested in connecting? Sending an interest request and exchanging contact details is coming soon. For now, reach out to <a href="mailto:' +
+      SUPPORT_EMAIL + '">' + SUPPORT_EMAIL + "</a> and mention this profile's code.</div>";
+  })();
+</script>
+
+</body>
+</html>

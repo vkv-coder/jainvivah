@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Browse — Jain Vivah</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .br-filter-row { display: flex; gap: 10px; }
+  .br-filter-row .mt-field { flex: 1; }
+  .br-toggle-filters {
+    background: none; border: none; color: var(--maroon); font-weight: 600;
+    font-size: 14px; cursor: pointer; text-decoration: underline; padding: 4px 0 12px;
+  }
+  .br-results-count { font-size: 13px; color: #8a7a6d; margin-bottom: 12px; }
+  .br-card {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 14px; margin-bottom: 12px; cursor: pointer; text-decoration: none; color: inherit;
+  }
+  .br-avatar {
+    width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--maroon), var(--maroon-dark));
+    color: var(--white); display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-heading); font-size: 20px; font-weight: 700;
+  }
+  .br-card-name { font-weight: 700; color: var(--charcoal); font-size: 15px; }
+  .br-card-meta { font-size: 13px; color: #6b5a4e; margin-top: 2px; }
+  .br-card-arrow { margin-left: auto; color: var(--gold); font-weight: 700; flex-shrink: 0; }
+  .br-empty { text-align: center; padding: 30px 10px; color: #8a7a6d; }
+</style>
+</head>
+<body>
+
+<div class="mt-invocation-strip">🙏 || Jai Jinendra || 🙏</div>
+
+<div class="mt-header">
+  <button type="button" class="mt-header-logout" onclick="logout()">Logout</button>
+  <div class="mt-logo">Jain Vivah</div>
+</div>
+
+<div class="mt-page">
+
+  <h1>Browse Profiles</h1>
+
+  <div class="mt-shield-box">
+    <strong>Photos are protected</strong>
+    Every photo you view carries a personal watermark tied to your account, so it can be traced back if ever shared or misused. Contact details are never shown here — they are only exchanged once an interest is accepted.
+  </div>
+
+  <div class="mt-card">
+    <button type="button" class="br-toggle-filters" id="br-toggle-btn" onclick="toggleFilters()">Show Filters ▾</button>
+
+    <div id="br-filters" style="display:none;">
+      <div class="br-filter-row">
+        <div class="mt-field">
+          <label for="f-age-min">Age from</label>
+          <select id="f-age-min"></select>
+        </div>
+        <div class="mt-field">
+          <label for="f-age-max">Age to</label>
+          <select id="f-age-max"></select>
+        </div>
+      </div>
+
+      <div class="mt-field">
+        <label for="f-city">City</label>
+        <input type="text" id="f-city" placeholder="e.g. Ahmedabad">
+      </div>
+
+      <div class="mt-field">
+        <label for="f-sect">Sect</label>
+        <select id="f-sect"><option value="">Any</option></select>
+      </div>
+
+      <div class="mt-field">
+        <label for="f-diet">Diet</label>
+        <select id="f-diet"><option value="">Any</option></select>
+      </div>
+
+      <div class="mt-field">
+        <label for="f-education">Education</label>
+        <select id="f-education"><option value="">Any</option></select>
+      </div>
+
+      <div class="mt-field">
+        <label for="f-profession">Profession</label>
+        <select id="f-profession"><option value="">Any</option></select>
+      </div>
+
+      <div class="mt-field">
+        <label for="f-marital">Marital Status</label>
+        <select id="f-marital"><option value="">Any</option></select>
+      </div>
+    </div>
+
+    <button type="button" class="mt-btn mt-btn-primary" onclick="runSearch()">Search</button>
+  </div>
+
+  <div class="br-results-count" id="br-count"></div>
+  <div id="br-results"></div>
+
+</div>
+
+<div class="mt-footer">
+  <div><a href="myprofile.html">My Profile</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div>
+  <div class="mt-brand">AnyApps.in</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="profile-shared.js"></script>
+<script>
+  let myProfile = null;
+
+  function toggleFilters() {
+    const panel = document.getElementById("br-filters");
+    const btn = document.getElementById("br-toggle-btn");
+    const showing = panel.style.display !== "none";
+    panel.style.display = showing ? "none" : "block";
+    btn.textContent = showing ? "Show Filters ▾" : "Hide Filters ▴";
+  }
+
+  function populateFilterDropdowns() {
+    const ageMin = document.getElementById("f-age-min");
+    const ageMax = document.getElementById("f-age-max");
+    ageMin.innerHTML = '<option value="">Any</option>';
+    ageMax.innerHTML = '<option value="">Any</option>';
+    for (let age = 18; age <= 70; age++) {
+      ageMin.innerHTML += '<option value="' + age + '">' + age + "</option>";
+      ageMax.innerHTML += '<option value="' + age + '">' + age + "</option>";
+    }
+
+    const sectSel = document.getElementById("f-sect");
+    SECT_OPTIONS.forEach((s) => { sectSel.innerHTML += '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + "</option>"; });
+
+    const dietSel = document.getElementById("f-diet");
+    DIET_OPTIONS.forEach(([label, code]) => { dietSel.innerHTML += '<option value="' + code + '">' + escapeHtml(label) + "</option>"; });
+
+    const eduSel = document.getElementById("f-education");
+    EDUCATION_OPTIONS.forEach((e) => { eduSel.innerHTML += '<option value="' + escapeHtml(e) + '">' + escapeHtml(e) + "</option>"; });
+
+    const profSel = document.getElementById("f-profession");
+    PROFESSION_OPTIONS.forEach((p) => { profSel.innerHTML += '<option value="' + escapeHtml(p) + '">' + escapeHtml(p) + "</option>"; });
+
+    const maritalSel = document.getElementById("f-marital");
+    MARITAL_STATUS_OPTIONS.forEach(([label, code]) => { maritalSel.innerHTML += '<option value="' + code + '">' + escapeHtml(label) + "</option>"; });
+  }
+
+  function oppositeGender(gender) {
+    return gender === "male" ? "female" : "male";
+  }
+
+  async function runSearch() {
+    const resultsEl = document.getElementById("br-results");
+    const countEl = document.getElementById("br-count");
+    resultsEl.innerHTML = '<p class="mt-hint">Searching...</p>';
+    countEl.textContent = "";
+
+    let query = supabaseClient
+      .from("mt_profiles")
+      .select("user_id, profile_code, full_name, dob, city, state, sect, diet, education, profession, marital_status")
+      .eq("gender", oppositeGender(myProfile.gender))
+      .neq("user_id", myProfile.user_id)
+      .order("created_at", { ascending: false })
+      .limit(60);
+
+    const city = document.getElementById("f-city").value.trim();
+    if (city) query = query.ilike("city", "%" + city + "%");
+
+    const sect = document.getElementById("f-sect").value;
+    if (sect) query = query.eq("sect", sect);
+
+    const diet = document.getElementById("f-diet").value;
+    if (diet) query = query.eq("diet", diet);
+
+    const education = document.getElementById("f-education").value;
+    if (education) query = query.eq("education", education);
+
+    const profession = document.getElementById("f-profession").value;
+    if (profession) query = query.eq("profession", profession);
+
+    const marital = document.getElementById("f-marital").value;
+    if (marital) query = query.eq("marital_status", marital);
+
+    const { data, error } = await query;
+
+    if (error) {
+      resultsEl.innerHTML = '<p class="br-empty">Could not load profiles right now. Please try again.</p>';
+      return;
+    }
+
+    let rows = data || [];
+
+    // Age filtering happens client-side since age is derived from dob,
+    // not stored as its own filterable column.
+    const ageMin = parseInt(document.getElementById("f-age-min").value, 10);
+    const ageMax = parseInt(document.getElementById("f-age-max").value, 10);
+    if (!isNaN(ageMin)) rows = rows.filter((r) => (calcAge(r.dob) || 0) >= ageMin);
+    if (!isNaN(ageMax)) rows = rows.filter((r) => (calcAge(r.dob) || 0) <= ageMax);
+
+    countEl.textContent = rows.length + " profile" + (rows.length === 1 ? "" : "s") + " found";
+
+    if (!rows.length) {
+      resultsEl.innerHTML = '<p class="br-empty">No profiles match these filters yet. Try widening your search.</p>';
+      return;
+    }
+
+    resultsEl.innerHTML = rows
+      .map((r) => {
+        const age = calcAge(r.dob);
+        const initial = (r.full_name || "?").trim().charAt(0).toUpperCase();
+        const metaParts = [
+          age ? age + " yrs" : "",
+          r.city || "",
+          r.profession || r.education || ""
+        ].filter(Boolean);
+        return (
+          '<a class="br-card" href="profile-view.html?id=' + encodeURIComponent(r.user_id) + '">' +
+          '<div class="br-avatar">' + escapeHtml(initial) + "</div>" +
+          "<div>" +
+          '<div class="br-card-name">' + escapeHtml(r.full_name || "Member") + "</div>" +
+          '<div class="br-card-meta">' + escapeHtml(metaParts.join(" · ")) + "</div>" +
+          "</div>" +
+          '<div class="br-card-arrow">→</div>' +
+          "</a>"
+        );
+      })
+      .join("");
+  }
+
+  (async () => {
+    const session = await requireAuth();
+    if (!session) return;
+
+    const { data: profile, error } = await supabaseClient
+      .from("mt_profiles")
+      .select("user_id, gender, profile_complete")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+    if (error || !profile) {
+      window.location.href = "register.html";
+      return;
+    }
+    if (!profile.profile_complete) {
+      queueToast("Please finish your profile before browsing.", "info");
+      window.location.href = "register.html";
+      return;
+    }
+
+    myProfile = profile;
+    populateFilterDropdowns();
+    await runSearch();
+  })();
+</script>
+
+</body>
+</html>
