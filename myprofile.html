@@ -647,9 +647,12 @@
         await supabaseClient.storage.from("mt-photos").remove([profileForBiodata.biodata_path]);
       }
 
-      await supabaseClient.from("mt_photos").delete().eq("user_id", currentUser.id);
-      await supabaseClient.from("mt_contacts").delete().eq("user_id", currentUser.id);
-      await supabaseClient.from("mt_profiles").delete().eq("user_id", currentUser.id);
+      const delPhotos = await supabaseClient.from("mt_photos").delete().eq("user_id", currentUser.id);
+      if (delPhotos.error) throw delPhotos.error;
+      const delContacts = await supabaseClient.from("mt_contacts").delete().eq("user_id", currentUser.id);
+      if (delContacts.error) throw delContacts.error;
+      const delProfile = await supabaseClient.from("mt_profiles").delete().eq("user_id", currentUser.id);
+      if (delProfile.error) throw delProfile.error;
 
       await supabaseClient.auth.signOut();
       queueToast("Your account and data have been deleted.", "success");

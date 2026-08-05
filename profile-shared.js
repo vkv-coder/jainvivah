@@ -357,7 +357,8 @@ function createPhotoManager(containerEl, userId, onChange) {
     const remaining = await fetchPhotos();
     const stillHasPrimary = remaining.some((p) => p.is_primary);
     if (!stillHasPrimary && remaining.length > 0) {
-      await supabaseClient.from("mt_photos").update({ is_primary: true }).eq("id", remaining[0].id);
+      const { error: promoteError } = await supabaseClient.from("mt_photos").update({ is_primary: true }).eq("id", remaining[0].id);
+      if (promoteError) console.error("Failed to promote next primary photo:", promoteError);
     }
 
     toast("Photo deleted.", "success");
