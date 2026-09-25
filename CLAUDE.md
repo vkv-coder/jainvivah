@@ -419,6 +419,19 @@ Mobile first. Dignified and warm, not a generic startup gradient look.
       policy on `mt_profiles`, not just the client-side check — needs the
       current `mt_profiles` SELECT policy read first so a new one doesn't
       conflict with it.
+
+**`sw.js` caching strategy changed to network-first on 25 Sep 2026.** It was
+cache-first with a manually-bumped `CACHE_NAME` ("MT_V3"), which meant every
+edit to a shell file (`index.html`, `myprofile.html`, `register.html`,
+`app.js`, `config.js`, `profile-shared.js`, `styles.css`, ...) silently kept
+being served stale until someone remembered to also bump that string in a
+completely different file — an entire session of fixes on 25 Sep 2026 looked
+"not working" purely because of this. Now every request tries the network
+first and only falls back to the cache when offline, so no version bump is
+needed for a deploy to show up — just a normal reload. If a new shell file
+is added, still add it to `SHELL_FILES` so it has an offline fallback, but
+forgetting to bump `CACHE_NAME` can no longer hide a fix.
+
 - [ ] Create the Telegram bot for this app (`JainVivahBot`) via @BotFather
 - [ ] Photo watermark — Batch 3
 - [ ] Weekly automatic database export to Google Drive (free tier has **no

@@ -1,16 +1,13 @@
 // Service worker for Jain Vivah.
-// Caches the app shell so the site opens fast and works offline-ish.
-// Supabase API calls are always fetched fresh from the network — matrimonial
-// data must never be served stale from a cache.
-
-// Bump this version string any time index.html/myprofile.html/register.html/
-// app.js/config.js/profile-shared.js/styles.css (or any other SHELL_FILES
-// entry) changes. A service worker only re-fetches its precached shell when
-// sw.js itself changes byte-for-byte - if only the shell files change but
-// this string doesn't, browsers keep serving the old cached copies forever,
-// silently hiding every deploy. Was stuck on MT_V3 through a whole session
-// of fixes on 25 Sep 2026 before this was caught.
-const CACHE_NAME = "MT_V4";
+// Network-first: every request tries the network first, so a deploy shows up
+// on the very next reload with no version bump needed. The cache is kept
+// purely as an offline fallback (updated with whatever last loaded
+// successfully) - not the primary source of truth. This app changes too
+// often during active development for a cache-first shell to be safe; a
+// whole session on 25 Sep 2026 was spent debugging pages that looked
+// "unfixed" only because the old cache-first strategy (version "MT_V3"/
+// "MT_V4") kept serving stale copies of files that had already been fixed.
+const CACHE_NAME = "MT_V5";
 
 const SHELL_FILES = [
   "index.html",
@@ -30,8 +27,12 @@ const SHELL_FILES = [
 ];
 
 self.addEventListener("install", (event) => {
+  // Best-effort initial offline fallback - failure here must never block
+  // install (e.g. a single 404 used to abort the whole addAll).
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_FILES))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(SHELL_FILES.map((file) => cache.add(file).catch(() => {})))
+    )
   );
   self.skipWaiting();
 });
@@ -63,9 +64,12 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).catch(() => cached);
-    })
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
