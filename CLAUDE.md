@@ -476,6 +476,29 @@ Mobile first. Dignified and warm, not a generic startup gradient look.
       could read any active member's full profile and photos without ever
       being verified. Confirmed applied live by the user.
 
+- [x] **Fixed 26 Sep 2026** — `register.html` and `myprofile.html` were
+      completely broken for every member: both re-declared `const
+      PROFESSIONS_WITHOUT_INCOME` inline even though `profile-shared.js`
+      (loaded on both pages) already declares it at top level. Two top-level
+      `const` with the same name in the same scope is a `SyntaxError`, which
+      aborts parsing of the *entire* inline `<script>` block before any of it
+      runs — not a runtime bug, a parse-time one. Symptom: blank profile
+      forms with no prefill and no "Logged in as" line, on every load,
+      regardless of cache state — found via a live member (Neha /
+      `kaavyaintl@gmail.com`) whose already-saved profile appeared empty.
+      Fixed by deleting the duplicate from both files, keeping the shared one.
+
+- [x] **Fixed 26 Sep 2026** — `mt_contacts_upd` RLS policy had no admin
+      bypass (`using (user_id = auth.uid())` only), unlike `mt_contacts_del`
+      which already had `or mt_is_admin(auth.uid())`. This meant admin.html's
+      Verify button silently updated **zero rows** — no error, since RLS just
+      filters which rows match rather than throwing — so a verified member
+      never actually left the pending list even after repeated
+      verify/re-login attempts. Fixed with `alter policy mt_contacts_upd ...
+      using ((user_id = auth.uid()) or mt_is_admin(auth.uid())) with check
+      (same)`. Worth re-checking other tables for this same
+      DELETE-has-admin-bypass-but-UPDATE-doesn't asymmetry.
+
 **`sw.js` caching strategy changed to network-first on 25 Sep 2026.** It was
 cache-first with a manually-bumped `CACHE_NAME` ("MT_V3"), which meant every
 edit to a shell file (`index.html`, `myprofile.html`, `register.html`,
