@@ -15,4 +15,4 @@ const APP_URL = "https://jainvivah.anyapps.in";
 // WhatsApp number members message to verify their mobile (manual process).
 // Replace with the real number, in international format with no + or spaces
 // (e.g. "919812345678").
-const WHATSAPP_VERIFY_NUMBER = "919XXXXXXXXX";
+const WHATSAPP_VERIFY_NUMBER = "919327243611";
