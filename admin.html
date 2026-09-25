@@ -20,6 +20,10 @@
     padding: 14px; margin-bottom: 12px;
   }
   .adm-row-main { flex: 1; min-width: 0; }
+  /* .mt-btn is width:100% by default (right everywhere else in the app,
+     where a button is alone in its own card) - override it here so it sits
+     compactly beside the row text instead of claiming the whole row. */
+  .adm-row .mt-btn { width: auto; flex-shrink: 0; white-space: nowrap; }
   .adm-name { font-weight: 700; color: var(--charcoal); font-size: 15px; }
   .adm-meta { font-size: 13px; color: #6b5a4e; margin-top: 2px; }
   .adm-code { font-family: monospace; background: #F5EDE3; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
