@@ -149,8 +149,13 @@ function describeSaveError(error, payload) {
 // ---------------------------------------------------------------------
 
 // Small slide-in notice. type is "success" | "error" | "info".
-function toast(message, type) {
+// Pass { sticky: true } for a message with real instructions the member
+// needs time to read (e.g. "check your email for a reset link") - it stays
+// on screen with a close (×) button instead of auto-dismissing after 3.5s,
+// which was too fast to read for anything longer than a one-line confirmation.
+function toast(message, type, opts) {
   type = type || "info";
+  opts = opts || {};
 
   let container = document.getElementById("mt-toast-container");
   if (!container) {
@@ -161,16 +166,34 @@ function toast(message, type) {
 
   const note = document.createElement("div");
   note.className = "mt-toast mt-toast-" + type;
-  note.textContent = message;
+
+  const textEl = document.createElement("span");
+  textEl.textContent = message;
+  note.appendChild(textEl);
+
+  function dismiss() {
+    note.classList.remove("mt-toast-show");
+    setTimeout(() => note.remove(), 300);
+  }
+
+  if (opts.sticky) {
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "mt-toast-close";
+    closeBtn.setAttribute("aria-label", "Dismiss");
+    closeBtn.textContent = "×";
+    closeBtn.addEventListener("click", dismiss);
+    note.appendChild(closeBtn);
+  }
+
   container.appendChild(note);
 
   // Force a layout so the slide-in transition actually plays.
   requestAnimationFrame(() => note.classList.add("mt-toast-show"));
 
-  setTimeout(() => {
-    note.classList.remove("mt-toast-show");
-    setTimeout(() => note.remove(), 300);
-  }, 3500);
+  if (!opts.sticky) {
+    setTimeout(dismiss, 3500);
+  }
 }
 
 // Queues a toast to show on the *next* page (e.g. right after a redirect),

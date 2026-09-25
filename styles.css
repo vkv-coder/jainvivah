@@ -419,6 +419,9 @@ a {
 
 .mt-toast {
   max-width: 90%;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   background: var(--charcoal);
   color: var(--white);
   padding: 12px 18px;
@@ -428,6 +431,19 @@ a {
   transform: translateY(-16px);
   opacity: 0;
   transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.mt-toast-close {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.8;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0;
+  margin-left: auto;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .mt-toast-show {
