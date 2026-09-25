@@ -176,8 +176,8 @@
     </div>
 
     <div class="mt-field">
-      <label for="mp-income">Annual income *</label>
-      <select id="mp-income" required>
+      <label for="mp-income" id="mp-income-label">Annual income *</label>
+      <select id="mp-income">
         <option value="" disabled selected>Choose one</option>
       </select>
     </div>
@@ -409,15 +409,15 @@
     updateOccupationDetailLabel(e.target.value);
   });
 
+  const PROFESSIONS_WITHOUT_INCOME = ["Student", "Homemaker"];
+
   function updateOccupationDetailLabel(profession) {
     const label = document.getElementById("mp-occupation-detail-label");
-    if (profession === "Student") {
-      label.textContent = "College name (optional)";
-    } else if (profession === "Other") {
-      label.textContent = "Business / Company name (optional)";
-    } else {
-      label.textContent = "Business / Company name (optional)";
-    }
+    label.textContent = profession === "Student" ? "College name (optional)" : "Business / Company name (optional)";
+
+    const incomeLabel = document.getElementById("mp-income-label");
+    const incomeExempt = PROFESSIONS_WITHOUT_INCOME.includes(profession);
+    incomeLabel.textContent = incomeExempt ? "Annual income (optional)" : "Annual income *";
   }
 
   async function loadProfile() {
@@ -534,10 +534,11 @@
     const income = document.getElementById("mp-income").value;
     const prefAgeMin = document.getElementById("mp-pref-age-min").value;
     const prefAgeMax = document.getElementById("mp-pref-age-max").value;
+    const incomeExempt = PROFESSIONS_WITHOUT_INCOME.includes(profession === "Other" ? professionOther : profession);
 
     if (
       !gender || !fullName || !managedBy || !dob || !heightCm || !weight || !marital || !diet ||
-      !sect || !city || !state || !education || !profession || !income ||
+      !sect || !city || !state || !education || !profession || (!income && !incomeExempt) ||
       !prefAgeMin || !prefAgeMax
     ) {
       toast("Please fill in all fields marked with *.", "error");
@@ -589,7 +590,7 @@
       education: education,
       profession: profession,
       occupation_detail: occupationDetail || null,
-      annual_income: income,
+      annual_income: income || null,
       pref_age_min: Number(prefAgeMin),
       pref_age_max: Number(prefAgeMax)
     };

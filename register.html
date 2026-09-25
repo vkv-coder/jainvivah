@@ -194,8 +194,8 @@
       </div>
 
       <div class="mt-field">
-        <label for="s3-income">Annual income *</label>
-        <select id="s3-income" required>
+        <label for="s3-income" id="s3-income-label">Annual income *</label>
+        <select id="s3-income">
           <option value="" disabled selected>Choose one</option>
         </select>
       </div>
@@ -419,9 +419,15 @@
     updateOccupationDetailLabel(e.target.value);
   });
 
+  const PROFESSIONS_WITHOUT_INCOME = ["Student", "Homemaker"];
+
   function updateOccupationDetailLabel(profession) {
     const label = document.getElementById("s3-occupation-detail-label");
     label.textContent = profession === "Student" ? "College name (optional)" : "Business / Company name (optional)";
+
+    const incomeLabel = document.getElementById("s3-income-label");
+    const incomeExempt = PROFESSIONS_WITHOUT_INCOME.includes(profession);
+    incomeLabel.textContent = incomeExempt ? "Annual income (optional)" : "Annual income *";
   }
 
   // ---------------- Step navigation ----------------
@@ -720,7 +726,8 @@
       return;
     }
     const payload = getStep3Fields();
-    if (!payload.education || !payload.profession || !payload.annual_income) {
+    const incomeExempt = PROFESSIONS_WITHOUT_INCOME.includes(payload.profession);
+    if (!payload.education || !payload.profession || (!payload.annual_income && !incomeExempt)) {
       toast("Please choose Education, Profession and Annual income.", "error");
       return;
     }

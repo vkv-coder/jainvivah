@@ -159,16 +159,23 @@ const REQUIRED_FIELDS = {
   ]
 };
 
+// Students and homemakers typically have no income of their own - annual
+// income is skipped as a required field for these two professions (still
+// fine to fill in if they want to).
+const PROFESSIONS_WITHOUT_INCOME = ["Student", "Homemaker"];
+
 // Checks a profile row against every required field across steps 1-4,
 // plus mobile (from the contact row) and at least one photo (step 5).
 // Returns an array of { step, label } for anything missing (empty array
 // means the profile is complete and ready to submit).
 function findMissingFields(profile, contact, photoCount) {
   const missing = [];
+  const incomeExempt = !!(profile && PROFESSIONS_WITHOUT_INCOME.includes(profile.profession));
 
   Object.keys(REQUIRED_FIELDS).forEach((stepKey) => {
     const step = Number(stepKey);
     REQUIRED_FIELDS[step].forEach(([field, label]) => {
+      if (field === "annual_income" && incomeExempt) return;
       const value = profile ? profile[field] : null;
       if (value === null || value === undefined || value === "") {
         missing.push({ step: step, label: label });
