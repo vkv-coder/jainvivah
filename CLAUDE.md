@@ -58,7 +58,9 @@ first created under the wrong zone (`sportbook.in`). Both caused
 
 ## 3. Supabase
 
-**Project: `Rotary_Events`** — shared with SportBook, DealLagi, Trust Analysis.
+**Project: `Rotary_Events`** — shared with DealLagi, Trust Analysis. (Corrected
+25 Sep 2026: SportBook is on a *different* Supabase project, not this one —
+earlier notes here were wrong about that.)
 
 - URL: `https://wrzpgultvahxbrgooibn.supabase.co`
 - Table prefix for this app: **`mt_`**
