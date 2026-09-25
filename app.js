@@ -20,7 +20,14 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 async function requireAuth() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) {
-    window.location.href = "index.html";
+    // Remember which page actually wanted the login, so the login form can
+    // send the member straight back there afterward instead of always
+    // falling through to routeAfterLogin()'s generic Browse/register.html
+    // choice - e.g. admin.html sending an admin to Login should return them
+    // to admin.html, not dump them on Browse just because their own profile
+    // happens to be complete.
+    const here = location.pathname.split("/").pop() || "index.html";
+    window.location.href = "index.html?redirect=" + encodeURIComponent(here);
     return null;
   }
   return session;

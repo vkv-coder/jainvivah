@@ -223,7 +223,18 @@
     }
 
     toast("Welcome back!", "success");
-    routeAfterLogin();
+
+    // If requireAuth() sent us here from a specific page (e.g. an admin
+    // bounced from admin.html), go straight back there instead of always
+    // falling through to routeAfterLogin()'s generic Browse/register.html
+    // choice. Restricted to a bare "name.html" pattern - never a full URL -
+    // so this can't be turned into an open redirect.
+    const redirectTo = new URLSearchParams(location.search).get("redirect");
+    if (redirectTo && /^[a-zA-Z0-9_-]+\.html$/.test(redirectTo)) {
+      window.location.href = redirectTo;
+    } else {
+      routeAfterLogin();
+    }
   });
 
   // ---------------- Forgot password ----------------
@@ -376,7 +387,12 @@
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
-      routeAfterLogin();
+      const redirectTo = new URLSearchParams(location.search).get("redirect");
+      if (redirectTo && /^[a-zA-Z0-9_-]+\.html$/.test(redirectTo)) {
+        window.location.href = redirectTo;
+      } else {
+        routeAfterLogin();
+      }
     }
   })();
 </script>
