@@ -204,7 +204,15 @@
     submitBtn.disabled = true;
     submitBtn.textContent = "Logging in...";
 
-    const { error } = await supabaseClient.auth.signInWithPassword({ email: tagAuthEmail(email), password });
+    // Try the tagged email first (every account created since email tagging
+    // went live), then fall back to the plain email (any account created
+    // before that, including the admin's own) - without this fallback,
+    // every pre-tagging account would be silently locked out with a
+    // correct password but a now-mismatched stored identity.
+    let { error } = await supabaseClient.auth.signInWithPassword({ email: tagAuthEmail(email), password });
+    if (error) {
+      ({ error } = await supabaseClient.auth.signInWithPassword({ email, password }));
+    }
 
     submitBtn.disabled = false;
     submitBtn.textContent = "Login";
@@ -227,7 +235,14 @@
       return;
     }
 
+    // Supabase deliberately never reveals whether an email exists, so there's
+    // no way to know in advance whether this account predates tagging (plain
+    // email) or not (tagged email) - request both. Whichever one is real
+    // gets a genuine reset email; the other silently does nothing.
     const { error } = await supabaseClient.auth.resetPasswordForEmail(tagAuthEmail(email), {
+      redirectTo: APP_URL + "/reset.html"
+    });
+    await supabaseClient.auth.resetPasswordForEmail(email, {
       redirectTo: APP_URL + "/reset.html"
     });
     if (error) {
