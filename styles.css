@@ -98,6 +98,45 @@ a {
   padding: 6px;
 }
 
+/* Prominent nav pill centered under the logo (e.g. "My Profile" on Browse,
+   "Browse" on My Profile) - deliberately more visible than the footer links. */
+.mt-header-nav-link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: var(--maroon);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+/* Multi-select checkbox list (e.g. Education - two or more degrees). */
+.mt-checkbox-list {
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--white);
+}
+
+.mt-checkbox-list label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.mt-checkbox-list input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 /* Small back link tucked into the header's top-left corner, mirroring logout. */
 .mt-header-back {
   position: absolute;

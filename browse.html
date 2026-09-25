@@ -46,6 +46,7 @@
   <button type="button" class="mt-header-back" onclick="if(window.history.length>1){history.back();}else{location.href='myprofile.html';}">&larr; Back</button>
   <button type="button" class="mt-header-logout" onclick="logout()">Logout</button>
   <div class="mt-logo">Jain Vivah</div>
+  <a href="myprofile.html" class="mt-header-nav-link">My Profile</a>
 </div>
 
 <div class="mt-page">
@@ -113,7 +114,7 @@
 
 <div class="mt-footer">
   <div><a href="myprofile.html">My Profile</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div>
-  <div class="mt-brand">AnyApps.in</div>
+  <div class="mt-brand">Powered by AnyApps.in</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -161,7 +162,38 @@
     return gender === "male" ? "female" : "male";
   }
 
+  // ---------------- Filters persist across visits ----------------
+  const FILTER_IDS = ["f-age-min", "f-age-max", "f-city", "f-sect", "f-diet", "f-education", "f-profession", "f-marital"];
+  const FILTERS_KEY = "mt_browse_filters";
+
+  function saveFiltersToStorage() {
+    const values = {};
+    FILTER_IDS.forEach((id) => { values[id] = document.getElementById(id).value; });
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(values));
+  }
+
+  function restoreFiltersFromStorage() {
+    let values;
+    try {
+      values = JSON.parse(localStorage.getItem(FILTERS_KEY) || "{}");
+    } catch (e) {
+      return;
+    }
+    let anySet = false;
+    FILTER_IDS.forEach((id) => {
+      if (values[id]) {
+        document.getElementById(id).value = values[id];
+        anySet = true;
+      }
+    });
+    if (anySet) {
+      document.getElementById("br-filters").style.display = "block";
+      document.getElementById("br-toggle-btn").textContent = "Hide Filters ▴";
+    }
+  }
+
   async function runSearch() {
+    saveFiltersToStorage();
     const resultsEl = document.getElementById("br-results");
     const countEl = document.getElementById("br-count");
     resultsEl.innerHTML = '<p class="mt-hint">Searching...</p>';
@@ -185,7 +217,10 @@
     if (diet) query = query.eq("diet", diet);
 
     const education = document.getElementById("f-education").value;
-    if (education) query = query.eq("education", education);
+    // Members can now hold two or more degrees (comma-separated), so this
+    // matches education containing the chosen degree rather than requiring
+    // an exact equal.
+    if (education) query = query.ilike("education", "%" + education + "%");
 
     const profession = document.getElementById("f-profession").value;
     if (profession) query = query.eq("profession", profession);
@@ -259,8 +294,21 @@
       return;
     }
 
+    const { data: contact } = await supabaseClient
+      .from("mt_contacts")
+      .select("mobile_verified")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+    if ((!contact || !contact.mobile_verified) && !(await isAdmin())) {
+      queueToast("Please verify your mobile number on WhatsApp before browsing other profiles.", "info");
+      window.location.href = "myprofile.html";
+      return;
+    }
+
     myProfile = profile;
     populateFilterDropdowns();
+    restoreFiltersFromStorage();
     await runSearch();
   })();
 </script>

@@ -78,15 +78,22 @@
           <button type="button" class="mt-choice" data-value="male">Male</button>
           <button type="button" class="mt-choice" data-value="female">Female</button>
         </div>
-        <div class="mt-hint" id="s1-gender-locked-hint" style="display:none;">
-          Gender cannot be changed. Contact support if this is wrong.
-        </div>
         <input type="hidden" id="s1-gender">
       </div>
 
       <div class="mt-field">
-        <label for="s1-dob">Date of birth *</label>
-        <input type="date" id="s1-dob" required>
+        <label>Date of birth (Day / Month / Year) *</label>
+        <div class="mt-range-row">
+          <select id="s1-dob-day" required></select>
+          <select id="s1-dob-month" required></select>
+          <select id="s1-dob-year" required></select>
+        </div>
+      </div>
+
+      <div class="mt-field">
+        <label>Age</label>
+        <div id="s1-age-display" style="padding:12px 14px; background:#F5EDE3; border-radius:10px; font-weight:600;">—</div>
+        <div class="mt-hint">Calculated automatically from date of birth.</div>
       </div>
 
       <div class="mt-field">
@@ -115,6 +122,11 @@
         </select>
       </div>
 
+      <div class="mt-field" id="s1-diet-other-wrap" style="display:none;">
+        <label for="s1-diet-other">Please specify your diet *</label>
+        <input type="text" id="s1-diet-other">
+      </div>
+
       <div class="mt-step-nav">
         <button type="button" class="mt-btn mt-btn-primary" id="s1-next">Next</button>
       </div>
@@ -128,6 +140,11 @@
         <select id="s2-sect" required>
           <option value="" disabled selected>Choose one</option>
         </select>
+      </div>
+
+      <div class="mt-field" id="s2-sect-other-wrap" style="display:none;">
+        <label for="s2-sect-other">Please specify your sect *</label>
+        <input type="text" id="s2-sect-other">
       </div>
 
       <div class="mt-field">
@@ -150,10 +167,13 @@
     <!-- ============ STEP 3: EDUCATION & WORK (OPEN) ============ -->
     <section class="mt-step" data-step="3" style="display:none;">
       <div class="mt-field">
-        <label for="s3-education">Education *</label>
-        <select id="s3-education" required>
-          <option value="" disabled selected>Choose one</option>
-        </select>
+        <label>Education * <span class="mt-hint">(select two or more if applicable)</span></label>
+        <div class="mt-checkbox-list" id="s3-education"></div>
+      </div>
+
+      <div class="mt-field" id="s3-education-other-wrap" style="display:none;">
+        <label for="s3-education-other">Please specify education *</label>
+        <input type="text" id="s3-education-other">
       </div>
 
       <div class="mt-field">
@@ -161,6 +181,16 @@
         <select id="s3-profession" required>
           <option value="" disabled selected>Choose one</option>
         </select>
+      </div>
+
+      <div class="mt-field" id="s3-profession-other-wrap" style="display:none;">
+        <label for="s3-profession-other">Please specify your profession *</label>
+        <input type="text" id="s3-profession-other">
+      </div>
+
+      <div class="mt-field">
+        <label for="s3-occupation-detail" id="s3-occupation-detail-label">Business / Company name (optional)</label>
+        <input type="text" id="s3-occupation-detail">
       </div>
 
       <div class="mt-field">
@@ -214,6 +244,21 @@
       <div class="mt-field">
         <label for="s6-mobile">Mobile *</label>
         <input type="tel" id="s6-mobile" inputmode="numeric" maxlength="10" placeholder="10 digit mobile number" required>
+      </div>
+
+      <div class="mt-field">
+        <label for="s6-mobile-relation">This mobile number belongs to *</label>
+        <select id="s6-mobile-relation" required>
+          <option value="" disabled selected>Choose one</option>
+          <option value="self">Self</option>
+          <option value="father">Father</option>
+          <option value="mother">Mother</option>
+          <option value="brother">Brother</option>
+          <option value="sister">Sister</option>
+          <option value="uncle">Uncle</option>
+          <option value="aunt">Aunt</option>
+          <option value="relative">Other relative</option>
+        </select>
       </div>
 
       <div class="mt-field">
@@ -289,8 +334,8 @@
   <div>
     <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a>
   </div>
-  <div class="mt-brand">AnyApps.in</div>
-  <div>Support: <a href="mailto:info.anyapps@gmail.com">info.anyapps@gmail.com</a></div>
+  <div class="mt-brand">Powered by AnyApps.in</div>
+  <div>Support: <span data-support-email></span></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -335,9 +380,48 @@
     fillSelect(document.getElementById("s1-marital"), MARITAL_STATUS_OPTIONS);
     fillSelect(document.getElementById("s1-diet"), DIET_OPTIONS);
     fillSelect(document.getElementById("s2-sect"), SECT_OPTIONS);
-    fillSelect(document.getElementById("s3-education"), EDUCATION_OPTIONS);
     fillSelect(document.getElementById("s3-profession"), PROFESSION_OPTIONS);
     fillSelect(document.getElementById("s3-income"), ANNUAL_INCOME_OPTIONS);
+
+    renderCheckboxList(document.getElementById("s3-education"), EDUCATION_OPTIONS);
+    wireOtherToggle(document.getElementById("s3-education"), document.getElementById("s3-education-other-wrap"));
+
+    populateDobDropdowns(
+      document.getElementById("s1-dob-day"),
+      document.getElementById("s1-dob-month"),
+      document.getElementById("s1-dob-year")
+    );
+  }
+
+  // ---------------- Date of birth -> Age ----------------
+  function recalcAgeDisplay() {
+    const dob = composeDobIso(
+      document.getElementById("s1-dob-day").value,
+      document.getElementById("s1-dob-month").value,
+      document.getElementById("s1-dob-year").value
+    );
+    const age = calcAge(dob);
+    document.getElementById("s1-age-display").textContent = age === null ? "—" : age + " years";
+  }
+  ["s1-dob-day", "s1-dob-month", "s1-dob-year"].forEach((id) => {
+    document.getElementById(id).addEventListener("change", recalcAgeDisplay);
+  });
+
+  // ---------------- "Other" reveal fields ----------------
+  document.getElementById("s1-diet").addEventListener("change", (e) => {
+    document.getElementById("s1-diet-other-wrap").style.display = e.target.value === "other" ? "block" : "none";
+  });
+  document.getElementById("s2-sect").addEventListener("change", (e) => {
+    document.getElementById("s2-sect-other-wrap").style.display = e.target.value === "Other" ? "block" : "none";
+  });
+  document.getElementById("s3-profession").addEventListener("change", (e) => {
+    document.getElementById("s3-profession-other-wrap").style.display = e.target.value === "Other" ? "block" : "none";
+    updateOccupationDetailLabel(e.target.value);
+  });
+
+  function updateOccupationDetailLabel(profession) {
+    const label = document.getElementById("s3-occupation-detail-label");
+    label.textContent = profession === "Student" ? "College name (optional)" : "Business / Company name (optional)";
   }
 
   // ---------------- Step navigation ----------------
@@ -511,11 +595,16 @@
   function getStep1Fields() {
     const fullName = document.getElementById("s1-full-name").value.trim();
     const gender = document.getElementById("s1-gender").value;
-    const dob = document.getElementById("s1-dob").value;
+    const dob = composeDobIso(
+      document.getElementById("s1-dob-day").value,
+      document.getElementById("s1-dob-month").value,
+      document.getElementById("s1-dob-year").value
+    );
     const heightCm = document.getElementById("s1-height").value;
     const weight = document.getElementById("s1-weight").value;
     const marital = document.getElementById("s1-marital").value;
     const diet = document.getElementById("s1-diet").value;
+    const dietOther = document.getElementById("s1-diet-other").value.trim();
 
     // Every one of these is NOT NULL on mt_profiles — stop and ask on the
     // form rather than ever attempting a save with one of them missing.
@@ -535,6 +624,10 @@
       toast("Please fill in all required fields.", "error");
       return null;
     }
+    if (diet === "other" && !dietOther) {
+      toast("Please specify your diet.", "error");
+      return null;
+    }
 
     const ageError = checkAgeRule(dob, normaliseCode(gender));
     if (ageError) {
@@ -549,7 +642,8 @@
       height_cm: Number(heightCm),
       weight_kg: Number(weight),
       marital_status: marital,
-      diet: diet
+      diet: diet,
+      diet_detail: diet === "other" ? dietOther : null
     };
 
     // Carry over managed_by from signup, once, without asking the member again.
@@ -575,8 +669,11 @@
 
   // ---------------- Step 2 ----------------
   function getStep2Fields() {
+    let sect = document.getElementById("s2-sect").value;
+    const sectOther = document.getElementById("s2-sect-other").value.trim();
+    if (sect === "Other" && sectOther) sect = sectOther;
     return {
-      sect: document.getElementById("s2-sect").value,
+      sect: sect,
       city: document.getElementById("s2-city").value.trim(),
       state: document.getElementById("s2-state").value.trim(),
       country: "India"
@@ -585,6 +682,10 @@
 
   document.getElementById("s2-back").addEventListener("click", () => goToStep(1));
   document.getElementById("s2-next").addEventListener("click", async () => {
+    if (document.getElementById("s2-sect").value === "Other" && !document.getElementById("s2-sect-other").value.trim()) {
+      toast("Please specify your sect.", "error");
+      return;
+    }
     const payload = getStep2Fields();
     if (!payload.sect || !payload.city || !payload.state) {
       toast("Please fill in Sect, City and State.", "error");
@@ -601,15 +702,23 @@
 
   // ---------------- Step 3 ----------------
   function getStep3Fields() {
+    let profession = document.getElementById("s3-profession").value;
+    const professionOther = document.getElementById("s3-profession-other").value.trim();
+    if (profession === "Other" && professionOther) profession = professionOther;
     return {
-      education: document.getElementById("s3-education").value,
-      profession: document.getElementById("s3-profession").value,
+      education: getCheckboxListValue(document.getElementById("s3-education"), document.getElementById("s3-education-other")),
+      profession: profession,
+      occupation_detail: document.getElementById("s3-occupation-detail").value.trim() || null,
       annual_income: document.getElementById("s3-income").value || null
     };
   }
 
   document.getElementById("s3-back").addEventListener("click", () => goToStep(2));
   document.getElementById("s3-next").addEventListener("click", async () => {
+    if (document.getElementById("s3-profession").value === "Other" && !document.getElementById("s3-profession-other").value.trim()) {
+      toast("Please specify your profession.", "error");
+      return;
+    }
     const payload = getStep3Fields();
     if (!payload.education || !payload.profession || !payload.annual_income) {
       toast("Please choose Education, Profession and Annual income.", "error");
@@ -689,10 +798,15 @@
 
   document.getElementById("s6-save-contact").addEventListener("click", async () => {
     const mobile = document.getElementById("s6-mobile").value.trim();
+    const mobileRelation = document.getElementById("s6-mobile-relation").value;
     const email = document.getElementById("s6-email").value.trim();
 
     if (!/^\d{10}$/.test(mobile)) {
       toast("Please enter a valid 10 digit mobile number.", "error");
+      return;
+    }
+    if (!mobileRelation) {
+      toast("Please select whose mobile number this is.", "error");
       return;
     }
 
@@ -700,6 +814,7 @@
       {
         user_id: currentUser.id,
         mobile: mobile,
+        mobile_relation: mobileRelation,
         email: email || null
       },
       { onConflict: "user_id" }
@@ -809,6 +924,7 @@
 
   async function deleteBiodata(path) {
     if (!path) return;
+    if (!confirm("Delete your uploaded bio-data file? This cannot be undone.")) return;
     await supabaseClient.storage.from(BIODATA_BUCKET).remove([path]);
 
     const payload = normaliseCodes({ biodata_path: null });
@@ -857,11 +973,9 @@
     }, 1200);
   });
 
-  // Wires the Male/Female tap buttons. Clicks are ignored once gender has
-  // already been saved to mt_profiles (locked, per setGenderField below).
+  // Wires the Male/Female tap buttons. Gender can be changed at any time.
   document.querySelectorAll("#s1-gender-group .mt-choice").forEach((btn) => {
     btn.addEventListener("click", () => {
-      if (btn.disabled) return;
       document.getElementById("s1-gender").value = btn.dataset.value;
       document.querySelectorAll("#s1-gender-group .mt-choice").forEach((b) => {
         b.classList.toggle("mt-choice-selected", b === btn);
@@ -869,20 +983,14 @@
     });
   });
 
-  // Populates and locks/unlocks the gender buttons.
-  // - savedGender (already in mt_profiles) always wins and locks the field.
-  // - otherwise fall back to whatever signup carried in localStorage.
-  // - otherwise leave both buttons unselected so the member must choose.
+  // Populates the gender buttons: savedGender (already in mt_profiles) wins,
+  // otherwise fall back to whatever signup carried in localStorage.
   function setGenderField(savedGender, signupGender) {
     const gender = savedGender || signupGender || "";
-    const locked = !!savedGender;
-
     document.getElementById("s1-gender").value = gender;
     document.querySelectorAll("#s1-gender-group .mt-choice").forEach((btn) => {
       btn.classList.toggle("mt-choice-selected", btn.dataset.value === gender);
-      btn.disabled = locked;
     });
-    document.getElementById("s1-gender-locked-hint").style.display = locked ? "block" : "none";
   }
 
   // ---------------- Prefill from an existing draft, if any ----------------
@@ -897,18 +1005,49 @@
     setGenderField(normaliseCode((profile && profile.gender) || ""), normaliseCode(signupData.gender || ""));
 
     if (profile) {
-      if (profile.dob) document.getElementById("s1-dob").value = profile.dob;
+      const dobParts = parseDobIso(profile.dob);
+      if (dobParts.day) document.getElementById("s1-dob-day").value = dobParts.day;
+      if (dobParts.month) document.getElementById("s1-dob-month").value = dobParts.month;
+      if (dobParts.year) document.getElementById("s1-dob-year").value = dobParts.year;
+      recalcAgeDisplay();
+
       if (profile.height_cm) document.getElementById("s1-height").value = profile.height_cm;
       if (profile.weight_kg) document.getElementById("s1-weight").value = profile.weight_kg;
       if (profile.marital_status) document.getElementById("s1-marital").value = profile.marital_status;
       if (profile.diet) document.getElementById("s1-diet").value = profile.diet;
+      if (profile.diet === "other" && profile.diet_detail) {
+        document.getElementById("s1-diet-other-wrap").style.display = "block";
+        document.getElementById("s1-diet-other").value = profile.diet_detail;
+      }
 
-      document.getElementById("s2-sect").value = profile.sect || signupData.sect || "";
+      const sectValue = profile.sect || signupData.sect || "";
+      const knownSect = SECT_OPTIONS.includes(sectValue);
+      document.getElementById("s2-sect").value = sectValue ? (knownSect ? sectValue : "Other") : "";
+      if (sectValue && !knownSect) {
+        document.getElementById("s2-sect-other-wrap").style.display = "block";
+        document.getElementById("s2-sect-other").value = sectValue;
+      }
       if (profile.city) document.getElementById("s2-city").value = profile.city;
       if (profile.state) document.getElementById("s2-state").value = profile.state;
 
-      if (profile.education) document.getElementById("s3-education").value = profile.education;
-      if (profile.profession) document.getElementById("s3-profession").value = profile.profession;
+      setCheckboxListValue(
+        document.getElementById("s3-education"),
+        document.getElementById("s3-education-other-wrap"),
+        document.getElementById("s3-education-other"),
+        profile.education || ""
+      );
+
+      if (profile.profession) {
+        const knownProfession = PROFESSION_OPTIONS.includes(profile.profession);
+        document.getElementById("s3-profession").value = knownProfession ? profile.profession : "Other";
+        if (!knownProfession) {
+          document.getElementById("s3-profession-other-wrap").style.display = "block";
+          document.getElementById("s3-profession-other").value = profile.profession;
+        }
+        updateOccupationDetailLabel(document.getElementById("s3-profession").value);
+      }
+      document.getElementById("s3-occupation-detail").value = profile.occupation_detail || "";
+
       if (profile.annual_income) document.getElementById("s3-income").value = profile.annual_income;
 
       if (profile.pref_age_min) document.getElementById("s5-age-min").value = profile.pref_age_min;
@@ -919,6 +1058,7 @@
 
     if (contact) {
       if (contact.mobile) document.getElementById("s6-mobile").value = contact.mobile;
+      if (contact.mobile_relation) document.getElementById("s6-mobile-relation").value = contact.mobile_relation;
       document.getElementById("s6-email").value = contact.email || currentUser.email || "";
     } else {
       document.getElementById("s6-email").value = currentUser.email || "";

@@ -100,7 +100,7 @@
     <p>
       For any privacy question, concern, or grievance, please write to our
       Grievance Officer at
-      <a href="mailto:info.anyapps@gmail.com">info.anyapps@gmail.com</a>.
+      <span data-support-email></span>.
       We aim to respond within a reasonable time.
     </p>
   </div>
@@ -110,9 +110,23 @@
   <div>
     <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a>
   </div>
-  <div class="mt-brand">AnyApps.in</div>
-  <div>Support: <a href="mailto:info.anyapps@gmail.com">info.anyapps@gmail.com</a></div>
+  <div class="mt-brand">Powered by AnyApps.in</div>
+  <div>Support: <span data-support-email></span></div>
 </div>
+
+<script>
+  // Kept dependency-free (no config.js/app.js) so this static legal page
+  // never breaks if the Supabase CDN script fails to load. Builds the
+  // support email at runtime rather than as plain text in the page source,
+  // so mobile data-compression proxies that rewrite visible "@" addresses
+  // (e.g. some Opera Mini/UC Browser modes) have nothing to rewrite.
+  document.querySelectorAll("[data-support-email]").forEach((el) => {
+    const a = document.createElement("a");
+    a.href = "mailto:info.anyapps@gmail.com";
+    a.textContent = "info.anyapps@gmail.com";
+    el.appendChild(a);
+  });
+</script>
 
 </body>
 </html>

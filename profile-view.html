@@ -114,6 +114,18 @@
     const session = await requireAuth();
     if (!session) return;
 
+    const { data: myContact } = await supabaseClient
+      .from("mt_contacts")
+      .select("mobile_verified")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+    if ((!myContact || !myContact.mobile_verified) && !(await isAdmin())) {
+      queueToast("Please verify your mobile number on WhatsApp before viewing other profiles.", "info");
+      window.location.href = "myprofile.html";
+      return;
+    }
+
     const params = new URLSearchParams(location.search);
     const targetId = params.get("id");
     const contentEl = document.getElementById("pv-content");

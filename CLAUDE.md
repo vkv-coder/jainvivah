@@ -28,6 +28,14 @@ Key decisions already settled:
 - No matching/eligibility filter — plain browse with filters
 - Age enforced: female 18+, male 21+ (Indian legal marriage age)
 - Profile managed by Self / Father / Mother / Brother / Sister / Relative
+- **Gender is now editable at any time** (25 Sep 2026) — the earlier "locked
+  after signup" rule was explicitly reversed. `myprofile.html` and
+  `register.html` both show it as a Male/Female tap-choice, never disabled.
+- **Browsing/viewing other profiles requires a verified mobile number**
+  (25 Sep 2026) — enforced client-side in `browse.html` and
+  `profile-view.html` by checking `mt_contacts.mobile_verified` before
+  allowing access. This is NOT yet backed by an RLS policy (client-side
+  only) — see Open Items.
 
 ---
 
@@ -125,6 +133,12 @@ alter table mt_profiles add column if not exists pref_city       text;
 alter table mt_profiles add column if not exists pref_special    text;
 alter table mt_profiles add column if not exists biodata_path    text;
 alter table mt_profiles add column if not exists draft_step      int;
+
+-- Added 25 Sep 2026 - see "Batch 2.5" below.
+alter table mt_profiles add column if not exists education_detail text;   -- college/specialisation detail; also read by profile-view.html
+alter table mt_profiles add column if not exists occupation_detail text;  -- business/company name, or college name if profession = Student
+alter table mt_profiles add column if not exists diet_detail      text;   -- free text when diet = 'other'
+alter table mt_contacts add column if not exists mobile_relation  text;   -- whose number it is: self/father/mother/brother/sister/uncle/aunt/relative
 ```
 
 ### CHECK constraint values — the single biggest source of bugs
@@ -308,6 +322,64 @@ In order:
   My Preference (age range only), Contact & Photos. Contact number/email
   are still only revealed on interest acceptance (Batch 4).
 
+- **Batch 2.5 — Fixes + form rework (25 Sep 2026), all from a live testing
+  pass:**
+  - Fixed a real bug: `myprofile.html`'s "Save profile" read `gender` from
+    the form but never put it in the upsert payload, so the very first save
+    for anyone who reached My Profile without finishing `register.html`
+    (row does not exist yet → upsert takes the INSERT path) hit `null value
+    in column "gender"`. `register.html` never had this bug — it already
+    does a deliberate select-then-insert-or-update. Fixed by adding
+    `gender` to the payload in `myprofile.html`.
+  - Gender unlocked (see decisions above); moved to the top of Basic
+    details on both pages.
+  - Date of birth is now three dropdowns (Day / Month / Year) instead of
+    `<input type="date">`, so it always reads DD/MM/YYYY regardless of
+    device locale (native date inputs follow OS locale, which is not
+    always DD/MM/YYYY). A read-only Age field next to it recalculates on
+    every change via the existing `calcAge()`.
+  - Education is now a checkbox list (two or more degrees allowed),
+    stored as one comma-separated string — no schema change, since
+    `education` has no CHECK constraint. Sect / Diet / Profession each
+    gained an "Other, please specify" text field; for Sect and Profession
+    (unconstrained columns) the typed text replaces the literal word
+    "Other" before saving, for Diet (CHECK-constrained to `other`) the
+    typed text goes into the new `diet_detail` column instead.
+  - Added `occupation_detail` field under Profession, label switches to
+    "College name" when Profession = Student, otherwise "Business /
+    Company name" — both optional. (`education_detail`/`occupation_detail`
+    were already read by `profile-view.html` with no way to fill them in —
+    this closes that gap.)
+  - Added a "this number belongs to" relation dropdown (Self / Father /
+    Mother / Brother / Sister / Uncle / Aunt / Other relative) next to
+    Mobile, stored in the new `mt_contacts.mobile_relation` column.
+  - "My Profile" and "Browse" are now a visible pill link under the logo on
+    each other's page, not just a footer link next to Privacy/Terms.
+  - Added a `<button class="mt-header-back">` (top-left of header,
+    mirrors Logout) on every inner page except `index.html` (nothing to go
+    back to) and `profile-view.html` (already had its own "← Back to
+    Browse" link).
+  - Deleting a photo, a bio-data file, or the whole account now asks for
+    a native `confirm()` on top of whatever gate already existed (account
+    deletion still also requires typing DELETE).
+  - Browse filters persist in `localStorage` (`mt_browse_filters`) and
+    restore (with the filter panel auto-expanded) next time the member
+    opens Browse.
+  - Support email is now rendered by JS from `SUPPORT_EMAIL` into
+    `<span data-support-email>` placeholders instead of sitting as plain
+    "name@domain" text/mailto hrefs in the page source — some mobile
+    carrier/browser data-compression modes (e.g. certain Opera Mini/UC
+    Browser configurations) rewrite plain email text into a
+    "[email protected]" placeholder before non-JS renders ever see it;
+    this sidesteps that for every browser that runs the page's JS.
+    `privacy.html`/`terms.html` carry their own tiny inline copy of this
+    (they intentionally load no other script, so a static legal page never
+    breaks if the Supabase CDN script fails).
+  - Footer brand line changed from bare "AnyApps.in" to "Powered by
+    AnyApps.in" on every page.
+  - Signup CTA now reads "Sign Up Free" (tab) / "Sign Up for Free"
+    (submit button) instead of "Sign up" / "Create account".
+
 ### Not built yet
 
 - **Batch 3 — Browse:** search, filters, profile view, **per-viewer photo
@@ -335,7 +407,18 @@ Mobile first. Dignified and warm, not a generic startup gradient look.
 ## 7. Open items
 
 - [ ] Full end-to-end test of the 5-step form, draft resume and submit
-- [ ] Set the real `WHATSAPP_VERIFY_NUMBER` in `config.js`
+- [ ] Set the real `WHATSAPP_VERIFY_NUMBER` in `config.js` — still the
+      placeholder `919XXXXXXXXX` as of 25 Sep 2026. This is why WhatsApp
+      verification looked broken during testing ("not on WhatsApp", opens
+      WhatsApp Business): the deep link points at a fake number, so
+      WhatsApp itself rejects it and the phone falls back to whichever
+      WhatsApp variant is its default handler - nothing to do with how
+      verification is checked (it is a manual admin process, not automatic).
+- [ ] Back the "unverified members cannot browse/view profiles" rule (added
+      25 Sep 2026 in `browse.html`/`profile-view.html`) with a real RLS
+      policy on `mt_profiles`, not just the client-side check — needs the
+      current `mt_profiles` SELECT policy read first so a new one doesn't
+      conflict with it.
 - [ ] Create the Telegram bot for this app (`JainVivahBot`) via @BotFather
 - [ ] Photo watermark — Batch 3
 - [ ] Weekly automatic database export to Google Drive (free tier has **no

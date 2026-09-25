@@ -225,6 +225,45 @@ function cmToFeet(cm) {
   return feet + " ft " + inches + " in";
 }
 
+// Renders the support email into every element marked data-support-email,
+// built from SUPPORT_EMAIL at runtime rather than sitting as plain text in
+// the page source. Some mobile carriers/browsers (data-compression modes
+// such as Opera Mini) rewrite plain "name@domain" text or mailto hrefs into
+// a "[email protected]" placeholder before the page ever reaches the device;
+// keeping the real address out of the static HTML avoids that rewrite for
+// every browser that actually runs this script.
+function renderSupportEmailLinks() {
+  document.querySelectorAll("[data-support-email]").forEach((el) => {
+    const a = document.createElement("a");
+    a.href = "mailto:" + SUPPORT_EMAIL;
+    a.textContent = SUPPORT_EMAIL;
+    el.textContent = "";
+    el.appendChild(a);
+  });
+}
+document.addEventListener("DOMContentLoaded", renderSupportEmailLinks);
+
+// Composes a "YYYY-MM-DD" ISO date from separate day/month/year dropdowns,
+// or returns "" if any part is missing - used so date of birth can always
+// be entered in a fixed Day / Month / Year order regardless of the
+// device's locale (a native <input type="date"> follows OS locale, which
+// on some phones shows mm/dd/yyyy instead of dd/mm/yyyy).
+function composeDobIso(day, month, year) {
+  if (!day || !month || !year) return "";
+  const d = String(day).padStart(2, "0");
+  const m = String(month).padStart(2, "0");
+  return year + "-" + m + "-" + d;
+}
+
+// Splits a "YYYY-MM-DD" ISO date back into { day, month, year } strings for
+// prefilling the three dropdowns. Returns nulls if dob is empty/invalid.
+function parseDobIso(dob) {
+  if (!dob) return { day: null, month: null, year: null };
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dob);
+  if (!match) return { day: null, month: null, year: null };
+  return { year: match[1], month: String(Number(match[2])), day: String(Number(match[3])) };
+}
+
 // Escapes text before it is inserted into the page as HTML, so member
 // input can never break the layout or run as script.
 function escapeHtml(value) {

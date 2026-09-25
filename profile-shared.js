@@ -73,6 +73,42 @@ function buildHeightOptions() {
   return options;
 }
 
+const DOB_MONTHS = [
+  ["1", "January"], ["2", "February"], ["3", "March"], ["4", "April"],
+  ["5", "May"], ["6", "June"], ["7", "July"], ["8", "August"],
+  ["9", "September"], ["10", "October"], ["11", "November"], ["12", "December"]
+];
+
+// Fills the Day / Month / Year dropdowns used for date of birth, always in
+// that fixed left-to-right order so the form reads as DD / MM / YYYY on
+// every device regardless of locale.
+function populateDobDropdowns(daySelect, monthSelect, yearSelect) {
+  daySelect.innerHTML = '<option value="" disabled selected>Day</option>';
+  for (let d = 1; d <= 31; d++) {
+    const opt = document.createElement("option");
+    opt.value = String(d);
+    opt.textContent = String(d);
+    daySelect.appendChild(opt);
+  }
+
+  monthSelect.innerHTML = '<option value="" disabled selected>Month</option>';
+  DOB_MONTHS.forEach(([value, label]) => {
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = label;
+    monthSelect.appendChild(opt);
+  });
+
+  yearSelect.innerHTML = '<option value="" disabled selected>Year</option>';
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear - 18; y >= currentYear - 90; y--) {
+    const opt = document.createElement("option");
+    opt.value = String(y);
+    opt.textContent = String(y);
+    yearSelect.appendChild(opt);
+  }
+}
+
 // ---------------------------------------------------------------------
 // Validation helpers
 // ---------------------------------------------------------------------
@@ -154,6 +190,75 @@ function findMissingFields(profile, contact, photoCount) {
 // verification message, e.g. "JV4F2A9C1B".
 function generateProfileCode(userId) {
   return "JV" + userId.replace(/-/g, "").slice(0, 8).toUpperCase();
+}
+
+// ---------------------------------------------------------------------
+// Multi-select checkbox list (used for Education - two or more degrees)
+// with an "Other, please specify" text field. Stored on mt_profiles as a
+// single comma-separated text value, e.g. "B.Com, M.Com" - no schema
+// change needed since education has no CHECK constraint.
+// ---------------------------------------------------------------------
+
+function renderCheckboxList(containerEl, options) {
+  containerEl.innerHTML = options
+    .map((opt) => {
+      const id = containerEl.id + "-" + opt.replace(/[^a-z0-9]/gi, "_");
+      return (
+        '<label for="' + id + '"><input type="checkbox" id="' + id + '" value="' + escapeHtml(opt) + '">' +
+        escapeHtml(opt) + "</label>"
+      );
+    })
+    .join("");
+}
+
+// Wires the "Other" checkbox inside a rendered checkbox list to show/hide
+// a free-text field right below it.
+function wireOtherToggle(containerEl, otherWrapEl) {
+  const otherBox = containerEl.querySelector('input[value="Other"]');
+  if (!otherBox) return;
+  otherBox.addEventListener("change", () => {
+    otherWrapEl.style.display = otherBox.checked ? "block" : "none";
+  });
+}
+
+// Reads the checked boxes into a comma-separated string. If "Other" is
+// checked and the free-text field has a value, that typed text replaces
+// the literal word "Other" in the result.
+function getCheckboxListValue(containerEl, otherInputEl) {
+  const values = Array.from(containerEl.querySelectorAll("input[type=checkbox]:checked")).map((cb) => cb.value);
+  const otherIndex = values.indexOf("Other");
+  if (otherIndex !== -1) {
+    const otherText = (otherInputEl.value || "").trim();
+    if (otherText) values[otherIndex] = otherText;
+  }
+  return values.join(", ");
+}
+
+// Prefills a rendered checkbox list from a stored comma-separated string.
+// Any part that doesn't match a known checkbox value is treated as a
+// custom "Other" entry.
+function setCheckboxListValue(containerEl, otherWrapEl, otherInputEl, csvValue) {
+  const parts = (csvValue || "").split(",").map((p) => p.trim()).filter(Boolean);
+  const knownValues = Array.from(containerEl.querySelectorAll("input[type=checkbox]")).map((cb) => cb.value);
+  let hasOther = false;
+  let otherText = "";
+
+  parts.forEach((part) => {
+    if (knownValues.includes(part)) {
+      const cb = containerEl.querySelector('input[value="' + CSS.escape(part) + '"]');
+      if (cb) cb.checked = true;
+    } else {
+      hasOther = true;
+      otherText = part;
+    }
+  });
+
+  const otherBox = containerEl.querySelector('input[value="Other"]');
+  if (hasOther && otherBox) {
+    otherBox.checked = true;
+    otherWrapEl.style.display = "block";
+    otherInputEl.value = otherText;
+  }
 }
 
 // ---------------------------------------------------------------------
@@ -263,7 +368,7 @@ function createPhotoManager(containerEl, userId, onChange) {
       html +=
         '<div class="mt-field">' +
         '<label for="mt-photo-input">Add a photo (' + photos.length + '/' + MAX_PHOTOS + ')</label>' +
-        '<input type="file" id="mt-photo-input" accept="image/*">' +
+        '<input type="file" id="mt-photo-input" accept="image/*,.heic,.heif">' +
         "</div>";
     } else {
       html += '<p class="mt-hint">Maximum of ' + MAX_PHOTOS + ' photos reached. Delete one to add another.</p>';
@@ -345,6 +450,7 @@ function createPhotoManager(containerEl, userId, onChange) {
   }
 
   async function deletePhoto(photoId, storagePath) {
+    if (!confirm("Delete this photo? This cannot be undone.")) return;
     await supabaseClient.storage.from(PHOTOS_BUCKET).remove([storagePath]);
     const { error } = await supabaseClient.from("mt_photos").delete().eq("id", photoId);
 
