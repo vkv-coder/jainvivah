@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-ancestors 'none'; base-uri 'self'; object-src 'none';">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Jain Vivah</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .adm-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 14px; margin-bottom: 12px;
+  }
+  .adm-row-main { flex: 1; min-width: 0; }
+  .adm-name { font-weight: 700; color: var(--charcoal); font-size: 15px; }
+  .adm-meta { font-size: 13px; color: #6b5a4e; margin-top: 2px; }
+  .adm-code { font-family: monospace; background: #F5EDE3; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
+  .adm-empty { text-align: center; padding: 30px 10px; color: #8a7a6d; }
+  .adm-section-title { margin-top: 30px; }
+</style>
+</head>
+<body>
+
+<div class="mt-invocation-strip">🙏 || Jai Jinendra || 🙏</div>
+
+<div class="mt-header">
+  <button type="button" class="mt-header-back" onclick="if(window.history.length>1){history.back();}else{location.href='myprofile.html';}">&larr; Back</button>
+  <button type="button" class="mt-header-logout" onclick="logout()">Logout</button>
+  <div class="mt-logo">Jain Vivah</div>
+  <div class="mt-tagline">Admin · Mobile Verification</div>
+</div>
+
+<div class="mt-page">
+
+  <div id="adm-guard" style="display:none;">
+    <div class="mt-card">
+      <p>This page is only available to admins.</p>
+    </div>
+  </div>
+
+  <div id="adm-content" style="display:none;">
+    <h1>Pending verification (<span id="adm-pending-count">0</span>)</h1>
+    <p class="mt-hint">
+      Check that the WhatsApp message you received (e.g. "VERIFY JVA1B2C3D4") came from the
+      same mobile number shown below for that member, then tap Verify.
+    </p>
+    <div id="adm-pending-list"><p class="mt-hint">Loading...</p></div>
+
+    <h1 class="adm-section-title">Already verified (<span id="adm-verified-count">0</span>)</h1>
+    <div id="adm-verified-list"><p class="mt-hint">Loading...</p></div>
+  </div>
+
+</div>
+
+<div class="mt-footer">
+  <div class="mt-brand">Powered by AnyApps.in</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+  async function fetchProfilesById(userIds) {
+    if (!userIds.length) return {};
+    const { data, error } = await supabaseClient
+      .from("mt_profiles")
+      .select("user_id, full_name, profile_code, gender, city, managed_by")
+      .in("user_id", userIds);
+    if (error || !data) return {};
+    const byId = {};
+    data.forEach((p) => { byId[p.user_id] = p; });
+    return byId;
+  }
+
+  function renderRow(contact, profile, verified) {
+    const name = (profile && profile.full_name) || "(no profile name)";
+    const code = (profile && profile.profile_code) || "—";
+    const gender = (profile && GENDER_LABELS[profile.gender]) || "";
+    const city = (profile && profile.city) || "";
+    const metaParts = [gender, city, "Mobile: " + contact.mobile, contact.mobile_relation ? "(" + contact.mobile_relation + ")" : ""].filter(Boolean);
+
+    const btnLabel = verified ? "Unverify" : "Verify";
+    const btnClass = verified ? "mt-btn mt-btn-outline" : "mt-btn mt-btn-primary";
+
+    return (
+      '<div class="adm-row">' +
+        '<div class="adm-row-main">' +
+          '<div class="adm-name">' + escapeHtml(name) + " · <span class=\"adm-code\">" + escapeHtml(code) + "</span></div>" +
+          '<div class="adm-meta">' + escapeHtml(metaParts.join(" · ")) + "</div>" +
+        "</div>" +
+        '<button type="button" class="' + btnClass + '" data-action="toggle" data-user-id="' + escapeHtml(contact.user_id) + '" data-verify="' + (!verified) + '">' + btnLabel + "</button>" +
+      "</div>"
+    );
+  }
+
+  async function setVerified(userId, verified) {
+    const { error } = await supabaseClient
+      .from("mt_contacts")
+      .update({ mobile_verified: verified })
+      .eq("user_id", userId);
+    if (error) {
+      toast("Could not update: " + error.message, "error");
+      return false;
+    }
+    return true;
+  }
+
+  async function loadLists() {
+    const { data: contacts, error } = await supabaseClient
+      .from("mt_contacts")
+      .select("user_id, mobile, mobile_relation, mobile_verified")
+      .not("mobile", "is", null)
+      .order("user_id");
+
+    if (error) {
+      document.getElementById("adm-pending-list").innerHTML = '<p class="adm-empty">Could not load: ' + escapeHtml(error.message) + "</p>";
+      return;
+    }
+
+    const pending = (contacts || []).filter((c) => !c.mobile_verified);
+    const verified = (contacts || []).filter((c) => c.mobile_verified);
+
+    const profilesById = await fetchProfilesById((contacts || []).map((c) => c.user_id));
+
+    document.getElementById("adm-pending-count").textContent = pending.length;
+    document.getElementById("adm-verified-count").textContent = verified.length;
+
+    const pendingEl = document.getElementById("adm-pending-list");
+    pendingEl.innerHTML = pending.length
+      ? pending.map((c) => renderRow(c, profilesById[c.user_id], false)).join("")
+      : '<p class="adm-empty">Nothing waiting on verification.</p>';
+
+    const verifiedEl = document.getElementById("adm-verified-list");
+    verifiedEl.innerHTML = verified.length
+      ? verified.map((c) => renderRow(c, profilesById[c.user_id], true)).join("")
+      : '<p class="adm-empty">No members verified yet.</p>';
+
+    document.querySelectorAll('[data-action="toggle"]').forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        const ok = await setVerified(btn.dataset.userId, btn.dataset.verify === "true");
+        if (ok) {
+          toast(btn.dataset.verify === "true" ? "Marked verified." : "Marked unverified.", "success");
+          await loadLists();
+        } else {
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
+  (async () => {
+    const session = await requireAuth();
+    if (!session) return;
+
+    if (!(await isAdmin())) {
+      document.getElementById("adm-guard").style.display = "block";
+      return;
+    }
+
+    document.getElementById("adm-content").style.display = "block";
+    await loadLists();
+  })();
+</script>
+
+</body>
+</html>
