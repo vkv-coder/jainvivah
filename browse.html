@@ -306,6 +306,16 @@
       return;
     }
 
+    // One-time celebration the first time a member reaches Browse after an
+    // admin approves their mobile number - closes the silent gap between
+    // "admin clicked Verify" and the member ever finding out. Guarded on
+    // contact.mobile_verified specifically (not just the admin bypass above)
+    // so an unverified admin account never sees this about itself.
+    if (contact && contact.mobile_verified && !localStorage.getItem("mt_verified_seen")) {
+      localStorage.setItem("mt_verified_seen", "true");
+      toast("🎉 Your mobile number is verified — you can now browse and view other profiles!", "success", { sticky: true });
+    }
+
     myProfile = profile;
     populateFilterDropdowns();
     restoreFiltersFromStorage();
