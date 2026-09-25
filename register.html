@@ -416,8 +416,6 @@
     updateOccupationDetailLabel(e.target.value);
   });
 
-  const PROFESSIONS_WITHOUT_INCOME = ["Student", "Homemaker"];
-
   function updateOccupationDetailLabel(profession) {
     const label = document.getElementById("s3-occupation-detail-label");
     label.textContent = profession === "Student" ? "College name (optional)" : "Business / Company name (optional)";
