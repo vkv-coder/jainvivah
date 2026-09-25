@@ -297,6 +297,23 @@
       return;
     }
 
+    // This Supabase project's auth.users is shared across every AnyApps.in
+    // app (SportBook, DealLagi, Trust Analysis, JainVivah) - one login works
+    // across all of them, each with its own separate profile table. When
+    // signUp() is called with an email that's already registered ANYWHERE
+    // on this shared project, Supabase deliberately returns no error and
+    // sends no email (so the signup form can't be used to discover who's
+    // registered) - it just comes back with a real user object whose
+    // identities array is empty. Catch that here and send them to Login
+    // instead of showing a "check your email" message for an email that
+    // was never actually sent.
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      toast("This email is already registered — please log in instead.", "info");
+      mtShowTab("login");
+      document.getElementById("login-email").value = email;
+      return;
+    }
+
     // Stash the basics so register.html can prefill them without asking again.
     localStorage.setItem("mt_signup", JSON.stringify({
       full_name: fullName,
