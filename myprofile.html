@@ -23,7 +23,6 @@
   <button type="button" class="mt-header-logout" onclick="logout()">Logout</button>
   <div class="mt-logo">Jain Vivah</div>
   <a href="browse.html" class="mt-header-nav-link">Browse Profiles</a>
-  <a href="admin.html" id="mp-admin-link" class="mt-header-nav-link" style="display:none; margin-left:8px; background: var(--gold);">Admin</a>
 </div>
 
 <div class="mt-page">
@@ -867,10 +866,6 @@
     await photoManager.render();
     await refreshVerifySection();
     await renderBiodataSection();
-
-    if (await isAdmin()) {
-      document.getElementById("mp-admin-link").style.display = "inline-block";
-    }
   })();
 </script>
 
