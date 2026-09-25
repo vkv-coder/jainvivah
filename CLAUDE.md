@@ -185,7 +185,7 @@ an app was arriving from a personal Gmail address. Replaced with Brevo.
 
 ### Brevo account
 
-- Signed up with `vkvcoder.support@gmail.com`
+- Signed up with `info.anyapps@gmail.com`
 - Free plan: **300 emails per day**, shared across everything using it
 - Domain **`anyapps.in`** authenticated, branded subdomain **`mail.anyapps.in`**
 - SMTP login is **not** an email address — it looks like `b30cb2001@smtp-brevo.com`
@@ -198,7 +198,7 @@ an app was arriving from a personal Gmail address. Replaced with Brevo.
 |---|---|---|---|
 | TXT | `@` | `brevo-code:...` | — |
 | TXT | `@` | `v=spf1 include:spf.brevo.com mx ~all` | — |
-| TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:vkvcoder.support@gmail.com,mailto:rua@dmarc.brevo.com` | — |
+| TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:info.anyapps@gmail.com,mailto:rua@dmarc.brevo.com` | — |
 | CNAME | `brevo1._domainkey` | `b1.anyapps-in.dkim.brevo.com` | **DNS only** |
 | CNAME | `brevo2._domainkey` | `b2.anyapps-in.dkim.brevo.com` | **DNS only** |
 | CNAME | `img.mail` | `mail-anyapps-in.img.brand.brevosend.com` | **DNS only** |
@@ -384,5 +384,5 @@ preferred, not "partial edits" to be avoided.
 
 ### Contacts and branding
 
-- Support email: `vkvcoder.support@gmail.com`
+- Support email: `info.anyapps@gmail.com`
 - Public-facing branding: **AnyApps.in**

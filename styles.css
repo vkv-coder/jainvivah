@@ -98,6 +98,21 @@ a {
   padding: 6px;
 }
 
+/* Small back link tucked into the header's top-left corner, mirroring logout. */
+.mt-header-back {
+  position: absolute;
+  top: 10px;
+  left: 16px;
+  background: none;
+  border: none;
+  color: var(--maroon);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 6px;
+}
+
 .mt-header .mt-logo {
   font-family: var(--font-heading);
   font-size: 28px;
