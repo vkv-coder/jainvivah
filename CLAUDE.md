@@ -463,11 +463,18 @@ Mobile first. Dignified and warm, not a generic startup gradient look.
       WhatsApp itself rejects it and the phone falls back to whichever
       WhatsApp variant is its default handler - nothing to do with how
       verification is checked (it is a manual admin process, not automatic).
-- [ ] Back the "unverified members cannot browse/view profiles" rule (added
-      25 Sep 2026 in `browse.html`/`profile-view.html`) with a real RLS
-      policy on `mt_profiles`, not just the client-side check — needs the
-      current `mt_profiles` SELECT policy read first so a new one doesn't
-      conflict with it.
+- [x] **Done 25 Sep 2026** — "unverified members cannot browse/view profiles"
+      is now backed by real RLS, not just the client-side check in
+      `browse.html`/`profile-view.html`. Added `mt_is_verified(uid)` (mirrors
+      `mt_is_admin`/`mt_is_complete`: reads `mt_contacts.mobile_verified`),
+      and added `and mt_is_verified(auth.uid())` into both `mt_profiles_sel`
+      and `mt_photos_sel` via `alter policy ... using (...)` (in place, no
+      drop/recreate). Both existing policies already required
+      `mt_is_complete(auth.uid())` for the viewer but never checked
+      verification at all — meaning before this, anyone bypassing the app's
+      UI and calling the database directly (browser dev tools, a script)
+      could read any active member's full profile and photos without ever
+      being verified. Confirmed applied live by the user.
 
 **`sw.js` caching strategy changed to network-first on 25 Sep 2026.** It was
 cache-first with a manually-bumped `CACHE_NAME` ("MT_V3"), which meant every
