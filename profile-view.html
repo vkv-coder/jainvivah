@@ -110,7 +110,7 @@
     );
   }
 
-  (async () => {
+  async function loadProfileView() {
     const session = await requireAuth();
     if (!session) return;
 
@@ -210,6 +210,29 @@
       "</div>" +
       '<div class="mt-reassurance">Interested in connecting? Sending an interest request and exchanging contact details is coming soon. For now, reach out to <a href="mailto:' +
       SUPPORT_EMAIL + '">' + SUPPORT_EMAIL + "</a> and mention this profile's code.</div>";
+  }
+
+  // Safety net: this page must never sit on "Loading profile..." forever.
+  // If anything hangs (a stuck network call, a stale/expired session token
+  // silently retrying) or throws, show a clear retry message instead of a
+  // silent infinite spinner - found live 25 Sep 2026 when this page hung
+  // indefinitely after a successful mt_contacts check, with the next
+  // expected request never even appearing in the network panel.
+  (async () => {
+    const TIMEOUT_MS = 15000;
+    try {
+      await Promise.race([
+        loadProfileView(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("This is taking longer than expected. Please check your connection and try again.")), TIMEOUT_MS)
+        )
+      ]);
+    } catch (err) {
+      const contentEl = document.getElementById("pv-content");
+      contentEl.innerHTML =
+        '<p class="pv-notfound">' + escapeHtml((err && err.message) || "Something went wrong loading this profile.") + "</p>" +
+        '<p class="mt-center"><a href="#" onclick="location.reload(); return false;">Try again</a></p>';
+    }
   })();
 </script>
 

@@ -61,7 +61,15 @@ async function routeAfterLogin() {
 
 // Returns true if the current user is listed in mt_admins.
 async function isAdmin() {
-  const { data: { user } } = await supabaseClient.auth.getUser();
+  // getUser() re-validates against the server (unlike getSession(), which
+  // just reads local state) - wrapped so a slow/failed revalidation can
+  // never propagate as an unhandled rejection into a caller's && chain.
+  let user;
+  try {
+    ({ data: { user } } = await supabaseClient.auth.getUser());
+  } catch (e) {
+    return false;
+  }
   if (!user) return false;
 
   const { data, error } = await supabaseClient
