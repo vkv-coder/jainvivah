@@ -37,10 +37,6 @@
     </div>
     <div class="mt-progress-label" id="progress-label">Step 1 of 5 — Basic details</div>
 
-    <p class="mt-hint" style="margin-top:-10px;">
-      <a href="#" id="start-over-link">Start over (testing)</a>
-    </p>
-
     <div class="mt-reassurance" id="resume-banner" style="display:none;">
       Welcome back. You had reached Step <span id="resume-banner-step"></span> of 5.
     </div>
@@ -1089,17 +1085,6 @@
     normaliseCodes(signupData);
     localStorage.setItem("mt_signup", JSON.stringify(signupData));
   }
-
-  // Testing convenience only: clears the locally-cached signup draft and
-  // reloads the form. This does NOT delete anything already saved to
-  // Supabase — it just resets what this browser has cached locally, so a
-  // fresh reload re-reads whatever the account's mt_profiles row
-  // currently holds.
-  document.getElementById("start-over-link").addEventListener("click", (e) => {
-    e.preventDefault();
-    localStorage.removeItem("mt_signup");
-    window.location.reload();
-  });
 
   // ---------------- Page init ----------------
   (async () => {
