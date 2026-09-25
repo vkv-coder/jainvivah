@@ -166,7 +166,14 @@
   }
 
   // ---------------- Filters persist across visits ----------------
-  const FILTER_IDS = ["f-age-min", "f-age-max", "f-city", "f-sect", "f-diet", "f-education", "f-profession", "f-marital"];
+  // Age is deliberately NOT in this list - it always comes fresh from the
+  // member's own "Looking for" preference on My Profile (see
+  // applyPreferenceDefaults below), which is the single source of truth for
+  // it. Persisting an ad hoc age override here would create two competing
+  // answers to "what age range do I want" - the stored preference, and
+  // whatever was last typed into this filter panel - which is exactly the
+  // confusion this is meant to avoid.
+  const FILTER_IDS = ["f-city", "f-sect", "f-diet", "f-education", "f-profession", "f-marital"];
   const FILTERS_KEY = "mt_browse_filters";
 
   function saveFiltersToStorage() {
@@ -200,11 +207,11 @@
   // The "Looking for" age range collected on My Preference was being
   // stored and never actually used anywhere in Browse - every member saw
   // the exact same unfiltered list regardless of what they said they
-  // wanted. Now: if there's no explicit filter choice already saved for
-  // this browser, default to the member's own preference range and say so
-  // plainly, with a one-click way to see everyone instead - rather than
-  // silently showing everyone by default and making the preference step
-  // pointless.
+  // wanted. Now: Browse always applies the member's stored preference range
+  // and says so plainly. There is deliberately no "see all" bypass - if a
+  // member wants a different range, the answer is to update the actual
+  // preference on My Profile, not to quietly override it for one session
+  // and leave the stored preference stale and untrusted.
   function applyPreferenceDefaults() {
     if (!myProfile || !myProfile.pref_age_min || !myProfile.pref_age_max) return;
 
@@ -221,23 +228,11 @@
       banner.style.display = "block";
       banner.innerHTML =
         "Showing matches within your preferred age range (" + myProfile.pref_age_min + "–" + myProfile.pref_age_max + " yrs). " +
-        '<a href="#" id="br-see-all-link">See all profiles instead</a>';
-      document.getElementById("br-see-all-link").addEventListener("click", (e) => {
-        e.preventDefault();
-        showAllProfiles();
-      });
+        '<a href="myprofile.html">Want a different range? Update your preference</a>';
     } else {
       banner.style.display = "none";
       banner.innerHTML = "";
     }
-  }
-
-  function showAllProfiles() {
-    document.getElementById("f-age-min").value = "";
-    document.getElementById("f-age-max").value = "";
-    showPrefBanner(false);
-    saveFiltersToStorage();
-    runSearch();
   }
 
   async function runSearch() {
@@ -366,10 +361,12 @@
 
     myProfile = profile;
     populateFilterDropdowns();
-    const hadSavedFilters = restoreFiltersFromStorage();
-    if (!hadSavedFilters) {
-      applyPreferenceDefaults();
-    }
+    restoreFiltersFromStorage();
+    // Runs every visit, not just when no filters were saved - the stored
+    // preference is the single source of truth for age, so it always wins
+    // over whatever age values (there are none now - see FILTER_IDS above)
+    // might otherwise linger from a previous session.
+    applyPreferenceDefaults();
     await runSearch();
   })();
 </script>
