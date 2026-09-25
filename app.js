@@ -248,6 +248,37 @@ function cmToFeet(cm) {
   return feet + " ft " + inches + " in";
 }
 
+// ---------------------------------------------------------------------
+// Per-app email tagging for shared-project auth
+// ---------------------------------------------------------------------
+// This Supabase project's auth.users table is shared with other AnyApps.in
+// apps (DealLagi, Trust Analysis) - one row per email, so a member who
+// already used one of those apps would otherwise collide with Jain Vivah's
+// signup, forcing an unwanted password reset that also changes their
+// password on the other app (same shared row). Every auth call here
+// (signup/login/password reset) uses a "+jainvivah" tagged version of the
+// email instead, so Jain Vivah always gets its own separate auth.users row
+// and its own independent password, no matter what the member has used
+// elsewhere. Gmail/Outlook/Yahoo (and virtually every modern provider)
+// deliver mail sent to "name+anything@domain" straight to the same inbox
+// as "name@domain" - completely invisible to the member, who keeps
+// typing/seeing only their normal email everywhere in the app.
+const AUTH_EMAIL_TAG = "jainvivah";
+
+function tagAuthEmail(email) {
+  const at = (email || "").indexOf("@");
+  if (at === -1) return email;
+  return email.slice(0, at) + "+" + AUTH_EMAIL_TAG + email.slice(at);
+}
+
+// Reverses tagAuthEmail() - used only when falling back to displaying
+// currentUser.email/session.user.email, so the tag is never shown to the
+// member even in that fallback case.
+function untagAuthEmail(email) {
+  if (!email) return email;
+  return email.replace("+" + AUTH_EMAIL_TAG + "@", "@");
+}
+
 // Renders the support email into every element marked data-support-email,
 // built from SUPPORT_EMAIL at runtime rather than sitting as plain text in
 // the page source. Some mobile carriers/browsers (data-compression modes

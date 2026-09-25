@@ -204,7 +204,7 @@
     submitBtn.disabled = true;
     submitBtn.textContent = "Logging in...";
 
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    const { error } = await supabaseClient.auth.signInWithPassword({ email: tagAuthEmail(email), password });
 
     submitBtn.disabled = false;
     submitBtn.textContent = "Login";
@@ -227,7 +227,7 @@
       return;
     }
 
-    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(tagAuthEmail(email), {
       redirectTo: APP_URL + "/reset.html"
     });
     if (error) {
@@ -275,8 +275,15 @@
     const genderCode = selectedGender.trim().toLowerCase();
     const managedByCode = managedBy.trim().toLowerCase();
 
+    // Tagged so this app's auth.users row is always separate from DealLagi/
+    // Trust Analysis even when a member reuses the same real email address
+    // (see tagAuthEmail() in app.js for the full reasoning) - the member
+    // only ever sees/types their plain "email" above; this is purely the
+    // hidden auth-layer identity.
+    const authEmail = tagAuthEmail(email);
+
     const { data, error } = await supabaseClient.auth.signUp({
-      email,
+      email: authEmail,
       password,
       options: {
         emailRedirectTo: APP_URL + "/index.html",
@@ -297,27 +304,26 @@
       return;
     }
 
-    // This Supabase project's auth.users is shared across every AnyApps.in
-    // app (SportBook, DealLagi, Trust Analysis, JainVivah) - one login works
-    // across all of them, each with its own separate profile table. When
-    // signUp() is called with an email that's already registered ANYWHERE
-    // on this shared project, Supabase deliberately returns no error and
-    // sends no email (so the signup form can't be used to discover who's
-    // registered) - it just comes back with a real user object whose
-    // identities array is empty. Catch that here and send them to Login
-    // instead of showing a "check your email" message for an email that
-    // was never actually sent.
+    // Now that signup is tagged per-app, this branch only fires for a
+    // genuine repeat: this exact person already made a Jain Vivah account
+    // before (forgot they'd signed up, or is retrying) - a collision with
+    // DealLagi/Trust Analysis is no longer possible, since they're tagged
+    // differently. Supabase deliberately returns no error and sends no
+    // email for an already-registered address (so the signup form can't be
+    // used to discover who's registered) - it just comes back with a real
+    // user object whose identities array is empty. Catch that here and
+    // send them to Login instead of showing a "check your email" message
+    // for an email that was never actually sent.
     if (data.user && data.user.identities && data.user.identities.length === 0) {
-      // Most people in this situation won't remember a password for an
-      // account they didn't realise existed (it may belong to a different
-      // AnyApps.in app) - so proactively send a reset link rather than
-      // just pointing at Login and hoping they find "Forgot password?"
-      // themselves. They still land on Login with the email prefilled as
-      // a fallback in case they DO remember the password.
+      // Most people in this situation won't remember the password - so
+      // proactively send a reset link rather than just pointing at Login
+      // and hoping they find "Forgot password?" themselves. They still
+      // land on Login with the email prefilled as a fallback in case they
+      // DO remember the password.
       mtShowTab("login");
       document.getElementById("login-email").value = email;
 
-      await supabaseClient.auth.resetPasswordForEmail(email, {
+      await supabaseClient.auth.resetPasswordForEmail(authEmail, {
         redirectTo: APP_URL + "/reset.html"
       });
 

@@ -167,6 +167,38 @@ by `user_id`, never upsert a whole assembled object. Upsert was re-sending
 `null` for columns the current step does not own, which is what caused the
 repeated "null value in column gender" errors.
 
+### Per-app email tagging (added 25 Sep 2026)
+
+`auth.users` is shared with DealLagi and Trust Analysis - one row per email,
+one password. Before this fix, a member who already used one of those apps
+would hit an "already registered" wall signing up for Jain Vivah, and get
+funnelled into a forced password reset that also changed their password on
+the *other* app (same shared row) - confusing, and not something they asked
+for. Fixed by tagging every auth call (`signUp`, `signInWithPassword`,
+`resetPasswordForEmail`) with `tagAuthEmail()` (in `app.js`), which turns
+`name@domain` into `name+jainvivah@domain` before it ever reaches Supabase.
+Gmail/Outlook/Yahoo deliver "+anything" mail to the same inbox as the plain
+address, so this is invisible to the member - they only ever type/see their
+plain email. `untagAuthEmail()` reverses it for the two spots that fall back
+to displaying `currentUser.email`/`session.user.email` directly
+(`myprofile.html`, `register.html`'s contact step), so the tag is never
+shown in the app itself.
+
+Two things this does NOT cover:
+- **Doesn't apply retroactively.** Accounts already registered under a plain
+  email before this fix (e.g. early test accounts) stay on the shared/plain
+  row unless they sign up fresh.
+- **Confirmation/reset emails do show the tagged address** in the one line
+  Supabase's own template renders via `{{ .Email }}` (e.g. "confirm
+  john+jainvivah@gmail.com") - a minor cosmetic detail, not a functional
+  problem, and not something worth fighting since it'd mean giving up
+  Supabase's own placeholder.
+- **DealLagi and Trust Analysis are NOT tagged** - this only protects Jain
+  Vivah's side of the collision. If either of those apps ever signs up the
+  same email after Jain Vivah did, that collision (and forced reset) can
+  still happen on their end. Fixing that would mean adding the same tagging
+  there, a separate task in their own repos.
+
 ### Auth settings
 
 - **Confirm email:** ON

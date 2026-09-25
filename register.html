@@ -1059,9 +1059,9 @@
     if (contact) {
       if (contact.mobile) document.getElementById("s6-mobile").value = contact.mobile;
       if (contact.mobile_relation) document.getElementById("s6-mobile-relation").value = contact.mobile_relation;
-      document.getElementById("s6-email").value = contact.email || currentUser.email || "";
+      document.getElementById("s6-email").value = contact.email || untagAuthEmail(currentUser.email) || "";
     } else {
-      document.getElementById("s6-email").value = currentUser.email || "";
+      document.getElementById("s6-email").value = untagAuthEmail(currentUser.email) || "";
     }
   }
 

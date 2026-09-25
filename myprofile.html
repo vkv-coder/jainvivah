@@ -501,7 +501,7 @@
       document.getElementById("mp-pause-toggle").checked = !!profile.is_paused;
     }
 
-    document.getElementById("mp-email").value = (contact && contact.email) || currentUser.email || "";
+    document.getElementById("mp-email").value = (contact && contact.email) || untagAuthEmail(currentUser.email) || "";
     if (contact) {
       document.getElementById("mp-mobile").value = contact.mobile || "";
       if (contact.mobile_relation) document.getElementById("mp-mobile-relation").value = contact.mobile_relation;
