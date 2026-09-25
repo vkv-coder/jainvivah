@@ -310,11 +310,60 @@
       toast("Account created!", "success");
       routeAfterLogin();
     } else {
-      // Standard case: Supabase requires the confirmation link before a session exists.
+      // Standard case: Supabase requires confirming the email before a session
+      // exists. Offer both paths — clicking the link in the email, or typing
+      // the 6-digit code from that same email right here — whichever the
+      // member finds easier.
       document.getElementById("signup-form").innerHTML =
-        '<p class="mt-center">Almost there! We have sent a confirmation link to <strong>' +
+        '<p class="mt-center">Almost there! We have emailed a 6-digit code to <strong>' +
         escapeHtml(email) +
-        '</strong>. Please open it, then come back and log in from the Login tab.</p>';
+        '</strong>. Enter it below, or just open the link in that email instead.</p>' +
+        '<div class="mt-field">' +
+        '<label for="su-otp-code">6-digit code</label>' +
+        '<input type="text" id="su-otp-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code">' +
+        "</div>" +
+        '<button type="button" class="mt-btn mt-btn-primary" id="su-otp-verify">Verify &amp; Continue</button>' +
+        '<p class="mt-hint mt-center" style="margin-top:10px;">' +
+        "Didn't get it? Check spam, or " +
+        '<a href="#" id="su-otp-resend">resend the code</a>.</p>';
+
+      document.getElementById("su-otp-verify").addEventListener("click", async () => {
+        const code = document.getElementById("su-otp-code").value.trim();
+        if (!/^\d{6}$/.test(code)) {
+          toast("Please enter the 6-digit code.", "error");
+          return;
+        }
+        const verifyBtn = document.getElementById("su-otp-verify");
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = "Verifying...";
+
+        const { data: verifyData, error: verifyError } = await supabaseClient.auth.verifyOtp({
+          email: email,
+          token: code,
+          type: "signup"
+        });
+
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = "Verify & Continue";
+
+        if (verifyError) {
+          toast(verifyError.message, "error");
+          return;
+        }
+
+        toast("Account confirmed!", "success");
+        routeAfterLogin();
+      });
+
+      document.getElementById("su-otp-resend").addEventListener("click", async (evt) => {
+        evt.preventDefault();
+        const { error: resendError } = await supabaseClient.auth.resend({ type: "signup", email: email });
+        if (resendError) {
+          toast(resendError.message, "error");
+          return;
+        }
+        toast("Code resent — check your email.", "success");
+      });
     }
   });
 
