@@ -3,7 +3,14 @@
 // Supabase API calls are always fetched fresh from the network — matrimonial
 // data must never be served stale from a cache.
 
-const CACHE_NAME = "MT_V3";
+// Bump this version string any time index.html/myprofile.html/register.html/
+// app.js/config.js/profile-shared.js/styles.css (or any other SHELL_FILES
+// entry) changes. A service worker only re-fetches its precached shell when
+// sw.js itself changes byte-for-byte - if only the shell files change but
+// this string doesn't, browsers keep serving the old cached copies forever,
+// silently hiding every deploy. Was stuck on MT_V3 through a whole session
+// of fixes on 25 Sep 2026 before this was caught.
+const CACHE_NAME = "MT_V4";
 
 const SHELL_FILES = [
   "index.html",
@@ -11,6 +18,9 @@ const SHELL_FILES = [
   "terms.html",
   "register.html",
   "myprofile.html",
+  "browse.html",
+  "profile-view.html",
+  "admin.html",
   "reset.html",
   "styles.css",
   "app.js",
