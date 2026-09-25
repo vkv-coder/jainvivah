@@ -308,9 +308,24 @@
     // instead of showing a "check your email" message for an email that
     // was never actually sent.
     if (data.user && data.user.identities && data.user.identities.length === 0) {
-      toast("This email is already registered — please log in instead.", "info");
+      // Most people in this situation won't remember a password for an
+      // account they didn't realise existed (it may belong to a different
+      // AnyApps.in app) - so proactively send a reset link rather than
+      // just pointing at Login and hoping they find "Forgot password?"
+      // themselves. They still land on Login with the email prefilled as
+      // a fallback in case they DO remember the password.
       mtShowTab("login");
       document.getElementById("login-email").value = email;
+
+      await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: APP_URL + "/reset.html"
+      });
+
+      toast(
+        "This email already has an account. We've sent a password reset link — " +
+        "set a new password to continue with your Jain Vivah profile.",
+        "info"
+      );
       return;
     }
 
