@@ -413,6 +413,21 @@ In order:
     AnyApps.in" on every page.
   - Signup CTA now reads "Sign Up Free" (tab) / "Sign Up for Free"
     (submit button) instead of "Sign up" / "Create account".
+  - **Found and fixed a bug that had silently broken `profile-view.html`
+    since it was first written** (pre-dates this whole session): the
+    function declared `const location = [profile.city, ...]` for the
+    Location table row, later in the *same function* that already read the
+    browser's `location.search` near the top (for the `?id=` query param).
+    A `let`/`const` creates a temporal-dead-zone for its name across the
+    *entire* enclosing function regardless of declaration order, so that
+    earlier `location.search` read threw `ReferenceError: Cannot access
+    'location' before initialization` synchronously, every single time,
+    with nothing ever reaching the DOM - the page just sat on "Loading
+    profile..." forever with no visible error unless someone opened
+    DevTools. Renamed the local variable to `locationText`. Also added a
+    15s `Promise.race` timeout around the whole load so this class of bug
+    (or any future hang) shows a "try again" message instead of an
+    infinite silent spinner.
 
 ### Not built yet
 
