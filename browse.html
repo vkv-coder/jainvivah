@@ -59,6 +59,8 @@
     Every photo you view carries a personal watermark tied to your account, so it can be traced back if ever shared or misused. Contact details are never shown here — they are only exchanged once an interest is accepted.
   </div>
 
+  <div class="mt-visibility-banner" id="br-pref-banner" style="display:none;"></div>
+
   <div class="mt-card">
     <button type="button" class="br-toggle-filters" id="br-toggle-btn" onclick="toggleFilters()">Show Filters ▾</button>
 
@@ -105,7 +107,7 @@
       </div>
     </div>
 
-    <button type="button" class="mt-btn mt-btn-primary" onclick="runSearch()">Search</button>
+    <button type="button" class="mt-btn mt-btn-primary" onclick="showPrefBanner(false); saveFiltersToStorage(); runSearch();">Search</button>
   </div>
 
   <div class="br-results-count" id="br-count"></div>
@@ -178,7 +180,7 @@
     try {
       values = JSON.parse(localStorage.getItem(FILTERS_KEY) || "{}");
     } catch (e) {
-      return;
+      return false;
     }
     let anySet = false;
     FILTER_IDS.forEach((id) => {
@@ -191,10 +193,54 @@
       document.getElementById("br-filters").style.display = "block";
       document.getElementById("br-toggle-btn").textContent = "Hide Filters ▴";
     }
+    return anySet;
+  }
+
+  // ---------------- Default to the member's own stated age preference ----------------
+  // The "Looking for" age range collected on My Preference was being
+  // stored and never actually used anywhere in Browse - every member saw
+  // the exact same unfiltered list regardless of what they said they
+  // wanted. Now: if there's no explicit filter choice already saved for
+  // this browser, default to the member's own preference range and say so
+  // plainly, with a one-click way to see everyone instead - rather than
+  // silently showing everyone by default and making the preference step
+  // pointless.
+  function applyPreferenceDefaults() {
+    if (!myProfile || !myProfile.pref_age_min || !myProfile.pref_age_max) return;
+
+    document.getElementById("f-age-min").value = myProfile.pref_age_min;
+    document.getElementById("f-age-max").value = myProfile.pref_age_max;
+    document.getElementById("br-filters").style.display = "block";
+    document.getElementById("br-toggle-btn").textContent = "Hide Filters ▴";
+    showPrefBanner(true);
+  }
+
+  function showPrefBanner(active) {
+    const banner = document.getElementById("br-pref-banner");
+    if (active && myProfile && myProfile.pref_age_min && myProfile.pref_age_max) {
+      banner.style.display = "block";
+      banner.innerHTML =
+        "Showing matches within your preferred age range (" + myProfile.pref_age_min + "–" + myProfile.pref_age_max + " yrs). " +
+        '<a href="#" id="br-see-all-link">See all profiles instead</a>';
+      document.getElementById("br-see-all-link").addEventListener("click", (e) => {
+        e.preventDefault();
+        showAllProfiles();
+      });
+    } else {
+      banner.style.display = "none";
+      banner.innerHTML = "";
+    }
+  }
+
+  function showAllProfiles() {
+    document.getElementById("f-age-min").value = "";
+    document.getElementById("f-age-max").value = "";
+    showPrefBanner(false);
+    saveFiltersToStorage();
+    runSearch();
   }
 
   async function runSearch() {
-    saveFiltersToStorage();
     const resultsEl = document.getElementById("br-results");
     const countEl = document.getElementById("br-count");
     resultsEl.innerHTML = '<p class="mt-hint">Searching...</p>';
@@ -282,7 +328,7 @@
 
     const { data: profile, error } = await supabaseClient
       .from("mt_profiles")
-      .select("user_id, gender, profile_complete")
+      .select("user_id, gender, profile_complete, pref_age_min, pref_age_max")
       .eq("user_id", session.user.id)
       .maybeSingle();
 
@@ -320,7 +366,10 @@
 
     myProfile = profile;
     populateFilterDropdowns();
-    restoreFiltersFromStorage();
+    const hadSavedFilters = restoreFiltersFromStorage();
+    if (!hadSavedFilters) {
+      applyPreferenceDefaults();
+    }
     await runSearch();
   })();
 </script>
