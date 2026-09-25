@@ -48,6 +48,7 @@
   <div class="mt-logo">Jain Vivah</div>
   <a href="myprofile.html" class="mt-header-nav-link">My Profile</a>
 </div>
+<div class="mt-logged-in-as" id="mt-logged-in-as"></div>
 
 <div class="mt-page">
 
@@ -277,6 +278,7 @@
   (async () => {
     const session = await requireAuth();
     if (!session) return;
+    renderLoggedInAs(session);
 
     const { data: profile, error } = await supabaseClient
       .from("mt_profiles")

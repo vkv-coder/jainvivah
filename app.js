@@ -286,6 +286,16 @@ function untagAuthEmail(email) {
   return email.replace("+" + AUTH_EMAIL_TAG + "@", "@");
 }
 
+// Shows which account is currently logged in, right under the header, so
+// there's never ambiguity about whether you're looking at the admin
+// account or a particular test/member account - especially useful on a
+// shared-login dev/testing device where it's easy to lose track.
+function renderLoggedInAs(session) {
+  const el = document.getElementById("mt-logged-in-as");
+  if (!el || !session || !session.user) return;
+  el.textContent = "Logged in as: " + untagAuthEmail(session.user.email);
+}
+
 // Renders the support email into every element marked data-support-email,
 // built from SUPPORT_EMAIL at runtime rather than sitting as plain text in
 // the page source. Some mobile carriers/browsers (data-compression modes

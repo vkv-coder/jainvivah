@@ -41,6 +41,7 @@
   <div class="mt-logo">Jain Vivah</div>
   <div class="mt-tagline">Admin · Mobile Verification</div>
 </div>
+<div class="mt-logged-in-as" id="mt-logged-in-as"></div>
 
 <div class="mt-page">
 
@@ -165,6 +166,7 @@
   (async () => {
     const session = await requireAuth();
     if (!session) return;
+    renderLoggedInAs(session);
 
     if (!(await isAdmin())) {
       document.getElementById("adm-guard").style.display = "block";

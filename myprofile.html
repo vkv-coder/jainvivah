@@ -24,6 +24,7 @@
   <div class="mt-logo">Jain Vivah</div>
   <a href="browse.html" class="mt-header-nav-link">Browse Profiles</a>
 </div>
+<div class="mt-logged-in-as" id="mt-logged-in-as"></div>
 
 <div class="mt-page">
 
@@ -855,6 +856,7 @@
     const session = await requireAuth();
     if (!session) return;
     currentUser = session.user;
+    renderLoggedInAs(session);
 
     populateDropdowns();
 

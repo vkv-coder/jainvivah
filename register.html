@@ -23,6 +23,7 @@
   <button type="button" class="mt-header-logout" onclick="logout()">Logout</button>
   <div class="mt-logo">Jain Vivah</div>
 </div>
+<div class="mt-logged-in-as" id="mt-logged-in-as"></div>
 
 <div class="mt-page">
 
@@ -1105,6 +1106,7 @@
     const session = await requireAuth();
     if (!session) return;
     currentUser = session.user;
+    renderLoggedInAs(session);
 
     cleanStoredSignupData();
     populateDropdowns();

@@ -98,6 +98,13 @@ a {
   padding: 6px;
 }
 
+.mt-logged-in-as {
+  text-align: center;
+  font-size: 12px;
+  color: #8a7a6d;
+  padding: 4px 16px 0;
+}
+
 /* Prominent nav pill centered under the logo (e.g. "My Profile" on Browse,
    "Browse" on My Profile) - deliberately more visible than the footer links. */
 .mt-header-nav-link {
