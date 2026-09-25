@@ -188,7 +188,7 @@
     const height = profile.height_cm ? cmToFeet(profile.height_cm) : "";
     const dietLabel = (DIET_OPTIONS.find(([, code]) => code === profile.diet) || [profile.diet])[0];
     const maritalLabel = (MARITAL_STATUS_OPTIONS.find(([, code]) => code === profile.marital_status) || [profile.marital_status])[0];
-    const location = [profile.city, profile.state, profile.country].filter(Boolean).join(", ");
+    const locationText = [profile.city, profile.state, profile.country].filter(Boolean).join(", ");
 
     contentEl.innerHTML =
       photosHtml +
@@ -200,7 +200,7 @@
       row("Marital Status", maritalLabel) +
       row("Diet", dietLabel) +
       row("Sect", profile.sect) +
-      row("Location", location) +
+      row("Location", locationText) +
       row("Native Place", profile.native_place) +
       row("Education", profile.education + (profile.education_detail ? " — " + profile.education_detail : "")) +
       row("Profession", profile.profession + (profile.occupation_detail ? " — " + profile.occupation_detail : "")) +

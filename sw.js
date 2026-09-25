@@ -63,11 +63,19 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Browser extensions (ad blockers, password managers, etc.) can trigger
+  // this fetch handler for their own chrome-extension:// requests - the
+  // Cache API throws on any non-http(s) scheme, which was showing up as a
+  // benign but noisy "Uncaught (in promise)" error on every page load.
+  if (!event.request.url.startsWith("http")) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
         const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy).catch(() => {}));
         return response;
       })
       .catch(() => caches.match(event.request))
