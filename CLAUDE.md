@@ -54,6 +54,17 @@ Key decisions already settled:
 first created under the wrong zone (`sportbook.in`). Both caused
 "DNS check unsuccessful" in GitHub Pages.
 
+**Standalone `jainvivah.in` domain — nameserver switch to Cloudflare blocked
+until ~24 Nov 2026.** Bought fresh on Hostinger 25 Sep 2026. Hostinger (and
+apparently most registrars, confirmed by their support, not `.in`-specific)
+enforces a mandatory 60-day nameserver-lock on any newly registered domain —
+same rule that also applied to `anyapps.in`/`khursilo.in`/`deallagi.in`, it
+just wasn't noticeable there because by the time their nameservers were
+switched to Cloudflare, their own 60-day windows had already quietly expired
+months earlier. Nothing to debug or retry here — the site itself is
+unaffected (still fully live at `jainvivah.anyapps.in`); only the standalone
+`jainvivah.in` → Cloudflare pointing is paused until the lock lifts.
+
 ---
 
 ## 3. Supabase
