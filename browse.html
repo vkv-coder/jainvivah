@@ -241,6 +241,17 @@
         matchMode = btn.dataset.mode;
         localStorage.setItem(MATCH_MODE_KEY, matchMode);
         updateMatchModeButtons();
+
+        // City/education only belong to "all" mode. Without this, a value
+        // left over from a previous "all"-mode visit (auto-filled or
+        // manually typed) would silently keep narrowing results even after
+        // switching to "core" - breaking core mode's promise of being
+        // exactly age+diet+profession, nothing else.
+        if (matchMode === "core") {
+          document.getElementById("f-city").value = "";
+          document.getElementById("f-education").value = "";
+        }
+
         applyPreferenceDefaults();
         runSearch();
       });
