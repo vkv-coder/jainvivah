@@ -36,6 +36,12 @@
   .br-card-meta { font-size: 13px; color: #6b5a4e; margin-top: 2px; }
   .br-card-arrow { margin-left: auto; color: var(--gold); font-weight: 700; flex-shrink: 0; }
   .br-empty { text-align: center; padding: 30px 10px; color: #8a7a6d; }
+  .br-match-mode { display: flex; gap: 8px; margin: -6px 0 14px; flex-wrap: wrap; }
+  .br-mode-btn {
+    flex: 1; min-width: 150px; padding: 8px 10px; border-radius: 999px; border: 1.5px solid var(--border);
+    background: var(--white); color: var(--charcoal); font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .br-mode-btn.br-mode-active { background: var(--maroon); border-color: var(--maroon); color: var(--white); }
 </style>
 </head>
 <body>
@@ -60,6 +66,11 @@
   </div>
 
   <div class="mt-visibility-banner" id="br-pref-banner" style="display:none;"></div>
+
+  <div class="br-match-mode" id="br-match-mode" style="display:none;">
+    <button type="button" class="br-mode-btn" data-mode="all">Match: All my preferences</button>
+    <button type="button" class="br-mode-btn" data-mode="core">Match: Age, Diet &amp; Profession</button>
+  </div>
 
   <div class="mt-card">
     <button type="button" class="br-toggle-filters" id="br-toggle-btn" onclick="toggleFilters()">Show Filters ▾</button>
@@ -203,35 +214,139 @@
     return anySet;
   }
 
-  // ---------------- Default to the member's own stated age preference ----------------
-  // The "Looking for" age range collected on My Preference was being
-  // stored and never actually used anywhere in Browse - every member saw
-  // the exact same unfiltered list regardless of what they said they
-  // wanted. Now: Browse always applies the member's stored preference range
-  // and says so plainly. There is deliberately no "see all" bypass - if a
-  // member wants a different range, the answer is to update the actual
-  // preference on My Profile, not to quietly override it for one session
-  // and leave the stored preference stale and untrusted.
+  // ---------------- Match mode: "all" my preferences vs just the core trio ----------------
+  // "all" additionally enforces height/weight/income (invisible - no matching
+  // manual filter exists for these) and auto-fills city/education as a
+  // starting point. "core" only auto-fills age/diet/profession. Persisted
+  // separately from FILTER_IDS since it's a browsing-strictness choice, not
+  // a filter value itself.
+  const MATCH_MODE_KEY = "mt_browse_match_mode";
+  let matchMode = localStorage.getItem(MATCH_MODE_KEY) === "core" ? "core" : "all";
+
+  function updateMatchModeButtons() {
+    document.querySelectorAll(".br-mode-btn").forEach((btn) => {
+      btn.classList.toggle("br-mode-active", btn.dataset.mode === matchMode);
+    });
+  }
+
+  function wireMatchModeButtons() {
+    document.querySelectorAll(".br-mode-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        matchMode = btn.dataset.mode;
+        localStorage.setItem(MATCH_MODE_KEY, matchMode);
+        updateMatchModeButtons();
+        applyPreferenceDefaults();
+        runSearch();
+      });
+    });
+  }
+
+  // ---------------- Default to the member's own stated preference ----------------
+  // The preference fields collected on My Preference were being stored and
+  // never actually used anywhere in Browse - every member saw the exact
+  // same unfiltered list regardless of what they said they wanted. Now:
+  // Browse always applies the member's stored preference and says so
+  // plainly. There is deliberately no "see all" bypass - if a member wants
+  // different results, the answer is to update the actual preference on My
+  // Profile (or switch to the lighter match mode above), not to quietly
+  // override it for one session and leave the stored preference stale and
+  // untrusted.
+  //
+  // Only fields with a matching single-value manual filter (age, diet, and -
+  // when there's exactly one preferred value - profession/education) are
+  // auto-filled into the visible filter boxes, exactly like age already was.
+  // This runs once at load (and again on a mode switch) rather than being
+  // silently re-applied inside every search, so a member who then manually
+  // changes a box in Filters always has that change stick - same rule age
+  // already followed. Height/weight/income have no matching manual filter at
+  // all, so those are applied purely as invisible constraints in runSearch(),
+  // gated on matchMode === "all".
   function applyPreferenceDefaults() {
     if (!myProfile || !myProfile.pref_age_min || !myProfile.pref_age_max) return;
 
     document.getElementById("f-age-min").value = myProfile.pref_age_min;
     document.getElementById("f-age-max").value = myProfile.pref_age_max;
+
+    const dietField = document.getElementById("f-diet");
+    if (!dietField.value && myProfile.pref_diet) dietField.value = myProfile.pref_diet;
+
+    const professionField = document.getElementById("f-profession");
+    if (!professionField.value && myProfile.pref_profession && myProfile.pref_profession.length === 1) {
+      professionField.value = myProfile.pref_profession[0];
+    }
+
+    if (matchMode === "all") {
+      const cityField = document.getElementById("f-city");
+      if (!cityField.value && myProfile.pref_city) cityField.value = myProfile.pref_city;
+
+      const educationField = document.getElementById("f-education");
+      if (!educationField.value && myProfile.pref_education && myProfile.pref_education.length === 1) {
+        educationField.value = myProfile.pref_education[0];
+      }
+    }
+
     document.getElementById("br-filters").style.display = "block";
     document.getElementById("br-toggle-btn").textContent = "Hide Filters ▴";
+    document.getElementById("br-match-mode").style.display = "flex";
+    updateMatchModeButtons();
     showPrefBanner(true);
+  }
+
+  // Builds the plain-language list of what's currently being matched, for
+  // the banner and the empty-results message. "all" mode includes
+  // height/weight/education/income/city; "core" only age/diet/profession.
+  function describePreferenceParts() {
+    const parts = [];
+    if (myProfile.pref_age_min && myProfile.pref_age_max) {
+      parts.push("Age " + myProfile.pref_age_min + "–" + myProfile.pref_age_max + " yrs");
+    }
+    if (myProfile.pref_diet) {
+      const label = (DIET_OPTIONS.find(([, code]) => code === myProfile.pref_diet) || [myProfile.pref_diet])[0];
+      parts.push("Diet: " + label);
+    }
+    if (myProfile.pref_profession && myProfile.pref_profession.length) {
+      parts.push("Profession: " + myProfile.pref_profession.join(", "));
+    }
+    if (matchMode === "all") {
+      if (myProfile.pref_height_min || myProfile.pref_height_max) {
+        const from = myProfile.pref_height_min ? cmToFeet(myProfile.pref_height_min) : "Any";
+        const to = myProfile.pref_height_max ? cmToFeet(myProfile.pref_height_max) : "Any";
+        parts.push("Height " + from + "–" + to);
+      }
+      if (myProfile.pref_weight_min || myProfile.pref_weight_max) {
+        parts.push("Weight " + (myProfile.pref_weight_min || "Any") + "–" + (myProfile.pref_weight_max || "Any") + " kg");
+      }
+      if (myProfile.pref_education && myProfile.pref_education.length) {
+        parts.push("Education: " + myProfile.pref_education.join(", "));
+      }
+      if (myProfile.pref_income) {
+        parts.push("Income: " + myProfile.pref_income);
+      }
+      if (myProfile.pref_city) {
+        parts.push("City: " + myProfile.pref_city);
+      }
+    }
+    return parts;
   }
 
   function showPrefBanner(active) {
     const banner = document.getElementById("br-pref-banner");
-    if (active && myProfile && myProfile.pref_age_min && myProfile.pref_age_max) {
-      banner.style.display = "block";
+    if (!active || !myProfile || !myProfile.pref_age_min || !myProfile.pref_age_max) {
+      banner.style.display = "none";
+      banner.innerHTML = "";
+      return;
+    }
+
+    const parts = describePreferenceParts();
+    banner.style.display = "block";
+    if (parts.length <= 1) {
       banner.innerHTML =
         "Showing matches within your preferred age range (" + myProfile.pref_age_min + "–" + myProfile.pref_age_max + " yrs). " +
         '<a href="myprofile.html">Want a different range? Update your preference</a>';
     } else {
-      banner.style.display = "none";
-      banner.innerHTML = "";
+      banner.innerHTML =
+        "Matching your preference — " + escapeHtml(parts.join(" · ")) + ". " +
+        '<a href="myprofile.html">Update your preference</a>';
     }
   }
 
@@ -270,6 +385,18 @@
     const marital = document.getElementById("f-marital").value;
     if (marital) query = query.eq("marital_status", marital);
 
+    // Height/weight/income have no matching manual filter box, so they're
+    // only ever applied here, invisibly, and only in "all my preferences"
+    // mode - never silently in "core" mode, or that mode would stop being
+    // the lighter option it's advertised as.
+    if (matchMode === "all") {
+      if (myProfile.pref_height_min) query = query.gte("height_cm", myProfile.pref_height_min);
+      if (myProfile.pref_height_max) query = query.lte("height_cm", myProfile.pref_height_max);
+      if (myProfile.pref_weight_min) query = query.gte("weight_kg", myProfile.pref_weight_min);
+      if (myProfile.pref_weight_max) query = query.lte("weight_kg", myProfile.pref_weight_max);
+      if (myProfile.pref_income) query = query.eq("annual_income", myProfile.pref_income);
+    }
+
     const { data, error } = await query;
 
     if (error) {
@@ -289,7 +416,14 @@
     countEl.textContent = rows.length + " profile" + (rows.length === 1 ? "" : "s") + " found";
 
     if (!rows.length) {
-      resultsEl.innerHTML = '<p class="br-empty">No profiles match these filters yet. Try widening your search.</p>';
+      if (myProfile.pref_age_min && myProfile.pref_age_max) {
+        resultsEl.innerHTML =
+          matchMode === "all"
+            ? '<p class="br-empty">No profiles match all your preferences and filters right now. Try the "Age, Diet &amp; Profession" match mode above, clear any filters, or <a href="myprofile.html">update your preferences</a>.</p>'
+            : '<p class="br-empty">No profiles match your age, diet &amp; profession preference (and any filters above) right now. Try clearing the filters above, or <a href="myprofile.html">update your preference</a>.</p>';
+      } else {
+        resultsEl.innerHTML = '<p class="br-empty">No profiles match these filters yet. Try widening your search.</p>';
+      }
       return;
     }
 
@@ -323,7 +457,11 @@
 
     const { data: profile, error } = await supabaseClient
       .from("mt_profiles")
-      .select("user_id, gender, profile_complete, pref_age_min, pref_age_max")
+      .select(
+        "user_id, gender, profile_complete, pref_age_min, pref_age_max, " +
+        "pref_height_min, pref_height_max, pref_weight_min, pref_weight_max, " +
+        "pref_diet, pref_education, pref_profession, pref_income, pref_city"
+      )
       .eq("user_id", session.user.id)
       .maybeSingle();
 
@@ -362,6 +500,7 @@
     myProfile = profile;
     populateFilterDropdowns();
     restoreFiltersFromStorage();
+    wireMatchModeButtons();
     // Runs every visit, not just when no filters were saved - the stored
     // preference is the single source of truth for age, so it always wins
     // over whatever age values (there are none now - see FILTER_IDS above)

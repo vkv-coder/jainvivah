@@ -112,13 +112,25 @@ const CODE_FIELD_RULES = {
     // the closest honest mapping is "a parent manages this profile".
     legacy: { son: "father", daughter: "father" }
   },
-  pref_diet: { allowed: ["jain", "veg", "vegan", "other"], legacy: {} }
+  // Unlike the four required fields above (blocked from ever reaching here
+  // empty by each form's own "fill in all fields marked with *" check),
+  // pref_diet is optional and revocable - a member can set it, then later
+  // choose "Any" again. It needs `nullable: true` so that case actually
+  // clears the column via an explicit NULL, rather than the delete-the-key
+  // behavior below, which - on an upsert - just leaves whatever was
+  // previously stored untouched, silently blocking the member from ever
+  // clearing it back to "Any" once set.
+  pref_diet: { allowed: ["jain", "veg", "vegan", "other"], legacy: {}, nullable: true }
 };
 
-// Mutates (and returns) row in place: for each of the five constrained
-// fields present on it, trims + lowercases the value, applies the legacy
-// mapping, and DELETES the key entirely if the result is empty or still
-// not in the allowed list. Never lets "" or an invalid value through.
+// Mutates (and returns) row in place: for each of the constrained fields
+// present on it, trims + lowercases the value, applies the legacy mapping,
+// and - if the result is empty or still not in the allowed list - either
+// deletes the key entirely (required fields; this branch never actually
+// triggers for them since each form already blocks submission while any
+// required field is empty) or sets it to null (fields marked `nullable`,
+// so a member can genuinely clear a previously-set optional preference).
+// Never lets "" or an invalid value through either way.
 function normaliseCodes(row) {
   Object.keys(CODE_FIELD_RULES).forEach((field) => {
     if (!(field in row)) return;
@@ -129,7 +141,11 @@ function normaliseCodes(row) {
     if (rule.legacy[value]) value = rule.legacy[value];
 
     if (!value || !rule.allowed.includes(value)) {
-      delete row[field];
+      if (rule.nullable) {
+        row[field] = null;
+      } else {
+        delete row[field];
+      }
     } else {
       row[field] = value;
     }

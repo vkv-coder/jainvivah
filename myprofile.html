@@ -184,6 +184,7 @@
 
     <!-- ============ OPEN: MY PREFERENCE ============ -->
     <h3 class="mt-section-title">My Preference</h3>
+    <p class="mt-hint">Age is required. Everything else here is optional — fill in as much as you'd like Browse to match on.</p>
 
     <div class="mt-field">
       <label>Age range *</label>
@@ -195,6 +196,62 @@
           <input type="number" id="mp-pref-age-max" min="18" max="80" placeholder="To" required>
         </div>
       </div>
+    </div>
+
+    <div class="mt-field">
+      <label>Height range (optional)</label>
+      <div class="mt-range-row">
+        <div class="mt-field"><select id="mp-pref-height-min"><option value="">Any</option></select></div>
+        <div class="mt-field"><select id="mp-pref-height-max"><option value="">Any</option></select></div>
+      </div>
+    </div>
+
+    <div class="mt-field">
+      <label>Weight range in kg (optional)</label>
+      <div class="mt-range-row">
+        <div class="mt-field">
+          <input type="number" id="mp-pref-weight-min" min="30" max="200" placeholder="From">
+        </div>
+        <div class="mt-field">
+          <input type="number" id="mp-pref-weight-max" min="30" max="200" placeholder="To">
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-pref-diet">Diet (optional)</label>
+      <select id="mp-pref-diet"><option value="">Any</option></select>
+    </div>
+
+    <div class="mt-field">
+      <label>Education — any of these (optional)</label>
+      <div class="mt-checkbox-list" id="mp-pref-education"></div>
+      <div id="mp-pref-education-other-wrap" style="display:none; margin-top:8px;">
+        <input type="text" id="mp-pref-education-other" placeholder="Please specify">
+      </div>
+    </div>
+
+    <div class="mt-field">
+      <label>Profession — any of these (optional)</label>
+      <div class="mt-checkbox-list" id="mp-pref-profession"></div>
+      <div id="mp-pref-profession-other-wrap" style="display:none; margin-top:8px;">
+        <input type="text" id="mp-pref-profession-other" placeholder="Please specify">
+      </div>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-pref-income">Annual income (optional)</label>
+      <select id="mp-pref-income"><option value="">Any</option></select>
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-pref-city">Preferred city (optional)</label>
+      <input type="text" id="mp-pref-city" autocomplete="off">
+    </div>
+
+    <div class="mt-field">
+      <label for="mp-pref-special">Any other preference (optional)</label>
+      <textarea id="mp-pref-special" rows="3"></textarea>
     </div>
 
     <button type="button" class="mt-btn mt-btn-primary" id="mp-save-profile">Save profile</button>
@@ -350,14 +407,31 @@
       heightSelect.appendChild(opt);
     });
 
+    [document.getElementById("mp-pref-height-min"), document.getElementById("mp-pref-height-max")].forEach((sel) => {
+      buildHeightOptions().forEach((h) => {
+        const opt = document.createElement("option");
+        opt.value = h.cm;
+        opt.textContent = h.label;
+        sel.appendChild(opt);
+      });
+    });
+
     fillSelect(document.getElementById("mp-marital"), MARITAL_STATUS_OPTIONS);
     fillSelect(document.getElementById("mp-diet"), DIET_OPTIONS);
     fillSelect(document.getElementById("mp-sect"), SECT_OPTIONS);
     fillSelect(document.getElementById("mp-profession"), PROFESSION_OPTIONS);
     fillSelect(document.getElementById("mp-income"), ANNUAL_INCOME_OPTIONS);
+    fillSelect(document.getElementById("mp-pref-diet"), DIET_OPTIONS);
+    fillSelect(document.getElementById("mp-pref-income"), ANNUAL_INCOME_OPTIONS);
 
     renderCheckboxList(document.getElementById("mp-education"), EDUCATION_OPTIONS);
     wireOtherToggle(document.getElementById("mp-education"), document.getElementById("mp-education-other-wrap"));
+
+    renderCheckboxList(document.getElementById("mp-pref-education"), EDUCATION_OPTIONS);
+    wireOtherToggle(document.getElementById("mp-pref-education"), document.getElementById("mp-pref-education-other-wrap"));
+
+    renderCheckboxList(document.getElementById("mp-pref-profession"), PROFESSION_OPTIONS);
+    wireOtherToggle(document.getElementById("mp-pref-profession"), document.getElementById("mp-pref-profession-other-wrap"));
 
     populateDobDropdowns(
       document.getElementById("mp-dob-day"),
@@ -495,6 +569,27 @@
 
       if (profile.pref_age_min) document.getElementById("mp-pref-age-min").value = profile.pref_age_min;
       if (profile.pref_age_max) document.getElementById("mp-pref-age-max").value = profile.pref_age_max;
+      if (profile.pref_height_min) document.getElementById("mp-pref-height-min").value = profile.pref_height_min;
+      if (profile.pref_height_max) document.getElementById("mp-pref-height-max").value = profile.pref_height_max;
+      if (profile.pref_weight_min) document.getElementById("mp-pref-weight-min").value = profile.pref_weight_min;
+      if (profile.pref_weight_max) document.getElementById("mp-pref-weight-max").value = profile.pref_weight_max;
+      if (profile.pref_diet) document.getElementById("mp-pref-diet").value = profile.pref_diet;
+      if (profile.pref_income) document.getElementById("mp-pref-income").value = profile.pref_income;
+      document.getElementById("mp-pref-city").value = profile.pref_city || "";
+      document.getElementById("mp-pref-special").value = profile.pref_special || "";
+
+      setCheckboxListArray(
+        document.getElementById("mp-pref-education"),
+        document.getElementById("mp-pref-education-other-wrap"),
+        document.getElementById("mp-pref-education-other"),
+        profile.pref_education || []
+      );
+      setCheckboxListArray(
+        document.getElementById("mp-pref-profession"),
+        document.getElementById("mp-pref-profession-other-wrap"),
+        document.getElementById("mp-pref-profession-other"),
+        profile.pref_profession || []
+      );
 
       document.getElementById("mp-pause-toggle").checked = !!profile.is_paused;
     }
@@ -532,6 +627,16 @@
     const income = document.getElementById("mp-income").value;
     const prefAgeMin = document.getElementById("mp-pref-age-min").value;
     const prefAgeMax = document.getElementById("mp-pref-age-max").value;
+    const prefHeightMin = document.getElementById("mp-pref-height-min").value;
+    const prefHeightMax = document.getElementById("mp-pref-height-max").value;
+    const prefWeightMin = document.getElementById("mp-pref-weight-min").value;
+    const prefWeightMax = document.getElementById("mp-pref-weight-max").value;
+    const prefDiet = document.getElementById("mp-pref-diet").value;
+    const prefEducation = getCheckboxListArray(document.getElementById("mp-pref-education"), document.getElementById("mp-pref-education-other"));
+    const prefProfession = getCheckboxListArray(document.getElementById("mp-pref-profession"), document.getElementById("mp-pref-profession-other"));
+    const prefIncome = document.getElementById("mp-pref-income").value;
+    const prefCity = document.getElementById("mp-pref-city").value.trim();
+    const prefSpecial = document.getElementById("mp-pref-special").value.trim();
     const incomeExempt = PROFESSIONS_WITHOUT_INCOME.includes(profession === "Other" ? professionOther : profession);
 
     if (
@@ -566,6 +671,14 @@
       toast("My Preference: age 'from' cannot be greater than age 'to'.", "error");
       return;
     }
+    if (prefHeightMin && prefHeightMax && Number(prefHeightMin) > Number(prefHeightMax)) {
+      toast("My Preference: height 'from' cannot be greater than height 'to'.", "error");
+      return;
+    }
+    if (prefWeightMin && prefWeightMax && Number(prefWeightMin) > Number(prefWeightMax)) {
+      toast("My Preference: weight 'from' cannot be greater than weight 'to'.", "error");
+      return;
+    }
 
     if (sect === "Other") sect = sectOther;
     if (profession === "Other") profession = professionOther;
@@ -590,7 +703,17 @@
       occupation_detail: occupationDetail || null,
       annual_income: income || null,
       pref_age_min: Number(prefAgeMin),
-      pref_age_max: Number(prefAgeMax)
+      pref_age_max: Number(prefAgeMax),
+      pref_height_min: prefHeightMin ? Number(prefHeightMin) : null,
+      pref_height_max: prefHeightMax ? Number(prefHeightMax) : null,
+      pref_weight_min: prefWeightMin ? Number(prefWeightMin) : null,
+      pref_weight_max: prefWeightMax ? Number(prefWeightMax) : null,
+      pref_diet: prefDiet,
+      pref_education: prefEducation.length ? prefEducation : null,
+      pref_profession: prefProfession.length ? prefProfession : null,
+      pref_income: prefIncome || null,
+      pref_city: prefCity || null,
+      pref_special: prefSpecial || null
     };
 
     const cleaned = normaliseCodes(payload);

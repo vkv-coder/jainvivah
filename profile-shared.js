@@ -268,6 +268,45 @@ function setCheckboxListValue(containerEl, otherWrapEl, otherInputEl, csvValue) 
   }
 }
 
+// Same idea as getCheckboxListValue/setCheckboxListValue above, but for
+// mt_profiles columns that are real Postgres text[] arrays (pref_education,
+// pref_profession) rather than a comma-joined text column — a partner
+// preference naturally allows picking several acceptable options, unlike
+// the member's own single/comma-string fields.
+function getCheckboxListArray(containerEl, otherInputEl) {
+  const values = Array.from(containerEl.querySelectorAll("input[type=checkbox]:checked")).map((cb) => cb.value);
+  const otherIndex = values.indexOf("Other");
+  if (otherIndex !== -1) {
+    const otherText = (otherInputEl.value || "").trim();
+    if (otherText) values[otherIndex] = otherText;
+  }
+  return values;
+}
+
+function setCheckboxListArray(containerEl, otherWrapEl, otherInputEl, arrayValue) {
+  const parts = Array.isArray(arrayValue) ? arrayValue : [];
+  const knownValues = Array.from(containerEl.querySelectorAll("input[type=checkbox]")).map((cb) => cb.value);
+  let hasOther = false;
+  let otherText = "";
+
+  parts.forEach((part) => {
+    if (knownValues.includes(part)) {
+      const cb = containerEl.querySelector('input[value="' + CSS.escape(part) + '"]');
+      if (cb) cb.checked = true;
+    } else {
+      hasOther = true;
+      otherText = part;
+    }
+  });
+
+  const otherBox = containerEl.querySelector('input[value="Other"]');
+  if (hasOther && otherBox) {
+    otherBox.checked = true;
+    otherWrapEl.style.display = "block";
+    otherInputEl.value = otherText;
+  }
+}
+
 // ---------------------------------------------------------------------
 // Image resizing (runs entirely in the browser — the original file
 // never leaves the device).

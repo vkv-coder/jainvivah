@@ -209,6 +209,8 @@
          step was removed — only the logical step number (data-step, and the
          step argument passed to saveProfileStep/goToStep) changed to 4. -->
     <section class="mt-step" data-step="4" style="display:none;">
+      <p class="mt-hint">Age is required. Everything else here is optional — fill in as much as you'd like Browse to match on.</p>
+
       <div class="mt-field">
         <label>Age range *</label>
         <div class="mt-range-row">
@@ -219,6 +221,62 @@
             <input type="number" id="s5-age-max" min="18" max="80" placeholder="To" required>
           </div>
         </div>
+      </div>
+
+      <div class="mt-field">
+        <label>Height range (optional)</label>
+        <div class="mt-range-row">
+          <div class="mt-field"><select id="s5-pref-height-min"><option value="">Any</option></select></div>
+          <div class="mt-field"><select id="s5-pref-height-max"><option value="">Any</option></select></div>
+        </div>
+      </div>
+
+      <div class="mt-field">
+        <label>Weight range in kg (optional)</label>
+        <div class="mt-range-row">
+          <div class="mt-field">
+            <input type="number" id="s5-pref-weight-min" min="30" max="200" placeholder="From">
+          </div>
+          <div class="mt-field">
+            <input type="number" id="s5-pref-weight-max" min="30" max="200" placeholder="To">
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-field">
+        <label for="s5-pref-diet">Diet (optional)</label>
+        <select id="s5-pref-diet"><option value="">Any</option></select>
+      </div>
+
+      <div class="mt-field">
+        <label>Education — any of these (optional)</label>
+        <div class="mt-checkbox-list" id="s5-pref-education"></div>
+        <div id="s5-pref-education-other-wrap" style="display:none; margin-top:8px;">
+          <input type="text" id="s5-pref-education-other" placeholder="Please specify">
+        </div>
+      </div>
+
+      <div class="mt-field">
+        <label>Profession — any of these (optional)</label>
+        <div class="mt-checkbox-list" id="s5-pref-profession"></div>
+        <div id="s5-pref-profession-other-wrap" style="display:none; margin-top:8px;">
+          <input type="text" id="s5-pref-profession-other" placeholder="Please specify">
+        </div>
+      </div>
+
+      <div class="mt-field">
+        <label for="s5-pref-income">Annual income (optional)</label>
+        <select id="s5-pref-income"><option value="">Any</option></select>
+      </div>
+
+      <div class="mt-field">
+        <label for="s5-pref-city">Preferred city (optional)</label>
+        <input type="text" id="s5-pref-city" autocomplete="off">
+      </div>
+
+      <div class="mt-field">
+        <label for="s5-pref-special">Any other preference (optional)</label>
+        <textarea id="s5-pref-special" rows="3"></textarea>
       </div>
 
       <div class="mt-step-nav">
@@ -374,14 +432,31 @@
       heightSelect.appendChild(opt);
     });
 
+    [document.getElementById("s5-pref-height-min"), document.getElementById("s5-pref-height-max")].forEach((sel) => {
+      buildHeightOptions().forEach((h) => {
+        const opt = document.createElement("option");
+        opt.value = h.cm;
+        opt.textContent = h.label;
+        sel.appendChild(opt);
+      });
+    });
+
     fillSelect(document.getElementById("s1-marital"), MARITAL_STATUS_OPTIONS);
     fillSelect(document.getElementById("s1-diet"), DIET_OPTIONS);
     fillSelect(document.getElementById("s2-sect"), SECT_OPTIONS);
     fillSelect(document.getElementById("s3-profession"), PROFESSION_OPTIONS);
     fillSelect(document.getElementById("s3-income"), ANNUAL_INCOME_OPTIONS);
+    fillSelect(document.getElementById("s5-pref-diet"), DIET_OPTIONS);
+    fillSelect(document.getElementById("s5-pref-income"), ANNUAL_INCOME_OPTIONS);
 
     renderCheckboxList(document.getElementById("s3-education"), EDUCATION_OPTIONS);
     wireOtherToggle(document.getElementById("s3-education"), document.getElementById("s3-education-other-wrap"));
+
+    renderCheckboxList(document.getElementById("s5-pref-education"), EDUCATION_OPTIONS);
+    wireOtherToggle(document.getElementById("s5-pref-education"), document.getElementById("s5-pref-education-other-wrap"));
+
+    renderCheckboxList(document.getElementById("s5-pref-profession"), PROFESSION_OPTIONS);
+    wireOtherToggle(document.getElementById("s5-pref-profession"), document.getElementById("s5-pref-profession-other-wrap"));
 
     populateDobDropdowns(
       document.getElementById("s1-dob-day"),
@@ -742,9 +817,25 @@
   function getStep5Fields() {
     const ageMin = document.getElementById("s5-age-min").value;
     const ageMax = document.getElementById("s5-age-max").value;
+    const heightMin = document.getElementById("s5-pref-height-min").value;
+    const heightMax = document.getElementById("s5-pref-height-max").value;
+    const weightMin = document.getElementById("s5-pref-weight-min").value;
+    const weightMax = document.getElementById("s5-pref-weight-max").value;
+    const education = getCheckboxListArray(document.getElementById("s5-pref-education"), document.getElementById("s5-pref-education-other"));
+    const profession = getCheckboxListArray(document.getElementById("s5-pref-profession"), document.getElementById("s5-pref-profession-other"));
     return {
       pref_age_min: ageMin ? Number(ageMin) : null,
-      pref_age_max: ageMax ? Number(ageMax) : null
+      pref_age_max: ageMax ? Number(ageMax) : null,
+      pref_height_min: heightMin ? Number(heightMin) : null,
+      pref_height_max: heightMax ? Number(heightMax) : null,
+      pref_weight_min: weightMin ? Number(weightMin) : null,
+      pref_weight_max: weightMax ? Number(weightMax) : null,
+      pref_diet: document.getElementById("s5-pref-diet").value,
+      pref_education: education.length ? education : null,
+      pref_profession: profession.length ? profession : null,
+      pref_income: document.getElementById("s5-pref-income").value || null,
+      pref_city: document.getElementById("s5-pref-city").value.trim() || null,
+      pref_special: document.getElementById("s5-pref-special").value.trim() || null
     };
   }
 
@@ -757,6 +848,14 @@
     }
     if (payload.pref_age_min > payload.pref_age_max) {
       toast("Age 'from' cannot be greater than age 'to'.", "error");
+      return;
+    }
+    if (payload.pref_height_min !== null && payload.pref_height_max !== null && payload.pref_height_min > payload.pref_height_max) {
+      toast("Height 'from' cannot be greater than height 'to'.", "error");
+      return;
+    }
+    if (payload.pref_weight_min !== null && payload.pref_weight_max !== null && payload.pref_weight_min > payload.pref_weight_max) {
+      toast("Weight 'from' cannot be greater than weight 'to'.", "error");
       return;
     }
     const ok = await saveProfileStep(4, payload);
@@ -1054,6 +1153,27 @@
 
       if (profile.pref_age_min) document.getElementById("s5-age-min").value = profile.pref_age_min;
       if (profile.pref_age_max) document.getElementById("s5-age-max").value = profile.pref_age_max;
+      if (profile.pref_height_min) document.getElementById("s5-pref-height-min").value = profile.pref_height_min;
+      if (profile.pref_height_max) document.getElementById("s5-pref-height-max").value = profile.pref_height_max;
+      if (profile.pref_weight_min) document.getElementById("s5-pref-weight-min").value = profile.pref_weight_min;
+      if (profile.pref_weight_max) document.getElementById("s5-pref-weight-max").value = profile.pref_weight_max;
+      if (profile.pref_diet) document.getElementById("s5-pref-diet").value = profile.pref_diet;
+      if (profile.pref_income) document.getElementById("s5-pref-income").value = profile.pref_income;
+      document.getElementById("s5-pref-city").value = profile.pref_city || "";
+      document.getElementById("s5-pref-special").value = profile.pref_special || "";
+
+      setCheckboxListArray(
+        document.getElementById("s5-pref-education"),
+        document.getElementById("s5-pref-education-other-wrap"),
+        document.getElementById("s5-pref-education-other"),
+        profile.pref_education || []
+      );
+      setCheckboxListArray(
+        document.getElementById("s5-pref-profession"),
+        document.getElementById("s5-pref-profession-other-wrap"),
+        document.getElementById("s5-pref-profession-other"),
+        profile.pref_profession || []
+      );
     } else {
       document.getElementById("s2-sect").value = signupData.sect || "";
     }

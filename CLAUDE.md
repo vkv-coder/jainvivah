@@ -25,7 +25,11 @@ Key decisions already settled:
 - Typed form, not AI reading of PDFs
 - Up to 3 photos, clear (not blurred), watermarked at view time
 - Photos visible only to members whose own profile is complete
-- No matching/eligibility filter — plain browse with filters
+- **Superseded 26 Sep 2026** — ~~No matching/eligibility filter — plain browse with filters~~.
+  Browse now defaults to the member's own stored "My Preference" fields
+  (age/height/weight/diet/education/profession/income/city), with a
+  member-facing toggle between matching all of them or just the lighter
+  Age+Diet+Profession trio. See `browse.html`'s "Match mode" section below.
 - Age enforced: female 18+, male 21+ (Indian legal marriage age)
 - Profile managed by Self / Father / Mother / Brother / Sister / Relative
 - **Gender is now editable at any time** (25 Sep 2026) — the earlier "locked
@@ -34,8 +38,8 @@ Key decisions already settled:
 - **Browsing/viewing other profiles requires a verified mobile number**
   (25 Sep 2026) — enforced client-side in `browse.html` and
   `profile-view.html` by checking `mt_contacts.mobile_verified` before
-  allowing access. This is NOT yet backed by an RLS policy (client-side
-  only) — see Open Items.
+  allowing access, AND backed by RLS since 25 Sep 2026 (`mt_is_verified()`
+  added into `mt_profiles_sel`/`mt_photos_sel` — see below).
 
 ---
 
@@ -509,6 +513,43 @@ Mobile first. Dignified and warm, not a generic startup gradient look.
       using ((user_id = auth.uid()) or mt_is_admin(auth.uid())) with check
       (same)`. Worth re-checking other tables for this same
       DELETE-has-admin-bypass-but-UPDATE-doesn't asymmetry.
+
+- [x] **Built 26 Sep 2026** — Full "My Preference" collection + Browse
+      matching. The `mt_profiles` schema already had `pref_height_min/max`,
+      `pref_weight_min/max`, `pref_education[]`, `pref_profession[]`,
+      `pref_diet`, `pref_income`, `pref_city`, `pref_special` columns (added
+      early on, see "Columns added after the original schema" above) but no
+      UI ever collected them — only `pref_age_min/max` was ever built out.
+      Added the rest to both `register.html` (Step 4) and `myprofile.html`
+      ("My Preference" section), all optional except age. Education/
+      profession preference are genuine multi-select checkbox lists (real
+      Postgres arrays, unlike the member's own `education`/`profession`
+      columns which stay single/comma-string) — added `getCheckboxListArray`/
+      `setCheckboxListArray` to `profile-shared.js` for this.
+      Browse (`browse.html`) now has a member-facing **Match mode** toggle:
+      "All my preferences" vs "Age, Diet & Profession" (persisted in
+      `localStorage` under `mt_browse_match_mode`, default "all"). Design
+      rule, to avoid ever double-filtering the same field two different ways:
+      any preference field that already has a matching manual filter box
+      (age, diet, and profession/education when exactly one value is
+      preferred) is auto-filled into that box once at load — same mechanism
+      age already used — and from then on the visible box is the only source
+      of truth for it, so a member's own manual edit always sticks. Fields
+      with no manual filter box at all (height, weight, income) are applied
+      as invisible query constraints, gated on `matchMode === "all"` so
+      "core" mode stays genuinely lighter. `pref_special` (free-text notes)
+      is never used as a matching constraint — there is no equivalent field
+      on the other member's profile to compare it against, it is purely
+      informational for the member's own reference.
+      Also fixed a latent bug this surfaced: `app.js`'s `normaliseCodes()`
+      *deleted* an invalid/empty code field instead of nulling it, which is
+      harmless for the four required code fields (gender/diet/marital_status/
+      managed_by — form validation already blocks them from ever reaching
+      here empty) but would have permanently blocked a member from clearing
+      `pref_diet` back to "Any" once set (upsert leaves an omitted column
+      untouched, not nulled). Added a `nullable: true` flag to
+      `CODE_FIELD_RULES` so `pref_diet` nulls correctly; behavior for the
+      other four fields is unchanged.
 
 **`sw.js` caching strategy changed to network-first on 25 Sep 2026.** It was
 cache-first with a manually-bumped `CACHE_NAME` ("MT_V3"), which meant every
