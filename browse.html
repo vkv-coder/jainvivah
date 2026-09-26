@@ -42,6 +42,28 @@
     background: var(--white); color: var(--charcoal); font-size: 12px; font-weight: 600; cursor: pointer;
   }
   .br-mode-btn.br-mode-active { background: var(--maroon); border-color: var(--maroon); color: var(--white); }
+
+  /* ---------------- My Interests, embedded directly on the home page ---------------- */
+  .in-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 14px; margin-bottom: 12px; text-decoration: none; color: inherit;
+  }
+  .in-row-main { flex: 1; min-width: 0; }
+  .in-row .mt-btn { width: auto; flex-shrink: 0; white-space: nowrap; }
+  .in-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .in-name { font-weight: 700; color: var(--charcoal); font-size: 15px; }
+  .in-meta { font-size: 13px; color: #6b5a4e; margin-top: 2px; }
+  .in-contact-line { font-size: 13px; color: var(--maroon); margin-top: 4px; font-weight: 600; }
+  .in-empty { text-align: center; padding: 30px 10px; color: #8a7a6d; }
+  #in-main-tabs .mt-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  .in-count-badge {
+    display: inline-block; background: var(--gold); color: var(--white);
+    border-radius: 999px; font-size: 11px; font-weight: 700; padding: 1px 7px;
+  }
+  .in-subtabs { margin: 4px 0 16px; border-width: 1px; }
+  .in-subtabs .mt-tab { padding: 9px; font-size: 13px; }
+  .in-section-spacer { margin-top: 36px; }
 </style>
 </head>
 <body>
@@ -53,13 +75,59 @@
   <button type="button" class="mt-header-logout" onclick="logout()">Logout</button>
   <div class="mt-logo">Jain Vivah</div>
   <a href="myprofile.html" class="mt-header-nav-link">My Profile</a>
-  <a href="interests.html" class="mt-header-nav-link" style="margin-left:8px;">My Interests</a>
 </div>
 <div class="mt-logged-in-as" id="mt-logged-in-as"></div>
 
 <div class="mt-page">
 
-  <h1>Browse Profiles</h1>
+  <h1>My Interests</h1>
+
+  <div class="mt-tabs" id="in-main-tabs">
+    <div class="mt-tab mt-tab-active" data-tab="received">Received<span class="in-count-badge" id="in-received-count">0</span></div>
+    <div class="mt-tab" data-tab="accepted">Accepted<span class="in-count-badge" id="in-accepted-count">0</span></div>
+    <div class="mt-tab" data-tab="sent">Sent<span class="in-count-badge" id="in-sent-count">0</span></div>
+    <div class="mt-tab" data-tab="contacts">Contacts</div>
+  </div>
+
+  <div class="mt-tab-panel mt-tab-panel-active" data-panel="received">
+    <p class="mt-hint">Members who are interested in you — accept to unlock contact details, or decline.</p>
+    <div id="in-received-list"><p class="mt-hint">Loading...</p></div>
+  </div>
+
+  <div class="mt-tab-panel" data-panel="accepted">
+    <div class="mt-tabs in-subtabs" id="in-accepted-subtabs">
+      <div class="mt-tab mt-tab-active" data-subtab="accepted-by-you">Accepted by You</div>
+      <div class="mt-tab" data-subtab="accepted-by-them">Accepted by Them</div>
+    </div>
+    <div class="mt-tab-panel mt-tab-panel-active" data-subpanel="accepted-by-you">
+      <p class="mt-hint">Interests sent to you that you accepted.</p>
+      <div id="in-accepted-by-you-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+    <div class="mt-tab-panel" data-subpanel="accepted-by-them">
+      <p class="mt-hint">Interests you sent that they accepted.</p>
+      <div id="in-accepted-by-them-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+  </div>
+
+  <div class="mt-tab-panel" data-panel="sent">
+    <p class="mt-hint">Interests you've sent that are still awaiting a response.</p>
+    <div id="in-sent-list"><p class="mt-hint">Loading...</p></div>
+  </div>
+
+  <div class="mt-tab-panel" data-panel="contacts">
+    <div class="mt-tabs in-subtabs" id="in-contacts-subtabs">
+      <div class="mt-tab mt-tab-active" data-subtab="viewed-by-you">Viewed by You</div>
+      <div class="mt-tab" data-subtab="viewed-you">Viewed You</div>
+    </div>
+    <div class="mt-tab-panel mt-tab-panel-active" data-subpanel="viewed-by-you">
+      <div id="in-viewed-by-you-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+    <div class="mt-tab-panel" data-subpanel="viewed-you">
+      <div id="in-viewed-you-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+  </div>
+
+  <h1 class="in-section-spacer">Browse Profiles</h1>
 
   <div class="mt-shield-box">
     <strong>Photos are protected</strong>
@@ -509,6 +577,225 @@
       .join("");
   }
 
+  // ---------------- My Interests, embedded on the home page ----------------
+  function wireTabGroup(tabsEl, tabAttr, panelAttr, panelScopeEl) {
+    tabsEl.querySelectorAll("[" + tabAttr + "]").forEach((tabEl) => {
+      tabEl.addEventListener("click", () => {
+        const value = tabEl.getAttribute(tabAttr);
+        tabsEl.querySelectorAll("[" + tabAttr + "]").forEach((t) => t.classList.toggle("mt-tab-active", t === tabEl));
+        panelScopeEl.querySelectorAll("[" + panelAttr + "]").forEach((p) => {
+          p.classList.toggle("mt-tab-panel-active", p.getAttribute(panelAttr) === value);
+        });
+      });
+    });
+  }
+
+  async function fetchProfilesById(userIds) {
+    if (!userIds.length) return {};
+    const { data, error } = await supabaseClient
+      .from("mt_profiles")
+      .select("user_id, full_name, profile_code, gender, city, dob")
+      .in("user_id", userIds);
+    if (error || !data) return {};
+    const byId = {};
+    data.forEach((p) => { byId[p.user_id] = p; });
+    return byId;
+  }
+
+  async function fetchContactsById(userIds) {
+    if (!userIds.length) return {};
+    const { data, error } = await supabaseClient
+      .from("mt_contacts")
+      .select("user_id, mobile, email")
+      .in("user_id", userIds);
+    if (error || !data) return {};
+    const byId = {};
+    data.forEach((c) => { byId[c.user_id] = c; });
+    return byId;
+  }
+
+  function otherPartyId(row) {
+    return row.sender_id === myProfile.user_id ? row.receiver_id : row.sender_id;
+  }
+
+  function inRowMeta(profile) {
+    if (!profile) return "";
+    const age = calcAge(profile.dob);
+    return [age ? age + " yrs" : "", profile.city || ""].filter(Boolean).join(" · ");
+  }
+
+  function renderReceivedRow(interest, profile) {
+    const name = (profile && profile.full_name) || "(profile unavailable)";
+    return (
+      '<div class="in-row">' +
+        '<a class="in-row-main" href="profile-view.html?id=' + encodeURIComponent(interest.sender_id) + '">' +
+          '<div class="in-name">' + escapeHtml(name) + "</div>" +
+          '<div class="in-meta">' + escapeHtml(inRowMeta(profile)) + (interest.message ? " · “" + escapeHtml(interest.message) + "”" : "") + "</div>" +
+        "</a>" +
+        '<div class="in-actions">' +
+          '<button type="button" class="mt-btn mt-btn-primary" data-action="accept" data-id="' + escapeHtml(interest.id) + '">Accept</button>' +
+          '<button type="button" class="mt-btn mt-btn-outline" data-action="decline" data-id="' + escapeHtml(interest.id) + '">Decline</button>' +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderSentRow(interest, profile) {
+    const name = (profile && profile.full_name) || "(profile unavailable)";
+    return (
+      '<div class="in-row">' +
+        '<a class="in-row-main" href="profile-view.html?id=' + encodeURIComponent(interest.receiver_id) + '">' +
+          '<div class="in-name">' + escapeHtml(name) + "</div>" +
+          '<div class="in-meta">' + escapeHtml(inRowMeta(profile)) + "</div>" +
+        "</a>" +
+        '<div class="in-actions">' +
+          '<button type="button" class="mt-btn mt-btn-outline" data-action="withdraw" data-id="' + escapeHtml(interest.id) + '">Withdraw</button>' +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderAcceptedRow(interest, profile, contact) {
+    const otherId = otherPartyId(interest);
+    const name = (profile && profile.full_name) || "(profile unavailable)";
+    const contactLine = contact ? [contact.mobile, contact.email].filter(Boolean).join(" · ") : "";
+    return (
+      '<a class="in-row" href="profile-view.html?id=' + encodeURIComponent(otherId) + '">' +
+        '<div class="in-row-main">' +
+          '<div class="in-name">' + escapeHtml(name) + "</div>" +
+          '<div class="in-meta">' + escapeHtml(inRowMeta(profile)) + "</div>" +
+          (contactLine ? '<div class="in-contact-line">' + escapeHtml(contactLine) + "</div>" : "") +
+        "</div>" +
+      "</a>"
+    );
+  }
+
+  function renderViewRow(otherId, profile, viewedAt) {
+    const name = (profile && profile.full_name) || "(profile unavailable)";
+    const when = viewedAt ? new Date(viewedAt).toLocaleDateString() : "";
+    return (
+      '<a class="in-row" href="profile-view.html?id=' + encodeURIComponent(otherId) + '">' +
+        '<div class="in-row-main">' +
+          '<div class="in-name">' + escapeHtml(name) + "</div>" +
+          '<div class="in-meta">' + escapeHtml(inRowMeta(profile)) + (when ? " · " + escapeHtml(when) : "") + "</div>" +
+        "</div>" +
+      "</a>"
+    );
+  }
+
+  async function respondToInterest(id, status, confirmMsg) {
+    if (confirmMsg && !confirm(confirmMsg)) return;
+    const { error } = await supabaseClient.from("mt_interests").update({ status: status }).eq("id", id);
+    if (error) {
+      toast(error.message, "error");
+      return;
+    }
+    toast(
+      status === "accepted" ? "Interest accepted — contact details unlocked." :
+      status === "declined" ? "Interest declined." :
+      "Interest withdrawn.",
+      "success"
+    );
+    await loadInterests();
+  }
+
+  function wireInterestRowActions() {
+    document.querySelectorAll('[data-action="accept"]').forEach((btn) => {
+      btn.addEventListener("click", () => respondToInterest(btn.dataset.id, "accepted"));
+    });
+    document.querySelectorAll('[data-action="decline"]').forEach((btn) => {
+      btn.addEventListener("click", () => respondToInterest(btn.dataset.id, "declined", "Decline this interest? You won't be able to reconsider for a while."));
+    });
+    document.querySelectorAll('[data-action="withdraw"]').forEach((btn) => {
+      btn.addEventListener("click", () => respondToInterest(btn.dataset.id, "withdrawn", "Withdraw this interest?"));
+    });
+  }
+
+  async function loadInterests() {
+    const { data: rows, error } = await supabaseClient
+      .from("mt_interests")
+      .select("*")
+      .or("sender_id.eq." + myProfile.user_id + ",receiver_id.eq." + myProfile.user_id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      document.getElementById("in-received-list").innerHTML = '<p class="in-empty">Could not load: ' + escapeHtml(error.message) + "</p>";
+      return;
+    }
+
+    const all = rows || [];
+    const received = all.filter((r) => r.status === "pending" && r.receiver_id === myProfile.user_id);
+    const sent = all.filter((r) => r.status === "pending" && r.sender_id === myProfile.user_id);
+    const acceptedByYou = all.filter((r) => r.status === "accepted" && r.receiver_id === myProfile.user_id);
+    const acceptedByThem = all.filter((r) => r.status === "accepted" && r.sender_id === myProfile.user_id);
+
+    const profilesById = await fetchProfilesById(all.map((r) => otherPartyId(r)));
+    const contactsById = await fetchContactsById([...acceptedByYou, ...acceptedByThem].map((r) => otherPartyId(r)));
+
+    document.getElementById("in-received-count").textContent = received.length;
+    document.getElementById("in-sent-count").textContent = sent.length;
+    document.getElementById("in-accepted-count").textContent = acceptedByYou.length + acceptedByThem.length;
+
+    document.getElementById("in-received-list").innerHTML = received.length
+      ? received.map((r) => renderReceivedRow(r, profilesById[r.sender_id])).join("")
+      : '<p class="in-empty">Nothing waiting on your response.</p>';
+
+    document.getElementById("in-sent-list").innerHTML = sent.length
+      ? sent.map((r) => renderSentRow(r, profilesById[r.receiver_id])).join("")
+      : '<p class="in-empty">You haven\'t sent any interests yet.</p>';
+
+    document.getElementById("in-accepted-by-you-list").innerHTML = acceptedByYou.length
+      ? acceptedByYou.map((r) => renderAcceptedRow(r, profilesById[r.sender_id], contactsById[r.sender_id])).join("")
+      : '<p class="in-empty">You haven\'t accepted anyone yet.</p>';
+
+    document.getElementById("in-accepted-by-them-list").innerHTML = acceptedByThem.length
+      ? acceptedByThem.map((r) => renderAcceptedRow(r, profilesById[r.receiver_id], contactsById[r.receiver_id])).join("")
+      : '<p class="in-empty">No one you sent an interest to has accepted yet.</p>';
+
+    wireInterestRowActions();
+  }
+
+  function dedupeViewsByOtherParty(rows, idField) {
+    const seen = new Set();
+    const result = [];
+    rows.forEach((r) => {
+      if (seen.has(r[idField])) return;
+      seen.add(r[idField]);
+      result.push(r);
+    });
+    return result;
+  }
+
+  async function loadContactsTab() {
+    const { data: viewedByYouRows } = await supabaseClient
+      .from("mt_views")
+      .select("viewed_id, created_at")
+      .eq("viewer_id", myProfile.user_id)
+      .order("created_at", { ascending: false });
+
+    const { data: viewedYouRows } = await supabaseClient
+      .from("mt_views")
+      .select("viewer_id, created_at")
+      .eq("viewed_id", myProfile.user_id)
+      .order("created_at", { ascending: false });
+
+    const viewedByYou = dedupeViewsByOtherParty(viewedByYouRows || [], "viewed_id");
+    const viewedYou = dedupeViewsByOtherParty(viewedYouRows || [], "viewer_id");
+
+    const profilesById = await fetchProfilesById([
+      ...viewedByYou.map((r) => r.viewed_id),
+      ...viewedYou.map((r) => r.viewer_id)
+    ]);
+
+    document.getElementById("in-viewed-by-you-list").innerHTML = viewedByYou.length
+      ? viewedByYou.map((r) => renderViewRow(r.viewed_id, profilesById[r.viewed_id], r.created_at)).join("")
+      : '<p class="in-empty">You haven\'t viewed any profiles yet.</p>';
+
+    document.getElementById("in-viewed-you-list").innerHTML = viewedYou.length
+      ? viewedYou.map((r) => renderViewRow(r.viewer_id, profilesById[r.viewer_id], r.created_at)).join("")
+      : '<p class="in-empty">No one has viewed your profile yet.</p>';
+  }
+
   (async () => {
     const session = await requireAuth();
     if (!session) return;
@@ -553,7 +840,11 @@
     // so an unverified admin account never sees this about itself.
     if (contact && contact.mobile_verified && !localStorage.getItem("mt_verified_seen")) {
       localStorage.setItem("mt_verified_seen", "true");
-      toast("🎉 Your mobile number is verified — you can now browse and view other profiles!", "success", { sticky: true });
+      // Not sticky - the one-time guard above already ensures it's only
+      // ever seen once, so it doesn't need to stay pinned open until
+      // manually closed like a sticky toast does; a normal auto-fade is
+      // enough and looks less like a stuck banner.
+      toast("🎉 Your mobile number is verified — you can now browse and view other profiles!", "success");
     }
 
     myProfile = profile;
@@ -565,6 +856,13 @@
     // over whatever age values (there are none now - see FILTER_IDS above)
     // might otherwise linger from a previous session.
     applyPreferenceDefaults();
+
+    wireTabGroup(document.getElementById("in-main-tabs"), "data-tab", "data-panel", document.querySelector(".mt-page"));
+    wireTabGroup(document.getElementById("in-accepted-subtabs"), "data-subtab", "data-subpanel", document.querySelector('[data-panel="accepted"]'));
+    wireTabGroup(document.getElementById("in-contacts-subtabs"), "data-subtab", "data-subpanel", document.querySelector('[data-panel="contacts"]'));
+    await loadInterests();
+    await loadContactsTab();
+
     await runSearch();
   })();
 </script>
