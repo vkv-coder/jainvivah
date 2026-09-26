@@ -29,6 +29,24 @@
   .adm-code { font-family: monospace; background: #F5EDE3; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
   .adm-empty { text-align: center; padding: 30px 10px; color: #8a7a6d; }
   .adm-section-title { margin-top: 30px; }
+
+  /* ---------------- Dashboard ---------------- */
+  .dash-summary { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+  .dash-stat {
+    flex: 1; min-width: 110px; background: var(--white); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 14px; text-align: center;
+  }
+  .dash-stat-num { font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--maroon); }
+  .dash-stat-label { font-size: 12px; color: #6b5a4e; margin-top: 2px; }
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 640px) { .dash-grid { grid-template-columns: 1fr; } }
+  .dash-panel { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+  .dash-panel h4 { margin: 0 0 10px; font-size: 14px; color: var(--charcoal); }
+  .dash-bar-row { margin-bottom: 8px; }
+  .dash-bar-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--charcoal); margin-bottom: 3px; }
+  .dash-bar-label span { color: #8a7a6d; font-weight: 600; }
+  .dash-bar-track { background: #F5EDE3; border-radius: 6px; height: 8px; overflow: hidden; }
+  .dash-bar-fill { background: var(--gold); height: 100%; border-radius: 6px; }
 </style>
 </head>
 <body>
@@ -39,7 +57,7 @@
   <button type="button" class="mt-header-back" onclick="if(window.history.length>1){history.back();}else{location.href='myprofile.html';}">&larr; Back</button>
   <button type="button" class="mt-header-logout" onclick="logout()">Logout</button>
   <div class="mt-logo">Jain Vivah</div>
-  <div class="mt-tagline">Admin · Mobile Verification</div>
+  <div class="mt-tagline">Admin · Dashboard &amp; Mobile Verification</div>
 </div>
 <div class="mt-logged-in-as" id="mt-logged-in-as"></div>
 
@@ -52,7 +70,26 @@
   </div>
 
   <div id="adm-content" style="display:none;">
-    <h1>Pending verification (<span id="adm-pending-count">0</span>)</h1>
+    <h1>Dashboard</h1>
+
+    <div class="dash-summary">
+      <div class="dash-stat"><div class="dash-stat-num" id="dash-total">0</div><div class="dash-stat-label">Total signups</div></div>
+      <div class="dash-stat"><div class="dash-stat-num" id="dash-complete">0</div><div class="dash-stat-label">Complete profiles</div></div>
+      <div class="dash-stat"><div class="dash-stat-num" id="dash-verified">0</div><div class="dash-stat-label">Verified (can browse)</div></div>
+      <div class="dash-stat"><div class="dash-stat-num" id="dash-pending">0</div><div class="dash-stat-label">Pending verification</div></div>
+    </div>
+
+    <p class="mt-hint">Breakdowns below are among complete profiles only.</p>
+
+    <div class="dash-grid">
+      <div class="dash-panel"><h4>By Gender</h4><div id="dash-gender"></div></div>
+      <div class="dash-panel"><h4>By Age</h4><div id="dash-age"></div></div>
+      <div class="dash-panel"><h4>By City</h4><div id="dash-city"></div></div>
+      <div class="dash-panel"><h4>By Profession</h4><div id="dash-profession"></div></div>
+      <div class="dash-panel"><h4>By Diet</h4><div id="dash-diet"></div></div>
+    </div>
+
+    <h1 class="adm-section-title">Pending verification (<span id="adm-pending-count">0</span>)</h1>
     <p class="mt-hint">
       Check that the WhatsApp message you received (e.g. "VERIFY JVA1B2C3D4") came from the
       same mobile number shown below for that member, then tap Verify.
@@ -163,6 +200,83 @@
     });
   }
 
+  // ---------------- Dashboard ----------------
+  function renderBarList(containerId, counts, order) {
+    let entries = Object.entries(counts);
+    entries = order
+      ? order.filter((k) => k in counts).map((k) => [k, counts[k]])
+      : entries.sort((a, b) => b[1] - a[1]).slice(0, 15);
+    const max = Math.max(1, ...entries.map(([, c]) => c));
+    document.getElementById(containerId).innerHTML = entries.length
+      ? entries
+          .map(
+            ([label, count]) =>
+              '<div class="dash-bar-row">' +
+              '<div class="dash-bar-label"><span>' + escapeHtml(String(label)) + '</span>' + count + "</div>" +
+              '<div class="dash-bar-track"><div class="dash-bar-fill" style="width:' + (count / max) * 100 + '%"></div></div>' +
+              "</div>"
+          )
+          .join("")
+      : '<p class="mt-hint">No data yet.</p>';
+  }
+
+  function ageBracket(age) {
+    if (age === null) return "Unknown";
+    if (age < 25) return "18-24";
+    if (age < 31) return "25-30";
+    if (age < 36) return "31-35";
+    if (age < 41) return "36-40";
+    if (age < 51) return "41-50";
+    return "51+";
+  }
+
+  async function loadDashboard() {
+    const { data: allProfiles, error: profilesError } = await supabaseClient
+      .from("mt_profiles")
+      .select("gender, city, dob, profession, diet, profile_complete");
+
+    const { data: allContacts, error: contactsError } = await supabaseClient
+      .from("mt_contacts")
+      .select("mobile_verified")
+      .not("mobile", "is", null);
+
+    if (profilesError || contactsError) return;
+
+    const complete = (allProfiles || []).filter((p) => p.profile_complete);
+    const verifiedCount = (allContacts || []).filter((c) => c.mobile_verified).length;
+
+    document.getElementById("dash-total").textContent = (allProfiles || []).length;
+    document.getElementById("dash-complete").textContent = complete.length;
+    document.getElementById("dash-verified").textContent = verifiedCount;
+    document.getElementById("dash-pending").textContent = (allContacts || []).length - verifiedCount;
+
+    const genderCounts = {};
+    const cityCounts = {};
+    const professionCounts = {};
+    const dietCounts = {};
+    const ageCounts = {};
+
+    complete.forEach((p) => {
+      const genderLabel = GENDER_LABELS[p.gender] || "Unknown";
+      genderCounts[genderLabel] = (genderCounts[genderLabel] || 0) + 1;
+
+      if (p.city) cityCounts[p.city] = (cityCounts[p.city] || 0) + 1;
+      if (p.profession) professionCounts[p.profession] = (professionCounts[p.profession] || 0) + 1;
+
+      const dietLabel = (DIET_OPTIONS.find(([, code]) => code === p.diet) || [p.diet || "Unknown"])[0];
+      dietCounts[dietLabel] = (dietCounts[dietLabel] || 0) + 1;
+
+      const bracket = ageBracket(calcAge(p.dob));
+      ageCounts[bracket] = (ageCounts[bracket] || 0) + 1;
+    });
+
+    renderBarList("dash-gender", genderCounts, ["Male", "Female"]);
+    renderBarList("dash-age", ageCounts, ["18-24", "25-30", "31-35", "36-40", "41-50", "51+", "Unknown"]);
+    renderBarList("dash-city", cityCounts);
+    renderBarList("dash-profession", professionCounts);
+    renderBarList("dash-diet", dietCounts, DIET_OPTIONS.map(([label]) => label).concat(["Unknown"]));
+  }
+
   (async () => {
     const session = await requireAuth();
     if (!session) return;
@@ -174,6 +288,7 @@
     }
 
     document.getElementById("adm-content").style.display = "block";
+    await loadDashboard();
     await loadLists();
   })();
 </script>
