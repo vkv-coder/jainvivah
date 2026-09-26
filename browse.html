@@ -385,6 +385,19 @@
     const marital = document.getElementById("f-marital").value;
     if (marital) query = query.eq("marital_status", marital);
 
+    // Profession/education can carry TWO OR MORE preferred values (real
+    // arrays) - a single-select dropdown can only ever represent one of
+    // them, so applyPreferenceDefaults() only auto-fills it when there is
+    // exactly one. For 2+ values, matching happens here instead - only
+    // when the dropdown is still blank, so an explicit single manual
+    // choice there always wins over the broader preference. Profession is
+    // part of the "core" trio, so it applies in both match modes;
+    // education (like everything else with no matching required-core
+    // status) only applies in "all" mode.
+    if (!profession && myProfile.pref_profession && myProfile.pref_profession.length > 1) {
+      query = query.in("profession", myProfile.pref_profession);
+    }
+
     // Height/weight/income have no matching manual filter box, so they're
     // only ever applied here, invisibly, and only in "all my preferences"
     // mode - never silently in "core" mode, or that mode would stop being
@@ -395,6 +408,19 @@
       if (myProfile.pref_weight_min) query = query.gte("weight_kg", myProfile.pref_weight_min);
       if (myProfile.pref_weight_max) query = query.lte("weight_kg", myProfile.pref_weight_max);
       if (myProfile.pref_income) query = query.eq("annual_income", myProfile.pref_income);
+
+      if (!education && myProfile.pref_education && myProfile.pref_education.length > 1) {
+        // Education is a comma-joined text column, not an array, so this is
+        // an OR of "contains" checks rather than a single .in(). Values
+        // containing "," or ")" would break PostgREST's or=() filter
+        // syntax (only reachable via a typed "Other, please specify" entry,
+        // never the fixed EDUCATION_OPTIONS list) - skip those rather than
+        // risk a malformed query.
+        const safeValues = myProfile.pref_education.filter((v) => !/[,()]/.test(v));
+        if (safeValues.length) {
+          query = query.or(safeValues.map((v) => "education.ilike.%" + v + "%").join(","));
+        }
+      }
     }
 
     const { data, error } = await query;
