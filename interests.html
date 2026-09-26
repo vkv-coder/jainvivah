@@ -24,8 +24,14 @@
   .in-actions { display: flex; gap: 8px; flex-shrink: 0; }
   .in-name { font-weight: 700; color: var(--charcoal); font-size: 15px; }
   .in-meta { font-size: 13px; color: #6b5a4e; margin-top: 2px; }
+  .in-contact-line { font-size: 13px; color: var(--maroon); margin-top: 4px; font-weight: 600; }
   .in-empty { text-align: center; padding: 30px 10px; color: #8a7a6d; }
-  .in-section-title { margin-top: 30px; }
+  .in-count-badge {
+    display: inline-block; background: var(--gold); color: var(--white);
+    border-radius: 999px; font-size: 11px; font-weight: 700; padding: 1px 7px; margin-left: 6px;
+  }
+  .in-subtabs { margin: 4px 0 16px; border-width: 1px; }
+  .in-subtabs .mt-tab { padding: 9px; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -44,14 +50,50 @@
 
   <h1>My Interests</h1>
 
-  <h3 class="in-section-title">Received — waiting for your response (<span id="in-received-count">0</span>)</h3>
-  <div id="in-received-list"><p class="mt-hint">Loading...</p></div>
+  <div class="mt-tabs" id="in-main-tabs">
+    <div class="mt-tab mt-tab-active" data-tab="received">Received<span class="in-count-badge" id="in-received-count">0</span></div>
+    <div class="mt-tab" data-tab="accepted">Accepted<span class="in-count-badge" id="in-accepted-count">0</span></div>
+    <div class="mt-tab" data-tab="sent">Sent<span class="in-count-badge" id="in-sent-count">0</span></div>
+    <div class="mt-tab" data-tab="contacts">Contacts</div>
+  </div>
 
-  <h3 class="in-section-title">Sent — waiting for their response (<span id="in-sent-count">0</span>)</h3>
-  <div id="in-sent-list"><p class="mt-hint">Loading...</p></div>
+  <div class="mt-tab-panel mt-tab-panel-active" data-panel="received">
+    <p class="mt-hint">Members who are interested in you — accept to unlock contact details, or decline.</p>
+    <div id="in-received-list"><p class="mt-hint">Loading...</p></div>
+  </div>
 
-  <h3 class="in-section-title">Connected (<span id="in-accepted-count">0</span>)</h3>
-  <div id="in-accepted-list"><p class="mt-hint">Loading...</p></div>
+  <div class="mt-tab-panel" data-panel="accepted">
+    <div class="mt-tabs in-subtabs" id="in-accepted-subtabs">
+      <div class="mt-tab mt-tab-active" data-subtab="accepted-by-you">Accepted by You</div>
+      <div class="mt-tab" data-subtab="accepted-by-them">Accepted by Them</div>
+    </div>
+    <div class="mt-tab-panel mt-tab-panel-active" data-subpanel="accepted-by-you">
+      <p class="mt-hint">Interests sent to you that you accepted.</p>
+      <div id="in-accepted-by-you-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+    <div class="mt-tab-panel" data-subpanel="accepted-by-them">
+      <p class="mt-hint">Interests you sent that they accepted.</p>
+      <div id="in-accepted-by-them-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+  </div>
+
+  <div class="mt-tab-panel" data-panel="sent">
+    <p class="mt-hint">Interests you've sent that are still awaiting a response.</p>
+    <div id="in-sent-list"><p class="mt-hint">Loading...</p></div>
+  </div>
+
+  <div class="mt-tab-panel" data-panel="contacts">
+    <div class="mt-tabs in-subtabs" id="in-contacts-subtabs">
+      <div class="mt-tab mt-tab-active" data-subtab="viewed-by-you">Viewed by You</div>
+      <div class="mt-tab" data-subtab="viewed-you">Viewed You</div>
+    </div>
+    <div class="mt-tab-panel mt-tab-panel-active" data-subpanel="viewed-by-you">
+      <div id="in-viewed-by-you-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+    <div class="mt-tab-panel" data-subpanel="viewed-you">
+      <div id="in-viewed-you-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+  </div>
 
 </div>
 
@@ -67,6 +109,19 @@
 <script>
   let myId = null;
 
+  // ---------------- Generic tab wiring (main tabs + each panel's sub-tabs) ----------------
+  function wireTabGroup(tabsEl, tabAttr, panelAttr, panelScopeEl) {
+    tabsEl.querySelectorAll("[" + tabAttr + "]").forEach((tabEl) => {
+      tabEl.addEventListener("click", () => {
+        const value = tabEl.getAttribute(tabAttr);
+        tabsEl.querySelectorAll("[" + tabAttr + "]").forEach((t) => t.classList.toggle("mt-tab-active", t === tabEl));
+        panelScopeEl.querySelectorAll("[" + panelAttr + "]").forEach((p) => {
+          p.classList.toggle("mt-tab-panel-active", p.getAttribute(panelAttr) === value);
+        });
+      });
+    });
+  }
+
   async function fetchProfilesById(userIds) {
     if (!userIds.length) return {};
     const { data, error } = await supabaseClient
@@ -76,6 +131,18 @@
     if (error || !data) return {};
     const byId = {};
     data.forEach((p) => { byId[p.user_id] = p; });
+    return byId;
+  }
+
+  async function fetchContactsById(userIds) {
+    if (!userIds.length) return {};
+    const { data, error } = await supabaseClient
+      .from("mt_contacts")
+      .select("user_id, mobile, email")
+      .in("user_id", userIds);
+    if (error || !data) return {};
+    const byId = {};
+    data.forEach((c) => { byId[c.user_id] = c; });
     return byId;
   }
 
@@ -120,14 +187,31 @@
     );
   }
 
-  function renderAcceptedRow(interest, profile) {
+  function renderAcceptedRow(interest, profile, contact) {
     const otherId = otherPartyId(interest);
     const name = (profile && profile.full_name) || "(profile unavailable)";
+    const contactLine = contact
+      ? [contact.mobile, contact.email].filter(Boolean).join(" · ")
+      : "";
     return (
       '<a class="in-row" href="profile-view.html?id=' + encodeURIComponent(otherId) + '">' +
         '<div class="in-row-main">' +
           '<div class="in-name">' + escapeHtml(name) + "</div>" +
-          '<div class="in-meta">' + escapeHtml(rowMeta(profile)) + " · View contact details on their profile</div>" +
+          '<div class="in-meta">' + escapeHtml(rowMeta(profile)) + "</div>" +
+          (contactLine ? '<div class="in-contact-line">' + escapeHtml(contactLine) + "</div>" : "") +
+        "</div>" +
+      "</a>"
+    );
+  }
+
+  function renderViewRow(otherId, profile, viewedAt) {
+    const name = (profile && profile.full_name) || "(profile unavailable)";
+    const when = viewedAt ? new Date(viewedAt).toLocaleDateString() : "";
+    return (
+      '<a class="in-row" href="profile-view.html?id=' + encodeURIComponent(otherId) + '">' +
+        '<div class="in-row-main">' +
+          '<div class="in-name">' + escapeHtml(name) + "</div>" +
+          '<div class="in-meta">' + escapeHtml(rowMeta(profile)) + (when ? " · " + escapeHtml(when) : "") + "</div>" +
         "</div>" +
       "</a>"
     );
@@ -146,10 +230,22 @@
       "Interest withdrawn.",
       "success"
     );
-    await loadLists();
+    await loadInterests();
   }
 
-  async function loadLists() {
+  function wireRowActions() {
+    document.querySelectorAll('[data-action="accept"]').forEach((btn) => {
+      btn.addEventListener("click", () => respond(btn.dataset.id, "accepted"));
+    });
+    document.querySelectorAll('[data-action="decline"]').forEach((btn) => {
+      btn.addEventListener("click", () => respond(btn.dataset.id, "declined", "Decline this interest? You won't be able to reconsider for a while."));
+    });
+    document.querySelectorAll('[data-action="withdraw"]').forEach((btn) => {
+      btn.addEventListener("click", () => respond(btn.dataset.id, "withdrawn", "Withdraw this interest?"));
+    });
+  }
+
+  async function loadInterests() {
     const { data: rows, error } = await supabaseClient
       .from("mt_interests")
       .select("*")
@@ -164,13 +260,19 @@
     const all = rows || [];
     const received = all.filter((r) => r.status === "pending" && r.receiver_id === myId);
     const sent = all.filter((r) => r.status === "pending" && r.sender_id === myId);
-    const accepted = all.filter((r) => r.status === "accepted");
+    // "Accepted by You" = they sent it to you, you accepted. "Accepted by
+    // Them" = you sent it, they accepted. Both directions unlock the same
+    // contact details - the split is purely about whose action it was.
+    const acceptedByYou = all.filter((r) => r.status === "accepted" && r.receiver_id === myId);
+    const acceptedByThem = all.filter((r) => r.status === "accepted" && r.sender_id === myId);
 
     const profilesById = await fetchProfilesById(all.map((r) => otherPartyId(r)));
+    const acceptedIds = [...acceptedByYou, ...acceptedByThem].map((r) => otherPartyId(r));
+    const contactsById = await fetchContactsById(acceptedIds);
 
     document.getElementById("in-received-count").textContent = received.length;
     document.getElementById("in-sent-count").textContent = sent.length;
-    document.getElementById("in-accepted-count").textContent = accepted.length;
+    document.getElementById("in-accepted-count").textContent = acceptedByYou.length + acceptedByThem.length;
 
     document.getElementById("in-received-list").innerHTML = received.length
       ? received.map((r) => renderReceivedRow(r, profilesById[r.sender_id])).join("")
@@ -180,19 +282,59 @@
       ? sent.map((r) => renderSentRow(r, profilesById[r.receiver_id])).join("")
       : '<p class="in-empty">You haven\'t sent any interests yet.</p>';
 
-    document.getElementById("in-accepted-list").innerHTML = accepted.length
-      ? accepted.map((r) => renderAcceptedRow(r, profilesById[otherPartyId(r)])).join("")
-      : '<p class="in-empty">No connections yet.</p>';
+    document.getElementById("in-accepted-by-you-list").innerHTML = acceptedByYou.length
+      ? acceptedByYou.map((r) => renderAcceptedRow(r, profilesById[r.sender_id], contactsById[r.sender_id])).join("")
+      : '<p class="in-empty">You haven\'t accepted anyone yet.</p>';
 
-    document.querySelectorAll('[data-action="accept"]').forEach((btn) => {
-      btn.addEventListener("click", () => respond(btn.dataset.id, "accepted"));
+    document.getElementById("in-accepted-by-them-list").innerHTML = acceptedByThem.length
+      ? acceptedByThem.map((r) => renderAcceptedRow(r, profilesById[r.receiver_id], contactsById[r.receiver_id])).join("")
+      : '<p class="in-empty">No one you sent an interest to has accepted yet.</p>';
+
+    wireRowActions();
+  }
+
+  // A profile can be viewed more than once - dedupe to the most recent
+  // view per other person, like a "recently viewed" list rather than a
+  // flat activity log.
+  function dedupeViewsByOtherParty(rows, idField) {
+    const seen = new Set();
+    const result = [];
+    rows.forEach((r) => {
+      if (seen.has(r[idField])) return;
+      seen.add(r[idField]);
+      result.push(r);
     });
-    document.querySelectorAll('[data-action="decline"]').forEach((btn) => {
-      btn.addEventListener("click", () => respond(btn.dataset.id, "declined", "Decline this interest? You won't be able to reconsider for a while."));
-    });
-    document.querySelectorAll('[data-action="withdraw"]').forEach((btn) => {
-      btn.addEventListener("click", () => respond(btn.dataset.id, "withdrawn", "Withdraw this interest?"));
-    });
+    return result;
+  }
+
+  async function loadContactsTab() {
+    const { data: viewedByYouRows } = await supabaseClient
+      .from("mt_views")
+      .select("viewed_id, created_at")
+      .eq("viewer_id", myId)
+      .order("created_at", { ascending: false });
+
+    const { data: viewedYouRows } = await supabaseClient
+      .from("mt_views")
+      .select("viewer_id, created_at")
+      .eq("viewed_id", myId)
+      .order("created_at", { ascending: false });
+
+    const viewedByYou = dedupeViewsByOtherParty(viewedByYouRows || [], "viewed_id");
+    const viewedYou = dedupeViewsByOtherParty(viewedYouRows || [], "viewer_id");
+
+    const profilesById = await fetchProfilesById([
+      ...viewedByYou.map((r) => r.viewed_id),
+      ...viewedYou.map((r) => r.viewer_id)
+    ]);
+
+    document.getElementById("in-viewed-by-you-list").innerHTML = viewedByYou.length
+      ? viewedByYou.map((r) => renderViewRow(r.viewed_id, profilesById[r.viewed_id], r.created_at)).join("")
+      : '<p class="in-empty">You haven\'t viewed any profiles yet.</p>';
+
+    document.getElementById("in-viewed-you-list").innerHTML = viewedYou.length
+      ? viewedYou.map((r) => renderViewRow(r.viewer_id, profilesById[r.viewer_id], r.created_at)).join("")
+      : '<p class="in-empty">No one has viewed your profile yet.</p>';
   }
 
   (async () => {
@@ -213,7 +355,12 @@
       return;
     }
 
-    await loadLists();
+    wireTabGroup(document.getElementById("in-main-tabs"), "data-tab", "data-panel", document.querySelector(".mt-page"));
+    wireTabGroup(document.getElementById("in-accepted-subtabs"), "data-subtab", "data-subpanel", document.querySelector('[data-panel="accepted"]'));
+    wireTabGroup(document.getElementById("in-contacts-subtabs"), "data-subtab", "data-subpanel", document.querySelector('[data-panel="contacts"]'));
+
+    await loadInterests();
+    await loadContactsTab();
   })();
 </script>
 
