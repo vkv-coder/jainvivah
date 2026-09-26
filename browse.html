@@ -365,7 +365,20 @@
       .limit(60);
 
     const city = document.getElementById("f-city").value.trim();
-    if (city) query = query.ilike("city", "%" + city + "%");
+    // A member may list several acceptable cities separated by commas -
+    // exactly what "Preferred city" on My Preference invites, and what
+    // auto-fills into this same box. OR-match each one rather than
+    // requiring the whole comma-joined string as one literal substring,
+    // which would almost never match a real city value.
+    if (city) {
+      const cityParts = city.split(",").map((c) => c.trim()).filter(Boolean);
+      if (cityParts.length > 1) {
+        const safeParts = cityParts.filter((c) => !/[,()]/.test(c));
+        if (safeParts.length) query = query.or(safeParts.map((c) => "city.ilike.%" + c + "%").join(","));
+      } else if (cityParts.length === 1) {
+        query = query.ilike("city", "%" + cityParts[0] + "%");
+      }
+    }
 
     const sect = document.getElementById("f-sect").value;
     if (sect) query = query.eq("sect", sect);
