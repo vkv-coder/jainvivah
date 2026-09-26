@@ -448,8 +448,68 @@ In order:
 
 - **Batch 3 — Browse:** search, filters, profile view, **per-viewer photo
   watermark** (belongs here, not in the upload page), view logging
-- **Batch 4 — Interests + Admin:** send / accept / decline, contact reveal,
-  bio-data release on acceptance, block, report, admin panel, Telegram alerts
+- **Batch 4 — Interests:** ~~send / accept / decline, contact reveal,
+  bio-data release on acceptance~~ **built 26 Sep 2026**, see below. Block
+  and report are still not built; admin panel (mobile verification) was
+  already built 25 Sep 2026 (`admin.html`) — Telegram alerts not built.
+
+### Batch 4 (Interests) built 26 Sep 2026
+
+The database side of this (`mt_interests` table, its RLS, `mt_check_interest`
+BEFORE INSERT trigger enforcing the weekly limit/decline-lock/block check,
+`mt_interest_after_update` trigger, `mt_settings` rows for
+`interest_limit_per_week`/`decline_lock_months`) already existed from early
+in the project — only the UI was ever missing. Two real gaps found and fixed
+in that existing backend before building any UI on top of it:
+
+- **Bio-data was readable by any complete-profile member, not just an
+  accepted interest.** Bio-data files share the `mt-photos` bucket with
+  profile photos at a fully predictable path (`<user_id>/biodata.<ext>`),
+  and any profile's raw `user_id` is exposed in its own URL
+  (`profile-view.html?id=<uuid>`) — so anyone could construct the path
+  themselves and pull another member's full bio-data (family/relative
+  contact details, per the app's own UI copy) via a signed URL, with no
+  interest ever sent or accepted. Fixed by splitting `mt_storage_sel`:
+  paths matching `%/biodata.%` now require an `accepted` `mt_interests` row
+  between the two users; all other paths (photos) keep the existing
+  complete-profile gate, now also matching `mt_photos`' own verified/
+  not-blocked checks rather than just completeness.
+- **Either party could set status to `accepted` on their own.** The
+  UPDATE RLS policy only checked `sender_id = auth.uid() OR receiver_id =
+  auth.uid()` with no restriction on which party may set which status, and
+  `mt_interest_after_update()` only set `locked_until`/`responded_at` side
+  effects — it never checked who was making the change. A sender could
+  self-accept their own sent request and unlock the receiver's contact
+  details without genuine consent. Fixed by adding a permission check
+  inside `mt_interest_after_update()`: only the receiver may go
+  pending→accepted or pending→declined; only the sender may go
+  pending→withdrawn; every other transition raises an exception.
+
+**UI built**: `profile-view.html` now has a live interest section (replacing
+the old "coming soon, email support" placeholder) that renders one of five
+states — no interest yet (Send Interest, with an optional message), sent/
+pending (Withdraw), received/pending (Accept/Decline), accepted (contact
+details + bio-data download link, both now correctly gated), declined/
+withdrawn (plain status line). New `interests.html` page is a central inbox
+(Received / Sent / Connected sections) so a member doesn't have to
+remember which profiles they interacted with — linked from Browse's and My
+Profile's header nav, and profile-view.html's footer.
+
+**Known limitation, not fixed**: `mt_interests` has `UNIQUE(sender_id,
+receiver_id)` — only one row can ever exist per ordered pair. But
+`mt_check_interest()`'s decline-lock check (`locked_until`) only runs on
+INSERT, and the status-transition whitelist in `mt_interest_after_update()`
+has no path back to `pending` from `declined`/`withdrawn` — meaning once a
+pair reaches `declined` or `withdrawn`, sending "interest" to that same
+person again is currently impossible (a second INSERT hits the unique
+constraint; there is no UPDATE path back to pending either). This looks
+like a genuine pre-existing design gap from whenever the schema was first
+built, not something introduced today. Not fixed here since it wasn't part
+of what was asked for and needs a real design decision (e.g. an UPDATE-back-
+to-pending path with its own lock-check, replacing the INSERT-only check)
+rather than a quick patch — flagged here so it doesn't get "discovered"
+again as a mystery bug the next time someone actually needs to re-send
+after a decline-lock expires.
 
 ---
 

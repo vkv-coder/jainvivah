@@ -26,6 +26,8 @@
   .pv-row .pv-label { color: #6b5a4e; font-weight: 600; }
   .pv-row .pv-value { color: var(--charcoal); text-align: right; max-width: 60%; }
   .pv-loading, .pv-notfound { text-align: center; padding: 40px 10px; color: #8a7a6d; }
+  .pv-interest-actions { display: flex; gap: 10px; margin-top: 12px; }
+  .pv-interest-actions .mt-btn { width: auto; flex: 1; }
 </style>
 </head>
 <body>
@@ -48,7 +50,7 @@
 </div>
 
 <div class="mt-footer">
-  <div><a href="myprofile.html">My Profile</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div>
+  <div><a href="myprofile.html">My Profile</a> · <a href="interests.html">My Interests</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div>
   <div class="mt-brand">AnyApps.in</div>
 </div>
 
@@ -208,8 +210,155 @@
       row("Hobbies", profile.hobbies) +
       row("About", profile.about) +
       "</div>" +
-      '<div class="mt-reassurance">Interested in connecting? Sending an interest request and exchanging contact details is coming soon. For now, reach out to <a href="mailto:' +
-      SUPPORT_EMAIL + '">' + SUPPORT_EMAIL + "</a> and mention this profile's code.</div>";
+      '<div id="pv-interest-section"></div>';
+
+    await renderInterestSection(session, targetId, profile);
+  }
+
+  // ---------------- Interest: send / accept / decline / withdraw ----------------
+  // One row per (sender, receiver) pair ever exists (mt_interests has a
+  // UNIQUE(sender_id, receiver_id) constraint) - so "send" is only ever an
+  // INSERT the very first time; every state after that is handled by
+  // updating that same row via the RLS-and-trigger-enforced status
+  // transitions (see mt_interest_after_update - only the receiver may
+  // accept/decline, only the sender may withdraw).
+  function friendlyInterestError(message) {
+    if (/weekly interest limit/i.test(message)) {
+      return "You've reached your weekly interest limit. Please try again in a few days.";
+    }
+    if (/cannot send another interest/i.test(message)) {
+      return "You already reached out to this member recently — please try again later.";
+    }
+    if (/not allowed/i.test(message)) {
+      return "You're not able to send an interest to this member.";
+    }
+    return message;
+  }
+
+  async function renderInterestSection(session, targetId, targetProfile) {
+    const el = document.getElementById("pv-interest-section");
+    const myId = session.user.id;
+
+    const { data: existing } = await supabaseClient
+      .from("mt_interests")
+      .select("*")
+      .or("and(sender_id.eq." + myId + ",receiver_id.eq." + targetId + "),and(sender_id.eq." + targetId + ",receiver_id.eq." + myId + ")")
+      .maybeSingle();
+
+    async function sendInterest() {
+      const message = document.getElementById("pv-interest-message");
+      const { error } = await supabaseClient.from("mt_interests").insert({
+        sender_id: myId,
+        receiver_id: targetId,
+        message: (message && message.value.trim()) || null
+      });
+      if (error) {
+        toast(friendlyInterestError(error.message), "error");
+        return;
+      }
+      toast("Interest sent.", "success");
+      renderInterestSection(session, targetId, targetProfile);
+    }
+
+    async function updateStatus(id, status, confirmMsg) {
+      if (confirmMsg && !confirm(confirmMsg)) return;
+      const { error } = await supabaseClient.from("mt_interests").update({ status: status }).eq("id", id);
+      if (error) {
+        toast(error.message, "error");
+        return;
+      }
+      toast(
+        status === "accepted" ? "Interest accepted — contact details unlocked." :
+        status === "declined" ? "Interest declined." :
+        "Interest withdrawn.",
+        "success"
+      );
+      renderInterestSection(session, targetId, targetProfile);
+    }
+
+    if (!existing) {
+      el.innerHTML =
+        '<div class="mt-card">' +
+        '<div class="mt-field"><label for="pv-interest-message">Add a short message (optional)</label>' +
+        '<textarea id="pv-interest-message" rows="2"></textarea></div>' +
+        '<button type="button" class="mt-btn mt-btn-primary" id="pv-send-interest-btn">Send Interest</button>' +
+        "</div>";
+      document.getElementById("pv-send-interest-btn").addEventListener("click", sendInterest);
+      return;
+    }
+
+    if (existing.status === "pending" && existing.sender_id === myId) {
+      el.innerHTML =
+        '<div class="mt-reassurance">Interest sent — waiting for their response.</div>' +
+        '<button type="button" class="mt-btn mt-btn-outline" id="pv-withdraw-btn">Withdraw Interest</button>';
+      document.getElementById("pv-withdraw-btn").addEventListener("click", () =>
+        updateStatus(existing.id, "withdrawn", "Withdraw this interest?")
+      );
+      return;
+    }
+
+    if (existing.status === "pending" && existing.receiver_id === myId) {
+      el.innerHTML =
+        '<div class="mt-reassurance">This member is interested in you' +
+        (existing.message ? ': "' + escapeHtml(existing.message) + '"' : ".") +
+        "</div>" +
+        '<div class="pv-interest-actions">' +
+        '<button type="button" class="mt-btn mt-btn-primary" id="pv-accept-btn">Accept</button>' +
+        '<button type="button" class="mt-btn mt-btn-outline" id="pv-decline-btn">Decline</button>' +
+        "</div>";
+      document.getElementById("pv-accept-btn").addEventListener("click", () => updateStatus(existing.id, "accepted"));
+      document.getElementById("pv-decline-btn").addEventListener("click", () =>
+        updateStatus(existing.id, "declined", "Decline this interest? You won't be able to reconsider for a while.")
+      );
+      return;
+    }
+
+    if (existing.status === "accepted") {
+      const { data: contact } = await supabaseClient
+        .from("mt_contacts")
+        .select("mobile, alt_mobile, email, address")
+        .eq("user_id", targetId)
+        .maybeSingle();
+
+      let biodataHtml = "";
+      if (targetProfile.biodata_path) {
+        const { data: signed } = await supabaseClient.storage.from(PHOTOS_BUCKET_PV).createSignedUrl(targetProfile.biodata_path, 90);
+        if (signed) {
+          biodataHtml = '<p class="mt-center"><a href="' + escapeHtml(signed.signedUrl) + '" target="_blank">Download full bio-data</a></p>';
+        }
+      }
+
+      el.innerHTML =
+        '<div class="mt-reassurance">🎉 You\'re connected! Contact details are shared below.</div>' +
+        '<div class="mt-card">' +
+        row("Mobile", contact && contact.mobile) +
+        row("Alternate Mobile", contact && contact.alt_mobile) +
+        row("Email", contact && contact.email) +
+        row("Address", contact && contact.address) +
+        "</div>" +
+        biodataHtml;
+      return;
+    }
+
+    if (existing.status === "declined") {
+      el.innerHTML =
+        '<div class="mt-hint mt-center">' +
+        (existing.sender_id === myId
+          ? "This member declined your interest."
+          : "You declined this member's interest.") +
+        "</div>";
+      return;
+    }
+
+    if (existing.status === "withdrawn") {
+      el.innerHTML =
+        '<div class="mt-hint mt-center">' +
+        (existing.sender_id === myId
+          ? "You withdrew your interest."
+          : "This member withdrew their interest.") +
+        "</div>";
+      return;
+    }
   }
 
   // Safety net: this page must never sit on "Loading profile..." forever.

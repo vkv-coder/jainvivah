@@ -17,6 +17,7 @@ const SHELL_FILES = [
   "myprofile.html",
   "browse.html",
   "profile-view.html",
+  "interests.html",
   "admin.html",
   "reset.html",
   "styles.css",

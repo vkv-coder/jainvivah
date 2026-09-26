@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-ancestors 'none'; base-uri 'self'; object-src 'none';">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>My Interests — Jain Vivah</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .in-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 14px; margin-bottom: 12px; text-decoration: none; color: inherit;
+  }
+  .in-row-main { flex: 1; min-width: 0; }
+  .in-row .mt-btn { width: auto; flex-shrink: 0; white-space: nowrap; }
+  .in-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .in-name { font-weight: 700; color: var(--charcoal); font-size: 15px; }
+  .in-meta { font-size: 13px; color: #6b5a4e; margin-top: 2px; }
+  .in-empty { text-align: center; padding: 30px 10px; color: #8a7a6d; }
+  .in-section-title { margin-top: 30px; }
+</style>
+</head>
+<body>
+
+<div class="mt-invocation-strip">🙏 || Jai Jinendra || 🙏</div>
+
+<div class="mt-header">
+  <button type="button" class="mt-header-back" onclick="if(window.history.length>1){history.back();}else{location.href='browse.html';}">&larr; Back</button>
+  <button type="button" class="mt-header-logout" onclick="logout()">Logout</button>
+  <div class="mt-logo">Jain Vivah</div>
+  <a href="browse.html" class="mt-header-nav-link">Browse Profiles</a>
+</div>
+<div class="mt-logged-in-as" id="mt-logged-in-as"></div>
+
+<div class="mt-page">
+
+  <h1>My Interests</h1>
+
+  <h3 class="in-section-title">Received — waiting for your response (<span id="in-received-count">0</span>)</h3>
+  <div id="in-received-list"><p class="mt-hint">Loading...</p></div>
+
+  <h3 class="in-section-title">Sent — waiting for their response (<span id="in-sent-count">0</span>)</h3>
+  <div id="in-sent-list"><p class="mt-hint">Loading...</p></div>
+
+  <h3 class="in-section-title">Connected (<span id="in-accepted-count">0</span>)</h3>
+  <div id="in-accepted-list"><p class="mt-hint">Loading...</p></div>
+
+</div>
+
+<div class="mt-footer">
+  <div><a href="myprofile.html">My Profile</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div>
+  <div class="mt-brand">Powered by AnyApps.in</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="profile-shared.js"></script>
+<script>
+  let myId = null;
+
+  async function fetchProfilesById(userIds) {
+    if (!userIds.length) return {};
+    const { data, error } = await supabaseClient
+      .from("mt_profiles")
+      .select("user_id, full_name, profile_code, gender, city, dob")
+      .in("user_id", userIds);
+    if (error || !data) return {};
+    const byId = {};
+    data.forEach((p) => { byId[p.user_id] = p; });
+    return byId;
+  }
+
+  function otherPartyId(row) {
+    return row.sender_id === myId ? row.receiver_id : row.sender_id;
+  }
+
+  function rowMeta(profile) {
+    if (!profile) return "";
+    const age = calcAge(profile.dob);
+    return [age ? age + " yrs" : "", profile.city || ""].filter(Boolean).join(" · ");
+  }
+
+  function renderReceivedRow(interest, profile) {
+    const name = (profile && profile.full_name) || "(profile unavailable)";
+    return (
+      '<div class="in-row">' +
+        '<a class="in-row-main" href="profile-view.html?id=' + encodeURIComponent(interest.sender_id) + '">' +
+          '<div class="in-name">' + escapeHtml(name) + "</div>" +
+          '<div class="in-meta">' + escapeHtml(rowMeta(profile)) + (interest.message ? " · “" + escapeHtml(interest.message) + "”" : "") + "</div>" +
+        "</a>" +
+        '<div class="in-actions">' +
+          '<button type="button" class="mt-btn mt-btn-primary" data-action="accept" data-id="' + escapeHtml(interest.id) + '">Accept</button>' +
+          '<button type="button" class="mt-btn mt-btn-outline" data-action="decline" data-id="' + escapeHtml(interest.id) + '">Decline</button>' +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderSentRow(interest, profile) {
+    const name = (profile && profile.full_name) || "(profile unavailable)";
+    return (
+      '<div class="in-row">' +
+        '<a class="in-row-main" href="profile-view.html?id=' + encodeURIComponent(interest.receiver_id) + '">' +
+          '<div class="in-name">' + escapeHtml(name) + "</div>" +
+          '<div class="in-meta">' + escapeHtml(rowMeta(profile)) + "</div>" +
+        "</a>" +
+        '<div class="in-actions">' +
+          '<button type="button" class="mt-btn mt-btn-outline" data-action="withdraw" data-id="' + escapeHtml(interest.id) + '">Withdraw</button>' +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderAcceptedRow(interest, profile) {
+    const otherId = otherPartyId(interest);
+    const name = (profile && profile.full_name) || "(profile unavailable)";
+    return (
+      '<a class="in-row" href="profile-view.html?id=' + encodeURIComponent(otherId) + '">' +
+        '<div class="in-row-main">' +
+          '<div class="in-name">' + escapeHtml(name) + "</div>" +
+          '<div class="in-meta">' + escapeHtml(rowMeta(profile)) + " · View contact details on their profile</div>" +
+        "</div>" +
+      "</a>"
+    );
+  }
+
+  async function respond(id, status, confirmMsg) {
+    if (confirmMsg && !confirm(confirmMsg)) return;
+    const { error } = await supabaseClient.from("mt_interests").update({ status: status }).eq("id", id);
+    if (error) {
+      toast(error.message, "error");
+      return;
+    }
+    toast(
+      status === "accepted" ? "Interest accepted — contact details unlocked." :
+      status === "declined" ? "Interest declined." :
+      "Interest withdrawn.",
+      "success"
+    );
+    await loadLists();
+  }
+
+  async function loadLists() {
+    const { data: rows, error } = await supabaseClient
+      .from("mt_interests")
+      .select("*")
+      .or("sender_id.eq." + myId + ",receiver_id.eq." + myId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      document.getElementById("in-received-list").innerHTML = '<p class="in-empty">Could not load: ' + escapeHtml(error.message) + "</p>";
+      return;
+    }
+
+    const all = rows || [];
+    const received = all.filter((r) => r.status === "pending" && r.receiver_id === myId);
+    const sent = all.filter((r) => r.status === "pending" && r.sender_id === myId);
+    const accepted = all.filter((r) => r.status === "accepted");
+
+    const profilesById = await fetchProfilesById(all.map((r) => otherPartyId(r)));
+
+    document.getElementById("in-received-count").textContent = received.length;
+    document.getElementById("in-sent-count").textContent = sent.length;
+    document.getElementById("in-accepted-count").textContent = accepted.length;
+
+    document.getElementById("in-received-list").innerHTML = received.length
+      ? received.map((r) => renderReceivedRow(r, profilesById[r.sender_id])).join("")
+      : '<p class="in-empty">Nothing waiting on your response.</p>';
+
+    document.getElementById("in-sent-list").innerHTML = sent.length
+      ? sent.map((r) => renderSentRow(r, profilesById[r.receiver_id])).join("")
+      : '<p class="in-empty">You haven\'t sent any interests yet.</p>';
+
+    document.getElementById("in-accepted-list").innerHTML = accepted.length
+      ? accepted.map((r) => renderAcceptedRow(r, profilesById[otherPartyId(r)])).join("")
+      : '<p class="in-empty">No connections yet.</p>';
+
+    document.querySelectorAll('[data-action="accept"]').forEach((btn) => {
+      btn.addEventListener("click", () => respond(btn.dataset.id, "accepted"));
+    });
+    document.querySelectorAll('[data-action="decline"]').forEach((btn) => {
+      btn.addEventListener("click", () => respond(btn.dataset.id, "declined", "Decline this interest? You won't be able to reconsider for a while."));
+    });
+    document.querySelectorAll('[data-action="withdraw"]').forEach((btn) => {
+      btn.addEventListener("click", () => respond(btn.dataset.id, "withdrawn", "Withdraw this interest?"));
+    });
+  }
+
+  (async () => {
+    const session = await requireAuth();
+    if (!session) return;
+    myId = session.user.id;
+    renderLoggedInAs(session);
+
+    const { data: contact } = await supabaseClient
+      .from("mt_contacts")
+      .select("mobile_verified")
+      .eq("user_id", myId)
+      .maybeSingle();
+
+    if ((!contact || !contact.mobile_verified) && !(await isAdmin())) {
+      queueToast("Please verify your mobile number on WhatsApp before viewing interests.", "info");
+      window.location.href = "myprofile.html";
+      return;
+    }
+
+    await loadLists();
+  })();
+</script>
+
+</body>
+</html>
