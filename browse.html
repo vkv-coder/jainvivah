@@ -177,14 +177,20 @@
   }
 
   // ---------------- Filters persist across visits ----------------
-  // Age is deliberately NOT in this list - it always comes fresh from the
-  // member's own "Looking for" preference on My Profile (see
-  // applyPreferenceDefaults below), which is the single source of truth for
-  // it. Persisting an ad hoc age override here would create two competing
-  // answers to "what age range do I want" - the stored preference, and
-  // whatever was last typed into this filter panel - which is exactly the
-  // confusion this is meant to avoid.
-  const FILTER_IDS = ["f-city", "f-sect", "f-diet", "f-education", "f-profession", "f-marital"];
+  // Only sect and marital status are in this list - they're the two filter
+  // fields with no corresponding "My Preference" column at all, so there's
+  // no real stored preference for a remembered manual choice to compete
+  // with. Every other field (age, city, diet, education, profession) DOES
+  // have a real preference behind it, so none of them belong here: the
+  // stored preference must always be the single source of truth on every
+  // fresh visit, exactly like age already was. A remembered manual override
+  // for one of those would create two competing answers to "what does this
+  // member actually want" - the stored preference, and whatever was last
+  // typed into this filter panel - which is exactly the confusion this is
+  // meant to avoid. (City/diet/education/profession used to be in this
+  // list too - moved out 26 Sep 2026 once this inconsistency with age was
+  // noticed.)
+  const FILTER_IDS = ["f-sect", "f-marital"];
   const FILTERS_KEY = "mt_browse_filters";
 
   function saveFiltersToStorage() {
