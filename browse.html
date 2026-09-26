@@ -214,10 +214,10 @@
         anySet = true;
       }
     });
-    if (anySet) {
-      document.getElementById("br-filters").style.display = "block";
-      document.getElementById("br-toggle-btn").textContent = "Hide Filters ▴";
-    }
+    // Filters panel stays collapsed on open regardless - the values above
+    // are still applied to the search either way, this only controls
+    // whether the raw editable boxes are shown by default (a cleaner-
+    // looking Browse screen was requested over auto-expanding here).
     return anySet;
   }
 
@@ -303,8 +303,10 @@
       }
     }
 
-    document.getElementById("br-filters").style.display = "block";
-    document.getElementById("br-toggle-btn").textContent = "Hide Filters ▴";
+    // The filters panel itself stays collapsed by default (tap "Show
+    // Filters" to see/edit the raw boxes) - only the match-mode toggle and
+    // banner are shown up front, for a cleaner-looking Browse screen. The
+    // values set above are already applied to the search either way.
     document.getElementById("br-match-mode").style.display = "flex";
     updateMatchModeButtons();
     showPrefBanner(true);
