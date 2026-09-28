@@ -57,6 +57,7 @@
   <div class="mt-tabs" id="in-main-tabs">
     <div class="mt-tab mt-tab-active" data-tab="received">Received<span class="in-count-badge" id="in-received-count">0</span></div>
     <div class="mt-tab" data-tab="accepted">Accepted<span class="in-count-badge" id="in-accepted-count">0</span></div>
+    <div class="mt-tab" data-tab="rejected">Rejected<span class="in-count-badge" id="in-rejected-count">0</span></div>
     <div class="mt-tab" data-tab="sent">Sent<span class="in-count-badge" id="in-sent-count">0</span></div>
     <div class="mt-tab" data-tab="contacts">Contacts</div>
   </div>
@@ -78,6 +79,21 @@
     <div class="mt-tab-panel" data-subpanel="accepted-by-them">
       <p class="mt-hint">Interests you sent that they accepted.</p>
       <div id="in-accepted-by-them-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+  </div>
+
+  <div class="mt-tab-panel" data-panel="rejected">
+    <div class="mt-tabs in-subtabs" id="in-rejected-subtabs">
+      <div class="mt-tab mt-tab-active" data-subtab="rejected-by-you">Rejected by You</div>
+      <div class="mt-tab" data-subtab="rejected-by-them">Rejected by Them</div>
+    </div>
+    <div class="mt-tab-panel mt-tab-panel-active" data-subpanel="rejected-by-you">
+      <p class="mt-hint">Interests sent to you that you declined.</p>
+      <div id="in-rejected-by-you-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+    <div class="mt-tab-panel" data-subpanel="rejected-by-them">
+      <p class="mt-hint">Interests you sent that they declined.</p>
+      <div id="in-rejected-by-them-list"><p class="mt-hint">Loading...</p></div>
     </div>
   </div>
 
@@ -208,6 +224,19 @@
     );
   }
 
+  function renderRejectedRow(interest, profile) {
+    const otherId = otherPartyId(interest);
+    const name = (profile && profile.full_name) || "(profile unavailable)";
+    return (
+      '<a class="in-row" href="profile-view.html?id=' + encodeURIComponent(otherId) + '">' +
+        '<div class="in-row-main">' +
+          '<div class="in-name">' + escapeHtml(name) + "</div>" +
+          '<div class="in-meta">' + escapeHtml(rowMeta(profile)) + "</div>" +
+        "</div>" +
+      "</a>"
+    );
+  }
+
   function renderViewRow(otherId, profile, viewedAt) {
     const name = (profile && profile.full_name) || "(profile unavailable)";
     const when = viewedAt ? new Date(viewedAt).toLocaleDateString() : "";
@@ -269,6 +298,9 @@
     // contact details - the split is purely about whose action it was.
     const acceptedByYou = all.filter((r) => r.status === "accepted" && r.receiver_id === myId);
     const acceptedByThem = all.filter((r) => r.status === "accepted" && r.sender_id === myId);
+    // Same direction convention as Accepted above, applied to declined.
+    const rejectedByYou = all.filter((r) => r.status === "declined" && r.receiver_id === myId);
+    const rejectedByThem = all.filter((r) => r.status === "declined" && r.sender_id === myId);
 
     const profilesById = await fetchProfilesById(all.map((r) => otherPartyId(r)));
     const acceptedIds = [...acceptedByYou, ...acceptedByThem].map((r) => otherPartyId(r));
@@ -277,6 +309,7 @@
     document.getElementById("in-received-count").textContent = received.length;
     document.getElementById("in-sent-count").textContent = sent.length;
     document.getElementById("in-accepted-count").textContent = acceptedByYou.length + acceptedByThem.length;
+    document.getElementById("in-rejected-count").textContent = rejectedByYou.length + rejectedByThem.length;
 
     document.getElementById("in-received-list").innerHTML = received.length
       ? received.map((r) => renderReceivedRow(r, profilesById[r.sender_id])).join("")
@@ -293,6 +326,14 @@
     document.getElementById("in-accepted-by-them-list").innerHTML = acceptedByThem.length
       ? acceptedByThem.map((r) => renderAcceptedRow(r, profilesById[r.receiver_id], contactsById[r.receiver_id])).join("")
       : '<p class="in-empty">No one you sent an interest to has accepted yet.</p>';
+
+    document.getElementById("in-rejected-by-you-list").innerHTML = rejectedByYou.length
+      ? rejectedByYou.map((r) => renderRejectedRow(r, profilesById[r.sender_id])).join("")
+      : '<p class="in-empty">You haven\'t declined anyone.</p>';
+
+    document.getElementById("in-rejected-by-them-list").innerHTML = rejectedByThem.length
+      ? rejectedByThem.map((r) => renderRejectedRow(r, profilesById[r.receiver_id])).join("")
+      : '<p class="in-empty">No one has declined your interest.</p>';
 
     wireRowActions();
   }
@@ -361,6 +402,7 @@
 
     wireTabGroup(document.getElementById("in-main-tabs"), "data-tab", "data-panel", document.querySelector(".mt-page"));
     wireTabGroup(document.getElementById("in-accepted-subtabs"), "data-subtab", "data-subpanel", document.querySelector('[data-panel="accepted"]'));
+    wireTabGroup(document.getElementById("in-rejected-subtabs"), "data-subtab", "data-subpanel", document.querySelector('[data-panel="rejected"]'));
     wireTabGroup(document.getElementById("in-contacts-subtabs"), "data-subtab", "data-subpanel", document.querySelector('[data-panel="contacts"]'));
 
     await loadInterests();
