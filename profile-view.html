@@ -118,7 +118,7 @@
 
     const { data: myContact } = await supabaseClient
       .from("mt_contacts")
-      .select("mobile_verified")
+      .select("mobile, mobile_verified")
       .eq("user_id", session.user.id)
       .maybeSingle();
 
@@ -137,13 +137,19 @@
       return;
     }
 
-    // My own profile_code is the identity stamped onto every photo I view.
-    const { data: me } = await supabaseClient
-      .from("mt_profiles")
-      .select("profile_code")
-      .eq("user_id", session.user.id)
-      .maybeSingle();
-    const myCode = (me && me.profile_code) || session.user.id.slice(0, 8);
+    // My own mobile number is the identity stamped onto every photo I view
+    // (matches what My Profile's shield-box tells members to expect).
+    // Falls back to profile_code, then a short id prefix, only for the
+    // edge case of an admin viewing without their own contact/profile row.
+    let myCode = myContact && myContact.mobile;
+    if (!myCode) {
+      const { data: me } = await supabaseClient
+        .from("mt_profiles")
+        .select("profile_code")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      myCode = (me && me.profile_code) || session.user.id.slice(0, 8);
+    }
 
     const { data: profile, error } = await supabaseClient
       .from("mt_profiles")
