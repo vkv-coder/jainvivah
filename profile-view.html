@@ -317,6 +317,87 @@
         document.getElementById("pv-lightbox").classList.add("open");
       });
     }
+
+    return contact;
+  }
+
+  // Standard editable reminder sent to members with an incomplete profile.
+  // Kept as one place so the wording can be tweaked without touching the
+  // send logic below.
+  function buildOutreachMessage(profile, missing) {
+    const name = profile.full_name || "there";
+    return (
+      "Jai Jinendra " + name + ",\n\n" +
+      "Thank you for registering on Jain Vivah. To complete your verification, please fill in the following in your profile:\n" +
+      missing.map((m) => "- " + m).join("\n") +
+      "\n\nOnce these are complete, we will verify your profile so you can start browsing matches.\n\nJain Vivah Team"
+    );
+  }
+
+  function computeMissingItems(profile, contact) {
+    const checks = [
+      [profile.height_cm, "Height"],
+      [profile.marital_status, "Marital Status"],
+      [profile.diet, "Diet"],
+      [profile.sect, "Sect"],
+      [profile.city, "City / Location"],
+      [profile.native_place, "Native Place"],
+      [profile.education, "Education"],
+      [profile.profession, "Profession"],
+      [profile.annual_income, "Annual Income"],
+      [profile.hobbies, "Hobbies"],
+      [profile.about, "About"],
+      [contact && contact.alt_mobile, "Alternate Mobile"],
+      [contact && contact.address, "Address"]
+    ];
+    const missing = checks.filter(([v]) => !v).map(([, label]) => label);
+    if (!profile.biodata_path) {
+      missing.push("Bio-data (PDF or photo, with father/mother/siblings/family details)");
+    }
+    return missing;
+  }
+
+  function renderAdminOutreach(targetProfile, contact) {
+    const el = document.getElementById("pv-interest-section");
+    const missing = computeMissingItems(targetProfile, contact);
+
+    if (!missing.length) {
+      el.insertAdjacentHTML("beforeend", '<div class="mt-hint mt-center" style="margin-top:16px;">✅ Profile looks complete.</div>');
+      return;
+    }
+
+    const message = buildOutreachMessage(targetProfile, missing);
+    el.insertAdjacentHTML(
+      "beforeend",
+      '<div class="mt-card" style="margin-top:16px;">' +
+        '<h4 style="margin:0 0 8px;">Missing: ' + escapeHtml(missing.join(", ")) + "</h4>" +
+        '<div class="mt-field"><label for="pv-outreach-msg">Message to member (editable)</label>' +
+        '<textarea id="pv-outreach-msg" rows="8">' + escapeHtml(message) + "</textarea></div>" +
+        '<div class="pv-interest-actions">' +
+        (contact && contact.mobile ? '<button type="button" class="mt-btn mt-btn-primary" id="pv-outreach-whatsapp">Send via WhatsApp</button>' : "") +
+        (contact && contact.email ? '<button type="button" class="mt-btn mt-btn-outline" id="pv-outreach-email">Send via Email</button>' : "") +
+        "</div>" +
+        "</div>"
+    );
+
+    const waBtn = document.getElementById("pv-outreach-whatsapp");
+    if (waBtn) {
+      waBtn.addEventListener("click", () => {
+        const text = document.getElementById("pv-outreach-msg").value;
+        const digits = (contact.mobile || "").replace(/\D/g, "");
+        const waNumber = digits.length === 10 ? "91" + digits : digits;
+        window.open("https://wa.me/" + waNumber + "?text=" + encodeURIComponent(text), "_blank");
+      });
+    }
+
+    const emailBtn = document.getElementById("pv-outreach-email");
+    if (emailBtn) {
+      emailBtn.addEventListener("click", () => {
+        const text = document.getElementById("pv-outreach-msg").value;
+        const subject = "Complete your Jain Vivah profile for verification";
+        window.location.href = "mailto:" + encodeURIComponent(contact.email) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(text);
+      });
+    }
   }
 
   async function renderInterestSection(session, targetId, targetProfile, viewerIsAdmin) {
@@ -324,7 +405,8 @@
     const myId = session.user.id;
 
     if (viewerIsAdmin) {
-      await renderContactAndBiodata(targetId, targetProfile, '<div class="mt-reassurance">Admin view — full contact details and bio-data shown regardless of interest status.</div>');
+      const contact = await renderContactAndBiodata(targetId, targetProfile, '<div class="mt-reassurance">Admin view — full contact details and bio-data shown regardless of interest status.</div>');
+      renderAdminOutreach(targetProfile, contact);
       return;
     }
 
