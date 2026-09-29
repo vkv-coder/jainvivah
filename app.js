@@ -41,6 +41,11 @@ async function routeAfterLogin() {
     return;
   }
 
+  if (await isAdmin()) {
+    window.location.href = "admin.html";
+    return;
+  }
+
   const { data: profile, error } = await supabaseClient
     .from("mt_profiles")
     .select("*")
