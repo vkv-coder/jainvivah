@@ -28,6 +28,14 @@
   .pv-loading, .pv-notfound { text-align: center; padding: 40px 10px; color: #8a7a6d; }
   .pv-interest-actions { display: flex; gap: 10px; margin-top: 12px; }
   .pv-interest-actions .mt-btn { width: auto; flex: 1; }
+  .pv-photo-item img { cursor: zoom-in; }
+  .pv-lightbox {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.9); align-items: center; justify-content: center;
+    padding: 20px; cursor: zoom-out;
+  }
+  .pv-lightbox.open { display: flex; }
+  .pv-lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
 </style>
 </head>
 <body>
@@ -41,7 +49,7 @@
 
 <div class="mt-page">
 
-  <a class="pv-back" href="browse.html">&larr; Back to Browse</a>
+  <a class="pv-back" id="pv-back-link" href="browse.html">&larr; Back to Browse</a>
 
   <div id="pv-content">
     <p class="pv-loading">Loading profile...</p>
@@ -49,8 +57,12 @@
 
 </div>
 
-<div class="mt-footer">
-  <div><a href="myprofile.html">My Profile</a> · <a href="interests.html">My Interests</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div>
+<div class="pv-lightbox" id="pv-lightbox" onclick="this.classList.remove('open')">
+  <img id="pv-lightbox-img" src="" alt="Full-size photo">
+</div>
+
+<div class="mt-footer" id="pv-footer">
+  <div id="pv-footer-links"><a href="myprofile.html">My Profile</a> · <a href="interests.html">My Interests</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div>
   <div class="mt-brand">AnyApps.in</div>
 </div>
 
@@ -104,8 +116,11 @@
     });
   }
 
-  function row(label, value) {
-    if (!value) return "";
+  function row(label, value, forceShow) {
+    if (!value) {
+      if (!forceShow) return "";
+      value = "Not provided";
+    }
     return (
       '<div class="pv-row"><div class="pv-label">' + escapeHtml(label) + '</div>' +
       '<div class="pv-value">' + escapeHtml(value) + "</div></div>"
@@ -205,20 +220,34 @@
       '<h1 class="pv-name">' + escapeHtml(profile.full_name || "Member") + "</h1>" +
       '<div class="pv-code">Profile ' + escapeHtml(profile.profile_code || "") + "</div>" +
       '<div class="mt-card">' +
-      row("Age", age ? age + " years" : "") +
-      row("Height", height) +
-      row("Marital Status", maritalLabel) +
-      row("Diet", dietLabel) +
-      row("Sect", profile.sect) +
-      row("Location", locationText) +
-      row("Native Place", profile.native_place) +
-      row("Education", profile.education + (profile.education_detail ? " — " + profile.education_detail : "")) +
-      row("Profession", profile.profession + (profile.occupation_detail ? " — " + profile.occupation_detail : "")) +
-      row("Annual Income", profile.annual_income) +
-      row("Hobbies", profile.hobbies) +
-      row("About", profile.about) +
+      row("Age", age ? age + " years" : "", viewerIsAdmin) +
+      row("Height", height, viewerIsAdmin) +
+      row("Marital Status", maritalLabel, viewerIsAdmin) +
+      row("Diet", dietLabel, viewerIsAdmin) +
+      row("Sect", profile.sect, viewerIsAdmin) +
+      row("Location", locationText, viewerIsAdmin) +
+      row("Native Place", profile.native_place, viewerIsAdmin) +
+      row("Education", profile.education + (profile.education_detail ? " — " + profile.education_detail : ""), viewerIsAdmin) +
+      row("Profession", profile.profession + (profile.occupation_detail ? " — " + profile.occupation_detail : ""), viewerIsAdmin) +
+      row("Annual Income", profile.annual_income, viewerIsAdmin) +
+      row("Hobbies", profile.hobbies, viewerIsAdmin) +
+      row("About", profile.about, viewerIsAdmin) +
       "</div>" +
       '<div id="pv-interest-section"></div>';
+
+    contentEl.querySelectorAll(".pv-photo-item img").forEach((img) => {
+      img.addEventListener("click", () => {
+        document.getElementById("pv-lightbox-img").src = img.src;
+        document.getElementById("pv-lightbox").classList.add("open");
+      });
+    });
+
+    if (viewerIsAdmin) {
+      const backLink = document.getElementById("pv-back-link");
+      backLink.textContent = "← Back to Admin";
+      backLink.href = "admin.html";
+      document.getElementById("pv-footer-links").style.display = "none";
+    }
 
     await renderInterestSection(session, targetId, profile, viewerIsAdmin);
   }
@@ -258,15 +287,17 @@
       if (signed) {
         biodataHtml = '<p class="mt-center"><a href="' + escapeHtml(signed.signedUrl) + '" target="_blank">Download full bio-data</a></p>';
       }
+    } else {
+      biodataHtml = '<p class="mt-center mt-hint">No bio-data document uploaded.</p>';
     }
 
     el.innerHTML =
       headerHtml +
       '<div class="mt-card">' +
-      row("Mobile", contact && contact.mobile) +
-      row("Alternate Mobile", contact && contact.alt_mobile) +
-      row("Email", contact && contact.email) +
-      row("Address", contact && contact.address) +
+      row("Mobile", contact && contact.mobile, true) +
+      row("Alternate Mobile", contact && contact.alt_mobile, true) +
+      row("Email", contact && contact.email, true) +
+      row("Address", contact && contact.address, true) +
       "</div>" +
       biodataHtml;
   }
