@@ -122,7 +122,9 @@
       .eq("user_id", session.user.id)
       .maybeSingle();
 
-    if ((!myContact || !myContact.mobile_verified) && !(await isAdmin())) {
+    const viewerIsAdmin = await isAdmin();
+
+    if ((!myContact || !myContact.mobile_verified) && !viewerIsAdmin) {
       queueToast("Please verify your mobile number on WhatsApp before viewing other profiles.", "info");
       window.location.href = "myprofile.html";
       return;
@@ -218,7 +220,7 @@
       "</div>" +
       '<div id="pv-interest-section"></div>';
 
-    await renderInterestSection(session, targetId, profile);
+    await renderInterestSection(session, targetId, profile, viewerIsAdmin);
   }
 
   // ---------------- Interest: send / accept / decline / withdraw ----------------
@@ -241,9 +243,42 @@
     return message;
   }
 
-  async function renderInterestSection(session, targetId, targetProfile) {
+  async function renderContactAndBiodata(targetId, targetProfile, headerHtml) {
+    const el = document.getElementById("pv-interest-section");
+
+    const { data: contact } = await supabaseClient
+      .from("mt_contacts")
+      .select("mobile, alt_mobile, email, address")
+      .eq("user_id", targetId)
+      .maybeSingle();
+
+    let biodataHtml = "";
+    if (targetProfile.biodata_path) {
+      const { data: signed } = await supabaseClient.storage.from(PHOTOS_BUCKET_PV).createSignedUrl(targetProfile.biodata_path, 90);
+      if (signed) {
+        biodataHtml = '<p class="mt-center"><a href="' + escapeHtml(signed.signedUrl) + '" target="_blank">Download full bio-data</a></p>';
+      }
+    }
+
+    el.innerHTML =
+      headerHtml +
+      '<div class="mt-card">' +
+      row("Mobile", contact && contact.mobile) +
+      row("Alternate Mobile", contact && contact.alt_mobile) +
+      row("Email", contact && contact.email) +
+      row("Address", contact && contact.address) +
+      "</div>" +
+      biodataHtml;
+  }
+
+  async function renderInterestSection(session, targetId, targetProfile, viewerIsAdmin) {
     const el = document.getElementById("pv-interest-section");
     const myId = session.user.id;
+
+    if (viewerIsAdmin) {
+      await renderContactAndBiodata(targetId, targetProfile, '<div class="mt-reassurance">Admin view — full contact details and bio-data shown regardless of interest status.</div>');
+      return;
+    }
 
     const { data: existing } = await supabaseClient
       .from("mt_interests")
@@ -320,29 +355,7 @@
     }
 
     if (existing.status === "accepted") {
-      const { data: contact } = await supabaseClient
-        .from("mt_contacts")
-        .select("mobile, alt_mobile, email, address")
-        .eq("user_id", targetId)
-        .maybeSingle();
-
-      let biodataHtml = "";
-      if (targetProfile.biodata_path) {
-        const { data: signed } = await supabaseClient.storage.from(PHOTOS_BUCKET_PV).createSignedUrl(targetProfile.biodata_path, 90);
-        if (signed) {
-          biodataHtml = '<p class="mt-center"><a href="' + escapeHtml(signed.signedUrl) + '" target="_blank">Download full bio-data</a></p>';
-        }
-      }
-
-      el.innerHTML =
-        '<div class="mt-reassurance">🎉 You\'re connected! Contact details are shared below.</div>' +
-        '<div class="mt-card">' +
-        row("Mobile", contact && contact.mobile) +
-        row("Alternate Mobile", contact && contact.alt_mobile) +
-        row("Email", contact && contact.email) +
-        row("Address", contact && contact.address) +
-        "</div>" +
-        biodataHtml;
+      await renderContactAndBiodata(targetId, targetProfile, '<div class="mt-reassurance">🎉 You\'re connected! Contact details are shared below.</div>');
       return;
     }
 
