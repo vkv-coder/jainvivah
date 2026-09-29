@@ -139,6 +139,7 @@
           '<div class="adm-name">' + escapeHtml(name) + " · <span class=\"adm-code\">" + escapeHtml(code) + "</span></div>" +
           '<div class="adm-meta">' + escapeHtml(metaParts.join(" · ")) + "</div>" +
         "</div>" +
+        '<a href="profile-view.html?id=' + encodeURIComponent(contact.user_id) + '" target="_blank" class="mt-btn mt-btn-outline">View Profile</a>' +
         '<button type="button" class="' + btnClass + '" data-action="toggle" data-user-id="' + escapeHtml(contact.user_id) + '" data-verify="' + (!verified) + '">' + btnLabel + "</button>" +
       "</div>"
     );
