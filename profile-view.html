@@ -282,10 +282,19 @@
       .maybeSingle();
 
     let biodataHtml = "";
+    const isImageBiodata = targetProfile.biodata_path && /\.(jpe?g|png|webp|gif)$/i.test(targetProfile.biodata_path);
     if (targetProfile.biodata_path) {
       const { data: signed } = await supabaseClient.storage.from(PHOTOS_BUCKET_PV).createSignedUrl(targetProfile.biodata_path, 90);
       if (signed) {
-        biodataHtml = '<p class="mt-center"><a href="' + escapeHtml(signed.signedUrl) + '" target="_blank">Download full bio-data</a></p>';
+        if (isImageBiodata) {
+          biodataHtml =
+            '<div class="pv-photo-item" id="pv-biodata-thumb" style="max-width:200px;margin:10px auto;cursor:zoom-in;">' +
+            '<img src="' + escapeHtml(signed.signedUrl) + '" alt="Bio-data attachment" style="width:100%;border-radius:10px;">' +
+            "</div>" +
+            '<p class="mt-center"><a href="' + escapeHtml(signed.signedUrl) + '" target="_blank">Open full-size bio-data image</a></p>';
+        } else {
+          biodataHtml = '<p class="mt-center">📄 <a href="' + escapeHtml(signed.signedUrl) + '" target="_blank">Download full bio-data (PDF)</a></p>';
+        }
       }
     } else {
       biodataHtml = '<p class="mt-center mt-hint">No bio-data document uploaded.</p>';
@@ -300,6 +309,14 @@
       row("Address", contact && contact.address, true) +
       "</div>" +
       biodataHtml;
+
+    if (isImageBiodata) {
+      const thumb = document.getElementById("pv-biodata-thumb");
+      thumb.addEventListener("click", () => {
+        document.getElementById("pv-lightbox-img").src = thumb.querySelector("img").src;
+        document.getElementById("pv-lightbox").classList.add("open");
+      });
+    }
   }
 
   async function renderInterestSection(session, targetId, targetProfile, viewerIsAdmin) {
