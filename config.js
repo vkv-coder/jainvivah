@@ -10,7 +10,7 @@ const SUPPORT_EMAIL = "info.anyapps@gmail.com";
 // This Supabase project is shared with other apps, so its dashboard Site URL
 // points elsewhere. Every auth call that sends an email must pass its own
 // redirect explicitly, built from this.
-const APP_URL = "https://jainvivah.anyapps.in";
+const APP_URL = "https://jainvivah.in";
 
 // WhatsApp number members message to verify their mobile (manual process).
 // Replace with the real number, in international format with no + or spaces
