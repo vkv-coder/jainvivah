@@ -326,19 +326,21 @@
   // send logic below.
   function buildOutreachMessage(profile, missing) {
     const name = profile.full_name || "there";
-    const hasBiodata = !!profile.biodata_path;
-    const intro = hasBiodata
-      ? "Thank you for registering on Jain Vivah and for attaching your bio-data. We noticed a few fields below are still blank directly on your profile — Browse's search filters (diet, education, profession, etc.) only read what's filled in on the site itself, not your attached PDF, so filling these in ensures other members can actually find you when they search:"
-      : "Thank you for registering on Jain Vivah. To complete your verification, please fill in the following in your profile:";
     return (
       "Jai Jinendra " + name + ",\n\n" +
-      intro + "\n" +
+      "Thank you for registering on Jain Vivah. To complete your verification, please fill in the following in your profile:\n" +
       missing.map((m) => "- " + m).join("\n") +
       "\n\nOnce these are complete, we will verify your profile so you can start browsing matches.\n\nJain Vivah Team"
     );
   }
 
+  // A bio-data PDF/image is treated as a complete substitute for the
+  // individual site fields below - if a member has attached one, don't
+  // nag them to re-type what they've already provided. Only chase missing
+  // fields when there's no bio-data on file at all to fall back on.
   function computeMissingItems(profile, contact) {
+    if (profile.biodata_path) return [];
+
     const checks = [
       [profile.height_cm, "Height"],
       [profile.marital_status, "Marital Status"],
@@ -355,9 +357,7 @@
       [contact && contact.address, "Address"]
     ];
     const missing = checks.filter(([v]) => !v).map(([, label]) => label);
-    if (!profile.biodata_path) {
-      missing.push("Bio-data (PDF or photo, with father/mother/siblings/family details)");
-    }
+    missing.push("Bio-data (PDF or photo, with father/mother/siblings/family details)");
     return missing;
   }
 
