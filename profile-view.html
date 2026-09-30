@@ -326,9 +326,13 @@
   // send logic below.
   function buildOutreachMessage(profile, missing) {
     const name = profile.full_name || "there";
+    const hasBiodata = !!profile.biodata_path;
+    const intro = hasBiodata
+      ? "Thank you for registering on Jain Vivah and for attaching your bio-data. We noticed a few fields below are still blank directly on your profile — Browse's search filters (diet, education, profession, etc.) only read what's filled in on the site itself, not your attached PDF, so filling these in ensures other members can actually find you when they search:"
+      : "Thank you for registering on Jain Vivah. To complete your verification, please fill in the following in your profile:";
     return (
       "Jai Jinendra " + name + ",\n\n" +
-      "Thank you for registering on Jain Vivah. To complete your verification, please fill in the following in your profile:\n" +
+      intro + "\n" +
       missing.map((m) => "- " + m).join("\n") +
       "\n\nOnce these are complete, we will verify your profile so you can start browsing matches.\n\nJain Vivah Team"
     );
