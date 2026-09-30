@@ -326,21 +326,25 @@
   // send logic below.
   function buildOutreachMessage(profile, missing) {
     const name = profile.full_name || "there";
+    const hasBiodata = !!profile.biodata_path;
+    const intro = hasBiodata
+      ? "Thank you for registering on Jain Vivah and for attaching your bio-data. That's only shown to a match after mutual acceptance though - the fields below are what other members see on your profile FIRST, before they ever decide to send you an interest. Please fill these in directly on your profile:"
+      : "Thank you for registering on Jain Vivah. To complete your verification, please fill in the following in your profile:";
     return (
       "Jai Jinendra " + name + ",\n\n" +
-      "Thank you for registering on Jain Vivah. To complete your verification, please fill in the following in your profile:\n" +
+      intro + "\n" +
       missing.map((m) => "- " + m).join("\n") +
       "\n\nOnce these are complete, we will verify your profile so you can start browsing matches.\n\nJain Vivah Team"
     );
   }
 
-  // A bio-data PDF/image is treated as a complete substitute for the
-  // individual site fields below - if a member has attached one, don't
-  // nag them to re-type what they've already provided. Only chase missing
-  // fields when there's no bio-data on file at all to fall back on.
+  // Basic-detail fields are what any browsing member sees BEFORE deciding
+  // whether to send an interest - bio-data (PDF/image) only becomes visible
+  // AFTER mutual acceptance, same gate as contact details. So bio-data is
+  // not a substitute for these: a member who only attaches a PDF and skips
+  // these fields is effectively invisible to anyone deciding whether to
+  // reach out in the first place, PDF or not. Always check both.
   function computeMissingItems(profile, contact) {
-    if (profile.biodata_path) return [];
-
     const checks = [
       [profile.height_cm, "Height"],
       [profile.marital_status, "Marital Status"],
@@ -357,7 +361,9 @@
       [contact && contact.address, "Address"]
     ];
     const missing = checks.filter(([v]) => !v).map(([, label]) => label);
-    missing.push("Bio-data (PDF or photo, with father/mother/siblings/family details)");
+    if (!profile.biodata_path) {
+      missing.push("Bio-data (PDF or photo, with father/mother/siblings/family details)");
+    }
     return missing;
   }
 
