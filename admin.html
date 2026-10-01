@@ -98,6 +98,10 @@
 
     <h1 class="adm-section-title">Already verified (<span id="adm-verified-count">0</span>)</h1>
     <div id="adm-verified-list"><p class="mt-hint">Loading...</p></div>
+
+    <h1 class="adm-section-title">Incomplete registrations (<span id="adm-incomplete-count">0</span>)</h1>
+    <p class="mt-hint">Started signing up but never finished their profile - no mobile number on file yet, so reach out by email.</p>
+    <div id="adm-incomplete-list"><p class="mt-hint">Loading...</p></div>
   </div>
 
 </div>
@@ -201,6 +205,54 @@
     });
   }
 
+  function buildIncompleteReminder(reg) {
+    return (
+      "Jai Jinendra " + (reg.full_name || "there") + ",\n\n" +
+      "We noticed you started registering on Jain Vivah but haven't finished your profile yet. " +
+      "Please complete it at https://jainvivah.in so we can get you verified and browsing matches.\n\n" +
+      "Jain Vivah Team"
+    );
+  }
+
+  function renderIncompleteRow(reg) {
+    const name = reg.full_name || "(no name yet)";
+    const code = reg.profile_code || "—";
+    const started = reg.created_at ? new Date(reg.created_at).toLocaleDateString() : "";
+    const msgId = "inc-msg-" + reg.user_id;
+    return (
+      '<div class="adm-row" style="flex-direction:column;align-items:stretch;">' +
+        '<div class="adm-row-main">' +
+          '<div class="adm-name">' + escapeHtml(name) + " · <span class=\"adm-code\">" + escapeHtml(code) + "</span></div>" +
+          '<div class="adm-meta">' + escapeHtml(reg.email || "") + (started ? " · Started " + started : "") + "</div>" +
+        "</div>" +
+        '<textarea id="' + msgId + '" rows="4" style="margin-top:8px;">' + escapeHtml(buildIncompleteReminder(reg)) + "</textarea>" +
+        '<button type="button" class="mt-btn mt-btn-outline" data-action="email-incomplete" data-email="' + escapeHtml(reg.email || "") + '" data-msg-id="' + msgId + '" style="margin-top:8px;width:auto;">Send via Email</button>' +
+      "</div>"
+    );
+  }
+
+  async function loadIncompleteRegistrations() {
+    const { data, error } = await supabaseClient.rpc("mt_admin_incomplete_registrations");
+    const el = document.getElementById("adm-incomplete-list");
+    if (error) {
+      el.innerHTML = '<p class="adm-empty">Could not load: ' + escapeHtml(error.message) + "</p>";
+      return;
+    }
+
+    document.getElementById("adm-incomplete-count").textContent = (data || []).length;
+    el.innerHTML = (data || []).length
+      ? data.map(renderIncompleteRow).join("")
+      : '<p class="adm-empty">No incomplete registrations.</p>';
+
+    document.querySelectorAll('[data-action="email-incomplete"]').forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const text = document.getElementById(btn.dataset.msgId).value;
+        const subject = "Finish your Jain Vivah registration";
+        window.location.href = "mailto:" + encodeURIComponent(btn.dataset.email) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(text);
+      });
+    });
+  }
+
   // ---------------- Dashboard ----------------
   function renderBarList(containerId, counts, order) {
     let entries = Object.entries(counts);
@@ -291,6 +343,7 @@
     document.getElementById("adm-content").style.display = "block";
     await loadDashboard();
     await loadLists();
+    await loadIncompleteRegistrations();
   })();
 </script>
 
