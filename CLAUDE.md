@@ -156,6 +156,10 @@ alter table mt_profiles add column if not exists education_detail text;   -- col
 alter table mt_profiles add column if not exists occupation_detail text;  -- business/company name, or college name if profession = Student
 alter table mt_profiles add column if not exists diet_detail      text;   -- free text when diet = 'other'
 alter table mt_contacts add column if not exists mobile_relation  text;   -- whose number it is: self/father/mother/brother/sister/uncle/aunt/relative
+
+-- Added 2 Oct 2026 - "Number of children" / "Ages of children" on Basic details.
+alter table mt_profiles add column if not exists children_count int;      -- shown/editable only when marital_status is divorced/widow/widower
+alter table mt_profiles add column if not exists children_ages  text;     -- free text, e.g. "5, 8"; no CHECK constraint
 ```
 
 ### CHECK constraint values — the single biggest source of bugs
@@ -443,6 +447,16 @@ In order:
     15s `Promise.race` timeout around the whole load so this class of bug
     (or any future hang) shows a "try again" message instead of an
     infinite silent spinner.
+
+- **Added 2 Oct 2026 — Children fields on Basic details.** `register.html`
+  (Step 1) and `myprofile.html` now show "Number of children" and "Ages of
+  children" (free text, e.g. "5, 8") directly under Marital status, hidden
+  unless `marital_status` is `divorced`, `widow`, or `widower` (hidden +
+  cleared immediately when switched back to `unmarried`). Both optional, no
+  CHECK constraint. `profile-view.html` shows a "Children" row (count, plus
+  "(Ages: ...)" if filled) only when `children_count` is set. New columns:
+  `children_count int`, `children_ages text` — SQL in "Columns added after
+  the original schema" above, not yet run by the user.
 
 ### Not built yet
 

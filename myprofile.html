@@ -109,6 +109,18 @@
       </select>
     </div>
 
+    <div id="mp-children-wrap" style="display:none;">
+      <div class="mt-field">
+        <label for="mp-children-count">Number of children</label>
+        <input type="number" id="mp-children-count" min="0" max="20" step="1">
+      </div>
+
+      <div class="mt-field">
+        <label for="mp-children-ages">Ages of children</label>
+        <input type="text" id="mp-children-ages" placeholder="e.g. 5, 8">
+      </div>
+    </div>
+
     <div class="mt-field">
       <label for="mp-diet">Diet *</label>
       <select id="mp-diet" required>
@@ -479,6 +491,14 @@
   document.getElementById("mp-diet").addEventListener("change", (e) => {
     document.getElementById("mp-diet-other-wrap").style.display = e.target.value === "other" ? "block" : "none";
   });
+  document.getElementById("mp-marital").addEventListener("change", (e) => {
+    const showChildren = ["divorced", "widow", "widower"].includes(e.target.value);
+    document.getElementById("mp-children-wrap").style.display = showChildren ? "block" : "none";
+    if (!showChildren) {
+      document.getElementById("mp-children-count").value = "";
+      document.getElementById("mp-children-ages").value = "";
+    }
+  });
   document.getElementById("mp-profession").addEventListener("change", (e) => {
     document.getElementById("mp-profession-other-wrap").style.display = e.target.value === "Other" ? "block" : "none";
     updateOccupationDetailLabel(e.target.value);
@@ -531,6 +551,13 @@
       if (profile.height_cm) document.getElementById("mp-height").value = profile.height_cm;
       if (profile.weight_kg) document.getElementById("mp-weight").value = profile.weight_kg;
       if (profile.marital_status) document.getElementById("mp-marital").value = profile.marital_status;
+      if (["divorced", "widow", "widower"].includes(profile.marital_status)) {
+        document.getElementById("mp-children-wrap").style.display = "block";
+        if (profile.children_count !== null && profile.children_count !== undefined) {
+          document.getElementById("mp-children-count").value = profile.children_count;
+        }
+        if (profile.children_ages) document.getElementById("mp-children-ages").value = profile.children_ages;
+      }
       if (profile.diet) document.getElementById("mp-diet").value = profile.diet;
       if (profile.diet === "other" && profile.diet_detail) {
         document.getElementById("mp-diet-other-wrap").style.display = "block";
@@ -615,6 +642,9 @@
     const heightCm = document.getElementById("mp-height").value;
     const weight = document.getElementById("mp-weight").value;
     const marital = document.getElementById("mp-marital").value;
+    const hasChildrenFields = ["divorced", "widow", "widower"].includes(marital);
+    const childrenCount = document.getElementById("mp-children-count").value;
+    const childrenAges = document.getElementById("mp-children-ages").value.trim();
     let diet = document.getElementById("mp-diet").value;
     const dietOther = document.getElementById("mp-diet-other").value.trim();
     let sect = document.getElementById("mp-sect").value;
@@ -693,6 +723,8 @@
       height_cm: Number(heightCm),
       weight_kg: Number(weight),
       marital_status: normaliseCode(marital),
+      children_count: hasChildrenFields && childrenCount !== "" ? Number(childrenCount) : null,
+      children_ages: hasChildrenFields && childrenAges ? childrenAges : null,
       diet: normaliseCode(diet),
       diet_detail: normaliseCode(diet) === "other" ? dietOther : null,
       sect: sect,

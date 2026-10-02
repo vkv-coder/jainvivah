@@ -214,6 +214,9 @@
     const dietLabel = (DIET_OPTIONS.find(([, code]) => code === profile.diet) || [profile.diet])[0];
     const maritalLabel = (MARITAL_STATUS_OPTIONS.find(([, code]) => code === profile.marital_status) || [profile.marital_status])[0];
     const locationText = [profile.city, profile.state, profile.country].filter(Boolean).join(", ");
+    const childrenText = profile.children_count
+      ? profile.children_count + (profile.children_ages ? " (Ages: " + profile.children_ages + ")" : "")
+      : "";
 
     contentEl.innerHTML =
       photosHtml +
@@ -223,6 +226,7 @@
       row("Age", age ? age + " years" : "", viewerIsAdmin) +
       row("Height", height, viewerIsAdmin) +
       row("Marital Status", maritalLabel, viewerIsAdmin) +
+      row("Children", childrenText, false) +
       row("Diet", dietLabel, viewerIsAdmin) +
       row("Sect", profile.sect, viewerIsAdmin) +
       row("Location", locationText, viewerIsAdmin) +

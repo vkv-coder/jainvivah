@@ -112,6 +112,18 @@
         </select>
       </div>
 
+      <div id="s1-children-wrap" style="display:none;">
+        <div class="mt-field">
+          <label for="s1-children-count">Number of children</label>
+          <input type="number" id="s1-children-count" min="0" max="20" step="1">
+        </div>
+
+        <div class="mt-field">
+          <label for="s1-children-ages">Ages of children</label>
+          <input type="text" id="s1-children-ages" placeholder="e.g. 5, 8">
+        </div>
+      </div>
+
       <div class="mt-field">
         <label for="s1-diet">Diet *</label>
         <select id="s1-diet" required>
@@ -483,6 +495,14 @@
   document.getElementById("s1-diet").addEventListener("change", (e) => {
     document.getElementById("s1-diet-other-wrap").style.display = e.target.value === "other" ? "block" : "none";
   });
+  document.getElementById("s1-marital").addEventListener("change", (e) => {
+    const showChildren = ["divorced", "widow", "widower"].includes(e.target.value);
+    document.getElementById("s1-children-wrap").style.display = showChildren ? "block" : "none";
+    if (!showChildren) {
+      document.getElementById("s1-children-count").value = "";
+      document.getElementById("s1-children-ages").value = "";
+    }
+  });
   document.getElementById("s2-sect").addEventListener("change", (e) => {
     document.getElementById("s2-sect-other-wrap").style.display = e.target.value === "Other" ? "block" : "none";
   });
@@ -679,6 +699,9 @@
     const heightCm = document.getElementById("s1-height").value;
     const weight = document.getElementById("s1-weight").value;
     const marital = document.getElementById("s1-marital").value;
+    const hasChildrenFields = ["divorced", "widow", "widower"].includes(marital);
+    const childrenCount = document.getElementById("s1-children-count").value;
+    const childrenAges = document.getElementById("s1-children-ages").value.trim();
     const diet = document.getElementById("s1-diet").value;
     const dietOther = document.getElementById("s1-diet-other").value.trim();
 
@@ -718,6 +741,8 @@
       height_cm: Number(heightCm),
       weight_kg: Number(weight),
       marital_status: marital,
+      children_count: hasChildrenFields && childrenCount !== "" ? Number(childrenCount) : null,
+      children_ages: hasChildrenFields && childrenAges ? childrenAges : null,
       diet: diet,
       diet_detail: diet === "other" ? dietOther : null
     };
@@ -1115,6 +1140,13 @@
       if (profile.height_cm) document.getElementById("s1-height").value = profile.height_cm;
       if (profile.weight_kg) document.getElementById("s1-weight").value = profile.weight_kg;
       if (profile.marital_status) document.getElementById("s1-marital").value = profile.marital_status;
+      if (["divorced", "widow", "widower"].includes(profile.marital_status)) {
+        document.getElementById("s1-children-wrap").style.display = "block";
+        if (profile.children_count !== null && profile.children_count !== undefined) {
+          document.getElementById("s1-children-count").value = profile.children_count;
+        }
+        if (profile.children_ages) document.getElementById("s1-children-ages").value = profile.children_ages;
+      }
       if (profile.diet) document.getElementById("s1-diet").value = profile.diet;
       if (profile.diet === "other" && profile.diet_detail) {
         document.getElementById("s1-diet-other-wrap").style.display = "block";
