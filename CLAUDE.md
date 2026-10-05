@@ -458,6 +458,27 @@ In order:
   `children_count int`, `children_ages text` — SQL in "Columns added after
   the original schema" above, not yet run by the user.
 
+- **Fixed 5 Oct 2026 — Admin outreach message was asking members to fill in
+  fields that don't exist in the app.** `profile-view.html`'s
+  `computeMissingItems()` (admin-only "Missing: ..." panel + the WhatsApp/
+  email reminder text it builds) checked `profile.native_place`,
+  `profile.hobbies`, `profile.about`, `contact.alt_mobile` and
+  `contact.address` — none of which `register.html`/`myprofile.html` have
+  ever had an input for (confirmed via grep, zero matches in either form).
+  A real member complained after being told to "fill in" Native Place/
+  Hobbies, which is physically impossible on the form. All five removed
+  from the check and from the profile-view display rows (they could only
+  ever render empty, or "Not provided" for admin). `Address`/
+  `Alternate Mobile` were also wrong for a second reason: they're Contact
+  fields (revealed only post-interest-acceptance), not Basic-detail fields
+  a browsing member sees pre-acceptance — the whole point of this check,
+  per its own comment. Remaining check list: Height, Marital Status, Diet,
+  Sect, City/Location, Education, Profession, Annual Income, plus a
+  Bio-data line when none is uploaded. If a member is ever told a field is
+  "missing" again, **grep the form files first** before assuming the field
+  exists — this bug existed since whenever `computeMissingItems` was
+  written and nobody had checked.
+
 ### Not built yet
 
 - **Batch 3 — Browse:** search, filters, profile view, **per-viewer photo
