@@ -250,7 +250,7 @@
       document.getElementById("pv-footer-links").style.display = "none";
     }
 
-    await renderInterestSection(session, targetId, profile, viewerIsAdmin);
+    await renderInterestSection(session, targetId, profile, viewerIsAdmin, photos ? photos.length : 0);
   }
 
   // ---------------- Interest: send / accept / decline / withdraw ----------------
@@ -339,33 +339,26 @@
     );
   }
 
-  // Basic-detail fields are what any browsing member sees BEFORE deciding
-  // whether to send an interest - bio-data (PDF/image) only becomes visible
-  // AFTER mutual acceptance, same gate as contact details. So bio-data is
-  // not a substitute for these: a member who only attaches a PDF and skips
-  // these fields is effectively invisible to anyone deciding whether to
-  // reach out in the first place, PDF or not. Always check both.
-  function computeMissingItems(profile, contact) {
-    const checks = [
-      [profile.height_cm, "Height"],
-      [profile.marital_status, "Marital Status"],
-      [profile.diet, "Diet"],
-      [profile.sect, "Sect"],
-      [profile.city, "City / Location"],
-      [profile.education, "Education"],
-      [profile.profession, "Profession"],
-      [profile.annual_income, "Annual Income"]
-    ];
-    const missing = checks.filter(([v]) => !v).map(([, label]) => label);
+  // Uses the same findMissingFields() the rest of the app already uses
+  // (member's own "what's still needed" panel, admin.html's dashboard) -
+  // previously this had its own shorter hand-picked field list that never
+  // checked mobile number or photo count, so a profile missing only a
+  // photo looked "complete" here and showed no outreach box at all, even
+  // though admin.html correctly flagged it as not ready. Bio-data is
+  // pushed on separately since findMissingFields deliberately treats it
+  // as optional (it isn't part of what a browsing member sees first) -
+  // but it's exactly what this admin outreach message needs to ask about.
+  function computeMissingItems(profile, contact, photoCount) {
+    const missing = findMissingFields(profile, contact, photoCount).map((m) => m.label);
     if (!profile.biodata_path) {
       missing.push("Bio-data (PDF or photo, with father/mother/siblings/family details)");
     }
     return missing;
   }
 
-  function renderAdminOutreach(targetProfile, contact) {
+  function renderAdminOutreach(targetProfile, contact, photoCount) {
     const el = document.getElementById("pv-interest-section");
-    const missing = computeMissingItems(targetProfile, contact);
+    const missing = computeMissingItems(targetProfile, contact, photoCount);
 
     if (!missing.length) {
       el.insertAdjacentHTML("beforeend", '<div class="mt-hint mt-center" style="margin-top:16px;">✅ Profile looks complete.</div>');
@@ -406,13 +399,13 @@
     }
   }
 
-  async function renderInterestSection(session, targetId, targetProfile, viewerIsAdmin) {
+  async function renderInterestSection(session, targetId, targetProfile, viewerIsAdmin, photoCount) {
     const el = document.getElementById("pv-interest-section");
     const myId = session.user.id;
 
     if (viewerIsAdmin) {
       const contact = await renderContactAndBiodata(targetId, targetProfile, '<div class="mt-reassurance">Admin view — full contact details and bio-data shown regardless of interest status.</div>');
-      renderAdminOutreach(targetProfile, contact);
+      renderAdminOutreach(targetProfile, contact, photoCount);
       return;
     }
 
