@@ -155,53 +155,76 @@
 <script src="app.js"></script>
 <script src="profile-shared.js"></script>
 <script>
-  async function fetchProfilesById(userIds) {
-    if (!userIds.length) return {};
-    const { data, error } = await supabaseClient
-      .from("mt_profiles")
-      .select("user_id, full_name, profile_code, gender, city, managed_by, profile_complete, biodata_path")
-      .in("user_id", userIds);
-    if (error || !data) return {};
-    const byId = {};
-    data.forEach((p) => { byId[p.user_id] = p; });
-    return byId;
+  // Populated once per loadMembers() call - needed by statusBadges() since
+  // photo count isn't a column on mt_profiles.
+  let photoCountById = {};
+
+  // Specific missing items, not just a true/false flag - uses the same
+  // findMissingFields() the rest of the app already uses for a member's own
+  // "what's still needed" panel, rather than trusting mt_profiles.
+  // profile_complete. That stored flag only gets set when a member reaches
+  // register.html's actual final Finish step - someone who fills in every
+  // field via repeated "Save & finish later" without ever hitting Finish
+  // stays flagged incomplete forever even though the data is all there.
+  // Live-computing from the real columns (+ mobile + photo count) can't go
+  // stale that way. Found via MT1058: every required field and the bio-data
+  // PDF were present, profile_complete was still false, and the real gap
+  // (zero photos uploaded) wasn't shown anywhere - the old badge just said
+  // "profile incomplete" with no indication of what was actually missing.
+  function getMissingLabels(profile, contact) {
+    if (!profile) return ["no profile"];
+    return findMissingFields(profile, contact, photoCountById[profile.user_id] || 0).map((m) => m.label);
   }
 
-  // Used to decide which Pending row lands in "Ready to verify" vs "Not
-  // yet ready" - deliberately both checks (not just bio-data alone), since
-  // profile_complete only covers the required fields a browsing member
-  // sees first; bio-data (the full family-detail PDF) is separate and
-  // optional at signup, so a profile can be "complete" with zero bio-data.
-  function isReadyToVerify(profile) {
-    return !!(profile && profile.profile_complete && profile.biodata_path);
+  function isReadyToVerify(profile, contact) {
+    return !!(profile && profile.biodata_path) && getMissingLabels(profile, contact).length === 0;
   }
 
-  function completenessBadge(profile) {
-    if (isReadyToVerify(profile)) return '<span class="adm-ready-badge">✓ Bio-data attached</span>';
-    const reasons = [];
-    if (!profile || !profile.profile_complete) reasons.push("profile incomplete");
-    if (!profile || !profile.biodata_path) reasons.push("no bio-data PDF");
-    return '<span class="adm-notready-badge">' + escapeHtml(reasons.join(", ")) + "</span>";
+  function statusBadges(profile, contact) {
+    if (!profile) return '<span class="adm-notready-badge">no profile</span>';
+    const missing = getMissingLabels(profile, contact);
+    const completeBadge = missing.length
+      ? '<span class="adm-notready-badge">Missing: ' + escapeHtml(missing.join(", ")) + "</span>"
+      : '<span class="adm-ready-badge">✓ Profile complete</span>';
+    const bioBadge = profile.biodata_path
+      ? '<span class="adm-ready-badge">✓ Bio-data</span>'
+      : '<span class="adm-notready-badge">No bio-data PDF</span>';
+    return completeBadge + " " + bioBadge;
   }
 
-  function renderRow(contact, profile, verified) {
+  // showAction: whether to render a Verify/Unverify button at all. Kept
+  // off for "Not Yet Ready" deliberately - no action button there to
+  // avoid verifying an incomplete profile by mistake. "Complete" now gets
+  // the action back (it was missing entirely before) since a complete-but-
+  // no-bio-data profile is still a valid thing to manually verify.
+  function renderMemberRow(profile, contact, showAction) {
+    const userId = (profile && profile.user_id) || (contact && contact.user_id);
     const name = (profile && profile.full_name) || "(no profile name)";
     const code = (profile && profile.profile_code) || "—";
     const gender = (profile && GENDER_LABELS[profile.gender]) || "";
     const city = (profile && profile.city) || "";
-    const metaParts = [gender, city, "Mobile: " + contact.mobile, contact.mobile_relation ? "(" + contact.mobile_relation + ")" : ""].filter(Boolean);
+    const mobileLine = contact && contact.mobile
+      ? "Mobile: " + contact.mobile + (contact.mobile_relation ? " (" + contact.mobile_relation + ")" : "")
+      : "No mobile submitted yet";
+    const metaParts = [gender, city, mobileLine].filter(Boolean);
 
-    const btnLabel = verified ? "Unverify" : "Verify";
-    const btnClass = verified ? "mt-btn mt-btn-outline" : "mt-btn mt-btn-primary";
+    let actionHtml = "";
+    if (showAction && contact && contact.mobile) {
+      const verified = !!contact.mobile_verified;
+      const btnLabel = verified ? "Unverify" : "Verify";
+      const btnClass = verified ? "mt-btn mt-btn-outline" : "mt-btn mt-btn-primary";
+      actionHtml = '<button type="button" class="' + btnClass + '" data-action="toggle" data-user-id="' + escapeHtml(userId) + '" data-verify="' + (!verified) + '">' + btnLabel + "</button>";
+    }
 
     return (
       '<div class="adm-row">' +
         '<div class="adm-row-main">' +
-          '<div class="adm-name">' + escapeHtml(name) + " · <span class=\"adm-code\">" + escapeHtml(code) + "</span>" + (verified ? "" : completenessBadge(profile)) + "</div>" +
+          '<div class="adm-name">' + escapeHtml(name) + " · <span class=\"adm-code\">" + escapeHtml(code) + "</span></div>" +
           '<div class="adm-meta">' + escapeHtml(metaParts.join(" · ")) + "</div>" +
+          '<div style="margin-top:4px;">' + statusBadges(profile, contact) + "</div>" +
         "</div>" +
-        '<a href="profile-view.html?id=' + encodeURIComponent(contact.user_id) + '" target="_blank" class="mt-btn mt-btn-outline">View Profile</a>' +
-        '<button type="button" class="' + btnClass + '" data-action="toggle" data-user-id="' + escapeHtml(contact.user_id) + '" data-verify="' + (!verified) + '">' + btnLabel + "</button>" +
+        '<a href="profile-view.html?id=' + encodeURIComponent(userId) + '" target="_blank" class="mt-btn mt-btn-outline">View Profile</a>' +
+        actionHtml +
       "</div>"
     );
   }
@@ -218,50 +241,14 @@
     return true;
   }
 
-  async function loadLists() {
-    const { data: contacts, error } = await supabaseClient
-      .from("mt_contacts")
-      .select("user_id, mobile, mobile_relation, mobile_verified")
-      .not("mobile", "is", null)
-      .order("user_id");
-
-    if (error) {
-      document.getElementById("adm-pending-ready-list").innerHTML = '<p class="adm-empty">Could not load: ' + escapeHtml(error.message) + "</p>";
-      return;
-    }
-
-    const pending = (contacts || []).filter((c) => !c.mobile_verified);
-    const verified = (contacts || []).filter((c) => c.mobile_verified);
-
-    const profilesById = await fetchProfilesById((contacts || []).map((c) => c.user_id));
-
-    const pendingReady = pending.filter((c) => isReadyToVerify(profilesById[c.user_id]));
-    const pendingNotReady = pending.filter((c) => !isReadyToVerify(profilesById[c.user_id]));
-
-    document.getElementById("adm-verified-count").textContent = verified.length;
-    document.getElementById("adm-pending-ready-count").textContent = pendingReady.length;
-    document.getElementById("adm-pending-notready-count").textContent = pendingNotReady.length;
-
-    document.getElementById("adm-pending-ready-list").innerHTML = pendingReady.length
-      ? pendingReady.map((c) => renderRow(c, profilesById[c.user_id], false)).join("")
-      : '<p class="adm-empty">Nobody ready to verify right now.</p>';
-
-    document.getElementById("adm-pending-notready-list").innerHTML = pendingNotReady.length
-      ? pendingNotReady.map((c) => renderRow(c, profilesById[c.user_id], false)).join("")
-      : '<p class="adm-empty">Everyone pending has a complete profile and bio-data.</p>';
-
-    const verifiedEl = document.getElementById("adm-verified-list");
-    verifiedEl.innerHTML = verified.length
-      ? verified.map((c) => renderRow(c, profilesById[c.user_id], true)).join("")
-      : '<p class="adm-empty">No members verified yet.</p>';
-
+  function wireVerifyButtons(reload) {
     document.querySelectorAll('[data-action="toggle"]').forEach((btn) => {
       btn.addEventListener("click", async () => {
         btn.disabled = true;
         const ok = await setVerified(btn.dataset.userId, btn.dataset.verify === "true");
         if (ok) {
           toast(btn.dataset.verify === "true" ? "Marked verified." : "Marked unverified.", "success");
-          await loadLists();
+          await reload();
         } else {
           btn.disabled = false;
         }
@@ -347,63 +334,73 @@
     return "51+";
   }
 
-  // Read-only overview row for the Total Signups / Complete tabs - unlike
-  // renderRow() (Ready/Not-ready/Verified), there's no Verify/Unverify
-  // action here, just a status badge covering all three possible mobile
-  // states plus the usual completeness badge.
-  function renderOverviewRow(profile, contact) {
-    const name = profile.full_name || "(no name)";
-    const code = profile.profile_code || "—";
-    const gender = GENDER_LABELS[profile.gender] || "";
-    const city = profile.city || "";
-    const metaParts = [gender, city].filter(Boolean);
-
-    let statusBadge;
-    if (contact && contact.mobile_verified) {
-      statusBadge = '<span class="adm-ready-badge">Verified</span>';
-    } else if (contact && contact.mobile) {
-      statusBadge = '<span class="adm-notready-badge">Pending verification</span>';
-    } else {
-      statusBadge = '<span class="adm-notready-badge">No mobile yet</span>';
-    }
-
-    return (
-      '<div class="adm-row">' +
-        '<div class="adm-row-main">' +
-          '<div class="adm-name">' + escapeHtml(name) + " · <span class=\"adm-code\">" + escapeHtml(code) + "</span> " + statusBadge + completenessBadge(profile) + "</div>" +
-          '<div class="adm-meta">' + escapeHtml(metaParts.join(" · ")) + "</div>" +
-        "</div>" +
-        '<a href="profile-view.html?id=' + encodeURIComponent(profile.user_id) + '" target="_blank" class="mt-btn mt-btn-outline">View Profile</a>' +
-      "</div>"
-    );
-  }
-
-  async function loadDashboard() {
+  // One consolidated fetch backing all 5 member-based tabs (Total,
+  // Complete, Ready to Verify, Not Yet Ready, Verified) plus the
+  // breakdown panels, so completeness is computed identically everywhere
+  // instead of each tab/section re-deriving it slightly differently.
+  async function loadMembers() {
     const { data: allProfiles, error: profilesError } = await supabaseClient
       .from("mt_profiles")
-      .select("user_id, full_name, profile_code, gender, city, dob, profession, diet, profile_complete, biodata_path");
+      .select(
+        "user_id, full_name, profile_code, gender, city, state, dob, height_cm, weight_kg, " +
+        "marital_status, diet, sect, education, profession, annual_income, pref_age_min, pref_age_max, biodata_path"
+      );
 
     const { data: allContacts, error: contactsError } = await supabaseClient
       .from("mt_contacts")
-      .select("user_id, mobile, mobile_verified");
+      .select("user_id, mobile, mobile_relation, mobile_verified");
 
-    if (profilesError || contactsError) return;
+    const { data: allPhotos, error: photosError } = await supabaseClient
+      .from("mt_photos")
+      .select("user_id");
+
+    if (profilesError || contactsError || photosError) {
+      document.getElementById("adm-total-list").innerHTML =
+        '<p class="adm-empty">Could not load: ' + escapeHtml((profilesError || contactsError || photosError).message) + "</p>";
+      return;
+    }
 
     const contactsById = {};
     (allContacts || []).forEach((c) => { contactsById[c.user_id] = c; });
+    photoCountById = {};
+    (allPhotos || []).forEach((p) => { photoCountById[p.user_id] = (photoCountById[p.user_id] || 0) + 1; });
 
-    const complete = (allProfiles || []).filter((p) => p.profile_complete);
+    const profiles = allProfiles || [];
+    const complete = profiles.filter((p) => getMissingLabels(p, contactsById[p.user_id]).length === 0);
 
-    document.getElementById("adm-total-count").textContent = (allProfiles || []).length;
+    // Pending (Ready/Not-ready) is scoped to members who HAVE submitted a
+    // mobile number but aren't verified yet - matches the "Incomplete
+    // Registrations" tab's own job of covering people with no mobile at all.
+    const pendingProfiles = profiles.filter((p) => {
+      const c = contactsById[p.user_id];
+      return c && c.mobile && !c.mobile_verified;
+    });
+    const verifiedProfiles = profiles.filter((p) => {
+      const c = contactsById[p.user_id];
+      return c && c.mobile_verified;
+    });
+    const pendingReady = pendingProfiles.filter((p) => isReadyToVerify(p, contactsById[p.user_id]));
+    const pendingNotReady = pendingProfiles.filter((p) => !isReadyToVerify(p, contactsById[p.user_id]));
+
+    document.getElementById("adm-total-count").textContent = profiles.length;
     document.getElementById("adm-complete-count").textContent = complete.length;
+    document.getElementById("adm-pending-ready-count").textContent = pendingReady.length;
+    document.getElementById("adm-pending-notready-count").textContent = pendingNotReady.length;
+    document.getElementById("adm-verified-count").textContent = verifiedProfiles.length;
 
-    document.getElementById("adm-total-list").innerHTML = (allProfiles || []).length
-      ? allProfiles.map((p) => renderOverviewRow(p, contactsById[p.user_id])).join("")
-      : '<p class="adm-empty">No signups yet.</p>';
+    const list = (id, rows, showAction, emptyMsg) => {
+      document.getElementById(id).innerHTML = rows.length
+        ? rows.map((p) => renderMemberRow(p, contactsById[p.user_id], showAction)).join("")
+        : '<p class="adm-empty">' + escapeHtml(emptyMsg) + "</p>";
+    };
 
-    document.getElementById("adm-complete-list").innerHTML = complete.length
-      ? complete.map((p) => renderOverviewRow(p, contactsById[p.user_id])).join("")
-      : '<p class="adm-empty">No complete profiles yet.</p>';
+    list("adm-total-list", profiles, false, "No signups yet.");
+    list("adm-complete-list", complete, true, "No complete profiles yet.");
+    list("adm-pending-ready-list", pendingReady, true, "Nobody ready to verify right now.");
+    list("adm-pending-notready-list", pendingNotReady, false, "Everyone pending has a complete profile and bio-data.");
+    list("adm-verified-list", verifiedProfiles, true, "No members verified yet.");
+
+    wireVerifyButtons(loadMembers);
 
     const genderCounts = {};
     const cityCounts = {};
@@ -457,8 +454,7 @@
 
     document.getElementById("adm-content").style.display = "block";
     wireMainTabs();
-    await loadDashboard();
-    await loadLists();
+    await loadMembers();
     await loadIncompleteRegistrations();
   })();
 </script>
