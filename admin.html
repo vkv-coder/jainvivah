@@ -37,6 +37,12 @@
   .adm-ready-badge { background: #DCF5DC; color: #1b7a1b; }
   .adm-notready-badge { background: #FBE3E3; color: #b03a3a; }
 
+  #adm-pending-tabs .mt-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  .in-count-badge {
+    display: inline-block; background: var(--gold); color: var(--white);
+    border-radius: 999px; font-size: 11px; font-weight: 700; padding: 1px 7px;
+  }
+
   /* ---------------- Dashboard ---------------- */
   .dash-summary { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
   .dash-stat {
@@ -102,11 +108,20 @@
       same mobile number shown below for that member, then tap Verify.
     </p>
 
-    <h4 class="adm-subsection-title">Ready to verify — profile &amp; bio-data complete (<span id="adm-pending-ready-count">0</span>)</h4>
-    <div id="adm-pending-ready-list"><p class="mt-hint">Loading...</p></div>
+    <div class="mt-tabs" id="adm-pending-tabs">
+      <div class="mt-tab mt-tab-active" data-tab="ready">Ready to verify<span class="in-count-badge" id="adm-pending-ready-count">0</span></div>
+      <div class="mt-tab" data-tab="notready">Not yet ready<span class="in-count-badge" id="adm-pending-notready-count">0</span></div>
+    </div>
 
-    <h4 class="adm-subsection-title">Not yet ready — missing details or bio-data (<span id="adm-pending-notready-count">0</span>)</h4>
-    <div id="adm-pending-notready-list"><p class="mt-hint">Loading...</p></div>
+    <div class="mt-tab-panel mt-tab-panel-active" data-panel="ready">
+      <p class="mt-hint">Profile and bio-data both complete.</p>
+      <div id="adm-pending-ready-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+
+    <div class="mt-tab-panel" data-panel="notready">
+      <p class="mt-hint">Missing required details and/or bio-data PDF.</p>
+      <div id="adm-pending-notready-list"><p class="mt-hint">Loading...</p></div>
+    </div>
 
     <h1 class="adm-section-title">Already verified (<span id="adm-verified-count">0</span>)</h1>
     <div id="adm-verified-list"><p class="mt-hint">Loading...</p></div>
@@ -367,6 +382,19 @@
     renderBarList("dash-diet", dietCounts, DIET_OPTIONS.map(([label]) => label).concat(["Unknown"]));
   }
 
+  function wirePendingTabs() {
+    const tabsEl = document.getElementById("adm-pending-tabs");
+    tabsEl.querySelectorAll("[data-tab]").forEach((tabEl) => {
+      tabEl.addEventListener("click", () => {
+        const value = tabEl.dataset.tab;
+        tabsEl.querySelectorAll("[data-tab]").forEach((t) => t.classList.toggle("mt-tab-active", t === tabEl));
+        document.querySelectorAll("[data-panel]").forEach((p) => {
+          p.classList.toggle("mt-tab-panel-active", p.dataset.panel === value);
+        });
+      });
+    });
+  }
+
   (async () => {
     const session = await requireAuth();
     if (!session) return;
@@ -378,6 +406,7 @@
     }
 
     document.getElementById("adm-content").style.display = "block";
+    wirePendingTabs();
     await loadDashboard();
     await loadLists();
     await loadIncompleteRegistrations();
