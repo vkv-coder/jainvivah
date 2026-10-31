@@ -37,21 +37,22 @@
   .adm-ready-badge { background: #DCF5DC; color: #1b7a1b; }
   .adm-notready-badge { background: #FBE3E3; color: #b03a3a; }
 
-  #adm-pending-tabs .mt-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  /* 6 tabs don't fit in one row on mobile at flex:1 each - wrap into
+     multiple rows instead of squeezing labels unreadably. Each tab gets
+     its own pill border instead of relying on the container's single
+     outer border (which only looks right for one unbroken row). */
+  #adm-main-tabs { flex-wrap: wrap; border: none; overflow: visible; gap: 6px; }
+  #adm-main-tabs .mt-tab {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    flex: 1 1 30%; min-width: 100px; border-radius: 10px; border: 1.5px solid var(--maroon);
+  }
   .in-count-badge {
     display: inline-block; background: var(--gold); color: var(--white);
     border-radius: 999px; font-size: 11px; font-weight: 700; padding: 1px 7px;
   }
 
   /* ---------------- Dashboard ---------------- */
-  .dash-summary { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
-  .dash-stat {
-    flex: 1; min-width: 110px; background: var(--white); border-radius: var(--radius);
-    box-shadow: var(--shadow); padding: 14px; text-align: center;
-  }
-  .dash-stat-num { font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--maroon); }
-  .dash-stat-label { font-size: 12px; color: #6b5a4e; margin-top: 2px; }
-  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
   @media (max-width: 640px) { .dash-grid { grid-template-columns: 1fr; } }
   .dash-panel { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
   .dash-panel h4 { margin: 0 0 10px; font-size: 14px; color: var(--charcoal); }
@@ -85,11 +86,13 @@
   <div id="adm-content" style="display:none;">
     <h1>Dashboard</h1>
 
-    <div class="dash-summary">
-      <div class="dash-stat"><div class="dash-stat-num" id="dash-total">0</div><div class="dash-stat-label">Total signups</div></div>
-      <div class="dash-stat"><div class="dash-stat-num" id="dash-complete">0</div><div class="dash-stat-label">Complete profiles</div></div>
-      <div class="dash-stat"><div class="dash-stat-num" id="dash-verified">0</div><div class="dash-stat-label">Verified (can browse)</div></div>
-      <div class="dash-stat"><div class="dash-stat-num" id="dash-pending">0</div><div class="dash-stat-label">Pending verification</div></div>
+    <div class="mt-tabs" id="adm-main-tabs">
+      <div class="mt-tab mt-tab-active" data-tab="total">Total Signups<span class="in-count-badge" id="adm-total-count">0</span></div>
+      <div class="mt-tab" data-tab="complete">Complete<span class="in-count-badge" id="adm-complete-count">0</span></div>
+      <div class="mt-tab" data-tab="ready">Ready to Verify<span class="in-count-badge" id="adm-pending-ready-count">0</span></div>
+      <div class="mt-tab" data-tab="notready">Not Yet Ready<span class="in-count-badge" id="adm-pending-notready-count">0</span></div>
+      <div class="mt-tab" data-tab="verified">Verified<span class="in-count-badge" id="adm-verified-count">0</span></div>
+      <div class="mt-tab" data-tab="incomplete">Incomplete Reg.<span class="in-count-badge" id="adm-incomplete-count">0</span></div>
     </div>
 
     <p class="mt-hint">Breakdowns below are among complete profiles only.</p>
@@ -102,33 +105,43 @@
       <div class="dash-panel"><h4>By Diet</h4><div id="dash-diet"></div></div>
     </div>
 
-    <h1 class="adm-section-title">Pending verification (<span id="adm-pending-count">0</span>)</h1>
-    <p class="mt-hint">
-      Check that the WhatsApp message you received (e.g. "VERIFY JVA1B2C3D4") came from the
-      same mobile number shown below for that member, then tap Verify.
-    </p>
-
-    <div class="mt-tabs" id="adm-pending-tabs">
-      <div class="mt-tab mt-tab-active" data-tab="ready">Ready to verify<span class="in-count-badge" id="adm-pending-ready-count">0</span></div>
-      <div class="mt-tab" data-tab="notready">Not yet ready<span class="in-count-badge" id="adm-pending-notready-count">0</span></div>
+    <div class="mt-tab-panel mt-tab-panel-active" data-panel="total">
+      <h1 class="adm-section-title">Total Signups</h1>
+      <p class="mt-hint">Everyone who has a profile row, regardless of completeness or verification.</p>
+      <div id="adm-total-list"><p class="mt-hint">Loading...</p></div>
     </div>
 
-    <div class="mt-tab-panel mt-tab-panel-active" data-panel="ready">
-      <p class="mt-hint">Profile and bio-data both complete.</p>
+    <div class="mt-tab-panel" data-panel="complete">
+      <h1 class="adm-section-title">Complete Profiles</h1>
+      <p class="mt-hint">Required fields filled in, regardless of verification status.</p>
+      <div id="adm-complete-list"><p class="mt-hint">Loading...</p></div>
+    </div>
+
+    <div class="mt-tab-panel" data-panel="ready">
+      <h1 class="adm-section-title">Ready to Verify</h1>
+      <p class="mt-hint">
+        Profile and bio-data both complete. Check that the WhatsApp message you received
+        (e.g. "VERIFY JVA1B2C3D4") came from the same mobile number shown below, then tap Verify.
+      </p>
       <div id="adm-pending-ready-list"><p class="mt-hint">Loading...</p></div>
     </div>
 
     <div class="mt-tab-panel" data-panel="notready">
+      <h1 class="adm-section-title">Not Yet Ready</h1>
       <p class="mt-hint">Missing required details and/or bio-data PDF.</p>
       <div id="adm-pending-notready-list"><p class="mt-hint">Loading...</p></div>
     </div>
 
-    <h1 class="adm-section-title">Already verified (<span id="adm-verified-count">0</span>)</h1>
-    <div id="adm-verified-list"><p class="mt-hint">Loading...</p></div>
+    <div class="mt-tab-panel" data-panel="verified">
+      <h1 class="adm-section-title">Already Verified</h1>
+      <div id="adm-verified-list"><p class="mt-hint">Loading...</p></div>
+    </div>
 
-    <h1 class="adm-section-title">Incomplete registrations (<span id="adm-incomplete-count">0</span>)</h1>
-    <p class="mt-hint">Started signing up but never finished their profile - no mobile number on file yet, so reach out by email.</p>
-    <div id="adm-incomplete-list"><p class="mt-hint">Loading...</p></div>
+    <div class="mt-tab-panel" data-panel="incomplete">
+      <h1 class="adm-section-title">Incomplete Registrations</h1>
+      <p class="mt-hint">Started signing up but never finished their profile - no mobile number on file yet, so reach out by email.</p>
+      <div id="adm-incomplete-list"><p class="mt-hint">Loading...</p></div>
+    </div>
   </div>
 
 </div>
@@ -225,7 +238,6 @@
     const pendingReady = pending.filter((c) => isReadyToVerify(profilesById[c.user_id]));
     const pendingNotReady = pending.filter((c) => !isReadyToVerify(profilesById[c.user_id]));
 
-    document.getElementById("adm-pending-count").textContent = pending.length;
     document.getElementById("adm-verified-count").textContent = verified.length;
     document.getElementById("adm-pending-ready-count").textContent = pendingReady.length;
     document.getElementById("adm-pending-notready-count").textContent = pendingNotReady.length;
@@ -335,25 +347,63 @@
     return "51+";
   }
 
+  // Read-only overview row for the Total Signups / Complete tabs - unlike
+  // renderRow() (Ready/Not-ready/Verified), there's no Verify/Unverify
+  // action here, just a status badge covering all three possible mobile
+  // states plus the usual completeness badge.
+  function renderOverviewRow(profile, contact) {
+    const name = profile.full_name || "(no name)";
+    const code = profile.profile_code || "—";
+    const gender = GENDER_LABELS[profile.gender] || "";
+    const city = profile.city || "";
+    const metaParts = [gender, city].filter(Boolean);
+
+    let statusBadge;
+    if (contact && contact.mobile_verified) {
+      statusBadge = '<span class="adm-ready-badge">Verified</span>';
+    } else if (contact && contact.mobile) {
+      statusBadge = '<span class="adm-notready-badge">Pending verification</span>';
+    } else {
+      statusBadge = '<span class="adm-notready-badge">No mobile yet</span>';
+    }
+
+    return (
+      '<div class="adm-row">' +
+        '<div class="adm-row-main">' +
+          '<div class="adm-name">' + escapeHtml(name) + " · <span class=\"adm-code\">" + escapeHtml(code) + "</span> " + statusBadge + completenessBadge(profile) + "</div>" +
+          '<div class="adm-meta">' + escapeHtml(metaParts.join(" · ")) + "</div>" +
+        "</div>" +
+        '<a href="profile-view.html?id=' + encodeURIComponent(profile.user_id) + '" target="_blank" class="mt-btn mt-btn-outline">View Profile</a>' +
+      "</div>"
+    );
+  }
+
   async function loadDashboard() {
     const { data: allProfiles, error: profilesError } = await supabaseClient
       .from("mt_profiles")
-      .select("gender, city, dob, profession, diet, profile_complete");
+      .select("user_id, full_name, profile_code, gender, city, dob, profession, diet, profile_complete, biodata_path");
 
     const { data: allContacts, error: contactsError } = await supabaseClient
       .from("mt_contacts")
-      .select("mobile_verified")
-      .not("mobile", "is", null);
+      .select("user_id, mobile, mobile_verified");
 
     if (profilesError || contactsError) return;
 
-    const complete = (allProfiles || []).filter((p) => p.profile_complete);
-    const verifiedCount = (allContacts || []).filter((c) => c.mobile_verified).length;
+    const contactsById = {};
+    (allContacts || []).forEach((c) => { contactsById[c.user_id] = c; });
 
-    document.getElementById("dash-total").textContent = (allProfiles || []).length;
-    document.getElementById("dash-complete").textContent = complete.length;
-    document.getElementById("dash-verified").textContent = verifiedCount;
-    document.getElementById("dash-pending").textContent = (allContacts || []).length - verifiedCount;
+    const complete = (allProfiles || []).filter((p) => p.profile_complete);
+
+    document.getElementById("adm-total-count").textContent = (allProfiles || []).length;
+    document.getElementById("adm-complete-count").textContent = complete.length;
+
+    document.getElementById("adm-total-list").innerHTML = (allProfiles || []).length
+      ? allProfiles.map((p) => renderOverviewRow(p, contactsById[p.user_id])).join("")
+      : '<p class="adm-empty">No signups yet.</p>';
+
+    document.getElementById("adm-complete-list").innerHTML = complete.length
+      ? complete.map((p) => renderOverviewRow(p, contactsById[p.user_id])).join("")
+      : '<p class="adm-empty">No complete profiles yet.</p>';
 
     const genderCounts = {};
     const cityCounts = {};
@@ -382,8 +432,8 @@
     renderBarList("dash-diet", dietCounts, DIET_OPTIONS.map(([label]) => label).concat(["Unknown"]));
   }
 
-  function wirePendingTabs() {
-    const tabsEl = document.getElementById("adm-pending-tabs");
+  function wireMainTabs() {
+    const tabsEl = document.getElementById("adm-main-tabs");
     tabsEl.querySelectorAll("[data-tab]").forEach((tabEl) => {
       tabEl.addEventListener("click", () => {
         const value = tabEl.dataset.tab;
@@ -406,7 +456,7 @@
     }
 
     document.getElementById("adm-content").style.display = "block";
-    wirePendingTabs();
+    wireMainTabs();
     await loadDashboard();
     await loadLists();
     await loadIncompleteRegistrations();
